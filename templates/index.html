@@ -1,0 +1,19 @@
+{% extends "_base.html" %}
+{% block title %}COVID-19 Tracker{% endblock %}
+{% block body %}
+  <div id="body">
+    <div id="confirmed_cases"></div>
+    <div id="deaths"></div>
+    <div id="regional_cases"></div>
+    <div id="regional_deaths"></div>
+  </div>
+
+  <script>
+    var graphs = {{graphs|safe}};
+    window.onload = (ev) => {
+      for (graph of graphs) {
+        Bokeh.embed.embed_item(graph);
+      }
+    };
+  </script>
+{% endblock %}

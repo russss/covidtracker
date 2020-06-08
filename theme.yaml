@@ -1,0 +1,32 @@
+# Basic style to make Bokeh look decent.
+#
+# Load with `curdoc().theme = Theme('../russ.yaml')`
+#
+# I usually also set `fig.xgrid.visible = False` which
+# you apparently can't do through here.
+
+attrs:
+  Figure:
+    outline_line_width: 0
+
+  Title:
+    text_font: 'Noto Sans'
+    text_font_style: normal
+    text_font_size: 18px
+    align: center
+
+  Axis:
+    minor_tick_line_color: '#dddddd'
+    major_tick_line_color: '#dddddd'
+    axis_line_width: 0
+    minor_tick_line_width: 0
+    axis_label_text_font_style: normal
+    axis_label_text_font: 'Noto Sans'
+    major_label_text_font: 'Noto Sans'
+
+  Legend:
+    title_text_font: 'Noto Sans'
+    title_text_font_style: normal
+    title_text_font_size: 12px
+    label_text_font: 'Noto Sans'
+    label_text_font_size: 11px
