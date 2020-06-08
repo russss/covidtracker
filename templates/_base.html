@@ -4,10 +4,60 @@
   <meta charset="utf-8">
   <title>{% block title %}{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
   <style>
+    body {
+      color: #333;
+      font-family: 'Noto Sans', sans-serif;
+    }
+
+    .footnote {
+      font-size: 0.7em;
+    }
+
     #body {
       width: 80%;
       margin: auto;
+      min-width: 700px;
+    }
+
+    .graph {
+      margin-bottom: 2em;
+    }
+
+    table {
+      border-spacing: 0
+    }
+
+    td, th {
+      padding: 3px;
+    }
+
+    td.score {
+      text-align: center;
+      width: 100px;
+    }
+
+    .score_rise_small {
+      background-color: #DEB4AF;
+    }
+
+    .score_rise_large {
+      background-color: #DE5243;
+      color: #eee;
+    }
+
+    .score_fall_small {
+      background-color: #AFB9DE;
+    }
+
+    .score_fall_large {
+      background-color: #4362DE;
+      color: #eee;
+    }
+
+    .score_neutral {
+      background-color: #DEDEDE;
     }
   </style>
 </head>

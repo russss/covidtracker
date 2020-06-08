@@ -1,11 +1,51 @@
 {% extends "_base.html" %}
 {% block title %}COVID-19 Tracker{% endblock %}
+
+{% macro score_cell(value) %}
+  <td class="score score_
+      {%- if value < -50 %}fall_large
+      {%- elif value < -10 %}fall_small
+      {%- elif value > 50 %}rise_large
+      {%- elif value > 10 %}rise_small
+      {%- else %}neutral{% endif %}">
+    {{value|round|int}}%</td>
+{%- endmacro %}
 {% block body %}
   <div id="body">
-    <div id="confirmed_cases"></div>
-    <div id="deaths"></div>
-    <div id="regional_cases"></div>
-    <div id="regional_deaths"></div>
+    <h1>UK COVID-19 Tracker</h1>
+    <h2>Regional Trends</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Region</th>
+          <th>Triage (online)</th>
+          <th>Triage (phone)</th>
+          <th>Cases</th>
+          <th>Deaths</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for region, s in scores['scores'].items() %}
+        <tr>
+          <td>{{region}}</td>
+          {{score_cell(s['triage_online'])}}
+          {{score_cell(s['triage_pathways'])}}
+          {{score_cell(s['cases'])}}
+          {{score_cell(s['deaths'])}}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="footnote">
+        Triage scores are based on suspected COVID-19 cases through NHS 111 services, and are calculated
+        from changes in a 14-day average. Cases and deaths scores are calculated from changes in a
+        7-day average.</p>
+    <h2>General Situation</h2>
+    <p>Where data is likely to be incomplete due to reporting delays, it is shown in a lighter colour.</p>
+    <div id="confirmed_cases" class="graph"></div>
+    <div id="deaths" class="graph"></div>
+    <div id="regional_cases" class="graph"></div>
+    <div id="regional_deaths" class="graph"></div>
   </div>
 
   <script>
