@@ -12,12 +12,17 @@
 {%- endmacro %}
 {% block body %}
   <div id="body">
-    <h1>UK COVID-19 Tracker</h1>
+    <h1>COVID-19 Tracker</h1>
+    <p>This is a collection of what I consider to be the most useful COVID-19 data for England. It is updated
+        from the latest source data every 30 minutes.</p>
     <h2>Regional Trends</h2>
+    <p>While governments are keen on using the reproduction (R) number to measure the state of
+      outbreaks, it's ultimately just a measure of whether a certain metric is growing or shrinking.
+      This table shows the growth rate of these metrics directly.</p>
     <table>
       <thead>
         <tr>
-          <th>Region</th>
+          <th>English Region</th>
           <th>Triage (online)</th>
           <th>Triage (phone)</th>
           <th>Cases</th>
@@ -46,14 +51,24 @@
     <div id="deaths" class="graph"></div>
     <div id="regional_cases" class="graph"></div>
     <div id="regional_deaths" class="graph"></div>
+    <h2>NHS 111 Triage Data</h2>
+    <p>This data shows the number of instances of people contacting NHS 111 with suspected COVID-19
+        symptoms, both online and over the phone. It should act as a leading indicator of any COVID-19 outbreaks.</p>
+    <p>Caveats: the criteria used to triage users have changed several times. The phone triage data does not cover
+        999 calls in some areas of the country. <a href="https://digital.nhs.uk/data-and-information/publications/statistical/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online/latest">More info</a>.</p>
+    <div id="triage_online" class="graph"></div>
+    <div id="triage_pathways" class="graph"></div>
+    <h2>Sources</h2>
+    <table class="sources">
+      {% for publisher, name, url, date in sources %}
+        <tr>
+          <td>{{publisher}}</td>
+          <td><a href="{{url}}">{{name}}</a></td>
+          <td>{{date}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    <p class="footnote">Public Health England data at LTLA level is mapped to NHS England regions using
+        <a href="https://github.com/russss/local_authority_nhs_region">this mapping</a>, which is not exact.</p>
   </div>
-
-  <script>
-    var graphs = {{graphs|safe}};
-    window.onload = (ev) => {
-      for (graph of graphs) {
-        Bokeh.embed.embed_item(graph);
-      }
-    };
-  </script>
 {% endblock %}

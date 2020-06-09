@@ -1,14 +1,20 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import json
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 from bokeh.plotting import curdoc
 from bokeh.themes import Theme
 from bokeh.embed import json_item
 import coviddata.uk
 import coviddata.world
 
-from graphs import england_cases, england_deaths, regional_cases, regional_deaths
+from graphs import (
+    england_cases,
+    england_deaths,
+    regional_cases,
+    regional_deaths,
+    triage_graph,
+)
 from score import calculate_score
 
 curdoc().theme = Theme("./theme.yaml")
@@ -61,8 +67,11 @@ def online_triage_by_nhs_region():
         .sum()
     )
 
-    triage["count_rolling"] = (
+    triage["count_rolling_14"] = (
         triage["count"].fillna(0).rolling(date=14, center=True).mean().dropna("date")
+    )
+    triage["count_rolling_7"] = (
+        triage["count"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
     )
     return triage
 
@@ -82,8 +91,11 @@ def pathways_triage_by_nhs_region():
         .rename(ccg="region")
     )
 
-    triage["count_rolling"] = (
+    triage["count_rolling_14"] = (
         triage["count"].fillna(0).rolling(date=14, center=True).mean().dropna("date")
+    )
+    triage["count_rolling_7"] = (
+        triage["count"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
     )
     return triage
 
@@ -140,7 +152,32 @@ render_template(
         "confirmed_cases": england_cases(uk_cases),
         "deaths": england_deaths(uk_cases, excess_deaths),
         "regional_cases": regional_cases(nhs_region_cases),
-        "regional_deaths": regional_deaths(nhs_deaths)
+        "regional_deaths": regional_deaths(nhs_deaths),
+        "triage_online": triage_graph(triage_online, "Online triage"),
+        "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
     },
-    scores=calculate_score(nhs_deaths, nhs_region_cases, triage_online, triage_pathways)
+    scores=calculate_score(
+        nhs_deaths, nhs_region_cases, triage_online, triage_pathways
+    ),
+    sources=[
+        (
+            "Public Health England",
+            "Coronavirus (COVID-19) in the UK",
+            "https://coronavirus.data.gov.uk",
+            uk_cases.attrs["date"],
+        ),
+        (
+            "Financial Times",
+            "Coronavirus Excess Mortality Data",
+            "https://github.com/Financial-Times/coronavirus-excess-mortality-data",
+            date.today(),
+        ),
+        (
+            "NHS",
+            "Potential COVID-19 symptoms reported through NHS Pathways and 111 online",
+            "https://digital.nhs.uk/data-and-information/publications/statistical"
+            "/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online",
+            pd.Timestamp(triage_online["date"].max().item(0)).date(),
+        ),
+    ],
 )

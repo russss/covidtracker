@@ -9,10 +9,12 @@ def calculate_score(deaths, cases, triage_online, triage_pathways):
         deaths["deaths_rolling"] / deaths["deaths_rolling"].shift(date=7)
     ).dropna("date") - 1
     online_change = (
-        triage_online["count_rolling"] / triage_online["count_rolling"].shift(date=14)
+        triage_online["count_rolling_14"]
+        / triage_online["count_rolling_14"].shift(date=14)
     ).dropna("date") - 1
     pathways_change = (
-        triage_pathways["count_rolling"] / triage_pathways["count_rolling"].shift(date=14)
+        triage_pathways["count_rolling_14"]
+        / triage_pathways["count_rolling_14"].shift(date=14)
     ).dropna("date") - 1
 
     data = {"scores": {}}
@@ -20,8 +22,8 @@ def calculate_score(deaths, cases, triage_online, triage_pathways):
         data["scores"][loc] = {
             "cases": cases_change[:, -1].sel(location=loc).item() * 100,
             "deaths": deaths_change[-1].sel(location=loc).item() * 100,
-            "triage_online": online_change[:,-1].sel(region=loc).item() * 100,
-            "triage_pathways": pathways_change[:,-1].sel(region=loc).item() * 100,
+            "triage_online": online_change[:, -1].sel(region=loc).item() * 100,
+            "triage_pathways": pathways_change[:, -1].sel(region=loc).item() * 100,
         }
 
     data["dates"] = {

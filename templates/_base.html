@@ -19,10 +19,15 @@
       font-size: 0.7em;
     }
 
+    table.sources {
+      font-size: 0.8em;
+    }
+
     #body {
       width: 80%;
       margin: auto;
       min-width: 700px;
+      max-width: 1200px;
     }
 
     .graph {
@@ -30,7 +35,10 @@
     }
 
     table {
-      border-spacing: 0
+      border-spacing: 0;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 8px;
     }
 
     td, th {
@@ -65,6 +73,7 @@
     }
     
     #footer {
+      color: #666;
       margin-top: 10em;
       width: 100%;
       text-align: center;
@@ -73,11 +82,22 @@
   </style>
 </head>
 <body>
+  <noscript>I'm afraid you will need Javascript enabled to view the graphs.</noscript>
   {% block body %}{% endblock %}
   <div id="footer">
     <p>Made by <a href="https://russ.garrett.co.uk">Russ Garrett</a> (<a href="https://twitter.com/russss">@russss</a>). Page updated on {{generated}}.</p>
   </div>
-  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.1.min.js"></script>
-  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.0.1.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.2.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.0.2.min.js"></script>
+  {% if graphs %}
+  <script>
+    const graphs = {{graphs|safe}};
+    window.onload = (ev) => {
+      for (graph of graphs) {
+        Bokeh.embed.embed_item(graph);
+      }
+    };
+  </script>
+  {% endif %}
 </body>
 </html>

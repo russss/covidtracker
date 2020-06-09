@@ -2,8 +2,8 @@ import numpy as np
 from itertools import cycle
 from datetime import date, timedelta
 from bokeh.plotting import figure as bokeh_figure
-from bokeh.models import NumeralTickFormatter, DatetimeTickFormatter, Span, Label
-from bokeh.palettes import Category10
+from bokeh.models import NumeralTickFormatter, DatetimeTickFormatter, Span
+from bokeh.palettes import Dark2
 
 BAR_COLOUR = "#D5DFED"
 LINE_COLOUR = ["#3D6CB3", "#B33D43"]
@@ -20,9 +20,9 @@ nhs_region_pops = {
 }
 
 england_interventions = [
-    (date(2020, 3, 23), "Lockdown", "#E08CE6"),
-    (date(2020, 5, 10), "Stay Alert", "#8CE6E4"),
-    (date(2020, 6, 1), "Schools Open", "#8CE6E4"),
+    (date(2020, 3, 23), "Lockdown", "#CC5450"),
+    (date(2020, 5, 10), "Stay Alert", "#50CCA5"),
+    (date(2020, 6, 1), "Schools Open", "#50CCA5"),
 ]
 
 
@@ -71,6 +71,7 @@ def figure(**kwargs):
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b")
     fig.xgrid.visible = False
+    fig.y_range.start = 0
     return fig
 
 
@@ -78,7 +79,9 @@ def england_cases(uk_cases):
     provisional_days = 4
     location = "England"
 
-    fig = figure(title="New confirmed cases in English hospitals")
+    fig = figure(
+        title="New confirmed cases in English hospitals"
+    )
     cases = uk_cases.sel(location=location)["cases"].dropna("date").diff("date")
     rolling = cases[:-provisional_days].rolling({"date": 7}, center=True).mean()
 
@@ -87,6 +90,7 @@ def england_cases(uk_cases):
         x=cases["date"].values[:-provisional_days],
         top=cases.values[:-provisional_days],
         width=bar_width,
+        name="Cases",
         line_width=0,
         fill_color=BAR_COLOUR,
     )
@@ -94,12 +98,14 @@ def england_cases(uk_cases):
         x=cases["date"].values[-provisional_days:],
         top=cases.values[-provisional_days:],
         width=bar_width,
+        name="Provisional cases",
         line_width=0,
         fill_color="#EDEDED",
     )
     fig.line(
         x=rolling["date"].values,
         y=rolling.values,
+        name="7 day rolling mean",
         line_width=2,
         line_color=LINE_COLOUR[0],
     )
@@ -139,15 +145,16 @@ def england_deaths(uk_cases, excess_deaths):
         legend_label="Excess deaths (Weekly)",
     )
 
-    fig.y_range.start = 0
     fig.xaxis.axis_label = "Date of report"
     return fig
 
 
 def regional_cases(regions):
-    fig = figure(title="New cases in hospital")
+    fig = figure(
+        title="New cases in hospital", tooltips=[("Region", "$name"), ("Value", "$y")]
+    )
 
-    colours = cycle(Category10[10])
+    colours = cycle(Dark2[7])
 
     for loc in sorted([str(loc.data) for loc in regions["location"]]):
         s = regions.sel(location=loc)
@@ -156,6 +163,7 @@ def regional_cases(regions):
             x=s["date"].values,
             y=s["cases_rolling"].values / nhs_region_pops[loc] * 100000,
             legend_label=loc,
+            name=loc,
             color=color,
             line_width=1,
         )
@@ -163,21 +171,23 @@ def regional_cases(regions):
             x=s["date"].values,
             y=s["cases_rolling_provisional"].values / nhs_region_pops[loc] * 100000,
             legend_label=loc,
+            name=loc,
             color=color,
             line_width=1,
             line_alpha=0.4,
         )
 
     fig.legend.location = "top_right"
-    fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b")
     fig.yaxis.axis_label = "Cases per 100,000 population"
     return fig
 
 
 def regional_deaths(nhs_deaths):
-    fig = figure(title="Deaths in hospital")
+    fig = figure(
+        title="Deaths in hospital", tooltips=[("Region", "$name"), ("Value", "$y")]
+    )
 
-    colours = cycle(Category10[7])
+    colours = cycle(Dark2[7])
 
     for loc in sorted([str(loc.data) for loc in nhs_deaths["location"]]):
         s = nhs_deaths.sel(location=loc)
@@ -186,6 +196,7 @@ def regional_deaths(nhs_deaths):
             x=s["date"].values,
             y=s["deaths_rolling"].values / nhs_region_pops[loc] * 100000,
             legend_label=loc,
+            name=loc,
             color=color,
             line_width=1,
         )
@@ -193,13 +204,34 @@ def regional_deaths(nhs_deaths):
             x=s["date"].values,
             y=s["deaths_rolling_provisional"].values / nhs_region_pops[loc] * 100000,
             legend_label=loc,
+            name=loc,
             color=color,
             line_width=1,
             line_alpha=0.4,
         )
 
     fig.legend.location = "top_right"
-    fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b")
     fig.xaxis.axis_label = "Date of death"
     fig.yaxis.axis_label = "Deaths per 100,000 population"
+    return fig
+
+
+def triage_graph(triage_online, title=""):
+    fig = figure(title=title, tooltips=[("Region", "$name"), ("Value", "$y")],)
+
+    colours = cycle(Dark2[7])
+    for loc in sorted([str(loc.item()) for loc in triage_online["region"]]):
+        s = triage_online.sel(region=loc)
+        color = next(colours)
+        fig.line(
+            x=s["date"].values,
+            y=s["count_rolling_7"].values / nhs_region_pops[loc] * 100000,
+            legend_label=loc,
+            name=loc,
+            color=color,
+            line_width=1,
+        )
+
+    fig.legend.location = "top_right"
+    fig.yaxis.axis_label = "Instances per 100,000 population"
     return fig
