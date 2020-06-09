@@ -2,7 +2,7 @@ import numpy as np
 from itertools import cycle
 from datetime import date, timedelta
 from bokeh.plotting import figure as bokeh_figure
-from bokeh.models import NumeralTickFormatter, DatetimeTickFormatter
+from bokeh.models import NumeralTickFormatter, DatetimeTickFormatter, Span, Label
 from bokeh.palettes import Category10
 
 BAR_COLOUR = "#D5DFED"
@@ -19,6 +19,40 @@ nhs_region_pops = {
     "South West": 5605997,
 }
 
+england_interventions = [
+    (date(2020, 3, 23), "Lockdown", "#E08CE6"),
+    (date(2020, 5, 10), "Stay Alert", "#8CE6E4"),
+    (date(2020, 6, 1), "Schools Open", "#8CE6E4"),
+]
+
+
+def intervention(fig, date, label, colour="red"):
+    span = Span(
+        location=date,
+        dimension="height",
+        line_color=colour,
+        line_width=1,
+        line_dash="dashed",
+    )
+    fig.add_layout(span)
+
+    # span_label = Label(
+    #    text=label,
+    #    text_font="Noto Sans",
+    #    text_font_size="10px",
+    #    x=date,
+    #    y=0,
+    #    x_offset=-20,
+    #    y_offset=-10,
+    #    background_fill_color="white",
+    # )
+    # fig.add_layout(span_label)
+
+
+def add_interventions(fig):
+    for when, label, colour in england_interventions:
+        intervention(fig, when, label, colour)
+
 
 def figure(**kwargs):
     fig = bokeh_figure(
@@ -33,6 +67,7 @@ def figure(**kwargs):
         tools="",
         **kwargs
     )
+    add_interventions(fig)
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b")
     fig.xgrid.visible = False

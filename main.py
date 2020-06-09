@@ -1,6 +1,7 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import json
 import pandas as pd
+from datetime import datetime
 from bokeh.plotting import curdoc
 from bokeh.themes import Theme
 from bokeh.embed import json_item
@@ -22,9 +23,11 @@ def render_template(name, graphs={}, **kwargs):
 
     graphs_data = json.dumps([json_item(graph, name) for name, graph in graphs.items()])
 
+    generated = datetime.now()
+
     template = env.get_template(name)
     with open(f"output/{name}", "w") as f:
-        f.write(template.render(graphs=graphs_data, **kwargs))
+        f.write(template.render(graphs=graphs_data, generated=generated, **kwargs))
 
 
 def cases_by_nhs_region():

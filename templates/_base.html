@@ -11,6 +11,10 @@
       font-family: 'Noto Sans', sans-serif;
     }
 
+    a, a:visited, a:hover {
+      color: #323;
+    }
+
     .footnote {
       font-size: 0.7em;
     }
@@ -59,10 +63,20 @@
     .score_neutral {
       background-color: #DEDEDE;
     }
+    
+    #footer {
+      margin-top: 10em;
+      width: 100%;
+      text-align: center;
+      font-size: 0.7em;
+    }
   </style>
 </head>
 <body>
   {% block body %}{% endblock %}
+  <div id="footer">
+    <p>Made by <a href="https://russ.garrett.co.uk">Russ Garrett</a> (<a href="https://twitter.com/russss">@russss</a>). Page updated on {{generated}}.</p>
+  </div>
   <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.1.min.js"></script>
   <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.0.1.min.js"></script>
 </body>
