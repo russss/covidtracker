@@ -141,7 +141,7 @@ nhs_region_cases["cases_rolling_provisional"] = (
     .dropna("date")
 )
 
-excess_deaths = coviddata.world.excess_deaths_ft()
+excess_deaths = pd.read_csv('./excess_deaths.csv', index_col='date', parse_dates=['date'], dayfirst=True)
 triage_online = online_triage_by_nhs_region()
 triage_pathways = pathways_triage_by_nhs_region()
 
@@ -167,10 +167,11 @@ render_template(
             uk_cases.attrs["date"],
         ),
         (
-            "Financial Times",
-            "Coronavirus Excess Mortality Data",
-            "https://github.com/Financial-Times/coronavirus-excess-mortality-data",
-            date.today(),
+            "ONS",
+            "Deaths registered weekly in England and Wales, provisional",
+            "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
+            "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
+            date(2020, 6, 9),
         ),
         (
             "NHS",

@@ -134,9 +134,7 @@ def england_deaths(uk_cases, excess_deaths):
         line_color=LINE_COLOUR[0],
     )
 
-    excess = (
-        excess_deaths.xs(("UK", "England", "week"))["excess_deaths"].interpolate() / 7
-    )
+    excess = excess_deaths['deaths'].interpolate() / 7
     fig.line(
         x=excess.index,
         y=excess.values,
