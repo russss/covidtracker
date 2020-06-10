@@ -79,9 +79,7 @@ def england_cases(uk_cases):
     provisional_days = 4
     location = "England"
 
-    fig = figure(
-        title="New confirmed cases in English hospitals"
-    )
+    fig = figure(title="New confirmed cases in English hospitals")
     cases = uk_cases.sel(location=location)["cases"].dropna("date").diff("date")
     rolling = cases[:-provisional_days].rolling({"date": 7}, center=True).mean()
 
@@ -137,7 +135,7 @@ def england_deaths(uk_cases, excess_deaths):
         line_color=LINE_COLOUR[0],
     )
 
-    excess = excess_deaths['deaths'].interpolate() / 7
+    excess = excess_deaths["deaths"].interpolate() / 7
     fig.line(
         x=excess.index,
         y=excess.values,
@@ -235,4 +233,33 @@ def triage_graph(triage_online, title=""):
 
     fig.legend.location = "top_right"
     fig.yaxis.axis_label = "Instances per 100,000 population"
+    return fig
+
+
+def patients_in_hospital_graph(hosp):
+    fig = figure(
+        title="Patients in hospital", tooltips=[("Region", "$name"), ("Value", "$y")],
+    )
+
+    colours = cycle(Dark2[7])
+
+    locations = sorted(
+        set(str(loc.item()) for loc in hosp["location"])
+        - {"Scotland", "Wales", "Northern Ireland"}
+    )
+
+    for loc in locations:
+        s = hosp.sel(location=loc)
+        color = next(colours)
+        fig.line(
+            x=s["date"].values,
+            y=s["patients_rolling_3"].values / nhs_region_pops[loc] * 100000,
+            legend_label=loc,
+            name=loc,
+            color=color,
+            line_width=1,
+        )
+
+    fig.legend.location = "top_right"
+    fig.yaxis.axis_label = "Patients per 100,000 population"
     return fig

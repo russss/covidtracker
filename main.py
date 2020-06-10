@@ -14,6 +14,7 @@ from graphs import (
     regional_cases,
     regional_deaths,
     triage_graph,
+    patients_in_hospital_graph,
 )
 from score import calculate_score
 
@@ -141,7 +142,15 @@ nhs_region_cases["cases_rolling_provisional"] = (
     .dropna("date")
 )
 
-excess_deaths = pd.read_csv('./excess_deaths.csv', index_col='date', parse_dates=['date'], dayfirst=True)
+patients_in_hospital = coviddata.uk.people_in_hospital()
+patients_in_hospital["patients_rolling_3"] = (
+    patients_in_hospital["patients"].rolling(date=3, center=True).mean().dropna("date")
+)
+
+
+excess_deaths = pd.read_csv(
+    "./excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
+)
 triage_online = online_triage_by_nhs_region()
 triage_pathways = pathways_triage_by_nhs_region()
 
@@ -155,9 +164,14 @@ render_template(
         "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage"),
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
+        "patients": patients_in_hospital_graph(patients_in_hospital),
     },
     scores=calculate_score(
-        nhs_deaths, nhs_region_cases, triage_online, triage_pathways
+        nhs_deaths,
+        nhs_region_cases,
+        triage_online,
+        triage_pathways,
+        patients_in_hospital,
     ),
     sources=[
         (
@@ -179,6 +193,12 @@ render_template(
             "https://digital.nhs.uk/data-and-information/publications/statistical"
             "/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online",
             pd.Timestamp(triage_online["date"].max().item(0)).date(),
+        ),
+        (
+            "UK Government",
+            "Slides and datasets from daily press conference",
+            patients_in_hospital.attrs["source_url"],
+            patients_in_hospital.attrs["date"].date(),
         ),
     ],
 )
