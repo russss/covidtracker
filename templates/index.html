@@ -28,7 +28,7 @@
           <th title="{{scores['dates']['triage_online'].date()}}">Triage (online)</th>
           <th title="{{scores['dates']['triage_pathways'].date()}}">Triage (phone)</th>
           <th title="{{scores['dates']['cases'].date()}}">Cases</th>
-          <th title="{{scores['dates']['patients'].date()}}">Hospital Patients</th>
+          {#          <th title="{{scores['dates']['patients'].date()}}">Hospital Patients</th>#}
           <th title="{{scores['dates']['deaths'].date()}}">Deaths</th>
         </tr>
       </thead>
@@ -39,7 +39,7 @@
           {{score_cell(s['triage_online'])}}
           {{score_cell(s['triage_pathways'])}}
           {{score_cell(s['cases'])}}
-          {{score_cell(s['patients'])}}
+          {#          {{score_cell(s['patients'])}}#}
           {{score_cell(s['deaths'])}}
         </tr>
       {% endfor %}
