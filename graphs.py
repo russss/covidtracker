@@ -143,7 +143,7 @@ def england_deaths(uk_cases, excess_deaths):
         y=excess.values,
         line_width=2,
         line_color=LINE_COLOUR[1],
-        legend_label="Excess deaths (Weekly)",
+        legend_label="Excess deaths (weekly)",
     )
 
     fig.xaxis.axis_label = "Date of report"
