@@ -113,9 +113,11 @@ def england_cases(uk_cases):
 
 
 def england_deaths(uk_cases, excess_deaths):
-    fig = figure(title="Deaths in England")
+    fig = figure(title="Deaths in England & Wales")
 
-    deaths = uk_cases["deaths"].sel(location="England").diff("date").fillna(0)
+    deaths_england = uk_cases["deaths"].sel(location="England").diff("date").fillna(0)
+    deaths_wales = uk_cases["deaths"].sel(location="Wales").diff("date").fillna(0)
+    deaths = deaths_england + deaths_wales
     deaths_mean = deaths.rolling(date=7, center=True).mean().dropna("date")
 
     bar_width = 8640 * 10e3 * 0.7
@@ -123,6 +125,7 @@ def england_deaths(uk_cases, excess_deaths):
         x=deaths["date"].values,
         top=deaths.values,
         width=bar_width,
+        legend_label="Reported COVID-19 deaths",
         line_width=0,
         fill_color=BAR_COLOUR,
     )
@@ -130,7 +133,7 @@ def england_deaths(uk_cases, excess_deaths):
         x=deaths_mean["date"].values,
         y=deaths_mean.values,
         line_width=2,
-        legend_label="Reported COVID-19 deaths (7 day average)",
+        legend_label="7 day average",
         line_color=LINE_COLOUR[0],
     )
 
