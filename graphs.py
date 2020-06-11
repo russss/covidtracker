@@ -68,7 +68,6 @@ def figure(**kwargs):
         **kwargs
     )
     add_interventions(fig)
-    fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b")
     fig.xgrid.visible = False
     fig.y_range.start = 0
@@ -107,6 +106,7 @@ def england_cases(uk_cases):
         line_width=2,
         line_color=LINE_COLOUR[0],
     )
+    fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
 
 
@@ -145,6 +145,7 @@ def england_deaths(uk_cases, excess_deaths):
     )
 
     fig.xaxis.axis_label = "Date of report"
+    fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
 
 
