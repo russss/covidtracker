@@ -30,6 +30,8 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
+          GIT_CONFIG_NAME: covidtracker
+          GIT_CONFIG_EMAIL: russ+covidtracker@garrett.co.uk
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
           FOLDER: output
