@@ -23,6 +23,7 @@ england_interventions = [
     (date(2020, 3, 23), "Lockdown", "#CC5450"),
     (date(2020, 5, 10), "Stay Alert", "#50CCA5"),
     (date(2020, 6, 1), "Schools Open", "#50CCA5"),
+    (date(2020, 6, 15), "Non-essential shops Open", "#50CCA5"),
 ]
 
 
