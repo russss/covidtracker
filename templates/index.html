@@ -48,11 +48,19 @@
     <p class="footnote">
         Triage scores are based on suspected COVID-19 cases through NHS 111 services, and are calculated
         from 14-day changes in a 14-day average. Cases and deaths scores are calculated from 7-day changes in a
-        7-day average. Hospital patients score is calculated from 7-day changes in a 4-day average.</p>
+        7-day average.</p>
     <h2>General Situation</h2>
     <p>Where data is likely to be incomplete due to reporting delays, it is shown in a lighter colour.
         Red vertical markers show the date when restrictions were imposed,
-        green lines show restrictions being relaxed.</p>
+        green lines show restrictions being relaxed. Unless otherwise stated, trend lines are a 7-day
+        rolling average.</p>
+    <p>The officially reported number of cases in the UK (the red line in the chart below) is based on the
+        date of report, rather than the date the sample was taken. Data from England shows that new cases are
+        being reported from samples dated several weeks ago, so recently reported numbers are
+        likely to be higher than the true number of positive tests for that date.</p>
+    <p>England reports data from "pillar 1" testing (cases in hospital and NHS workers) based on the date of
+        sample, which is shown on the chart below in blue. This is likely provide a more accurate picture of
+        the rate of new cases.</p>
     <div id="confirmed_cases" class="graph"></div>
     <div id="deaths" class="graph"></div>
     <div id="regional_cases" class="graph"></div>
@@ -66,6 +74,14 @@
     <div id="triage_pathways" class="graph"></div>
     <h2>Sources</h2>
     <table class="sources">
+      <thead>
+        <tr>
+          <th>Publisher</th>
+          <th>Data Source</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
       {% for publisher, name, url, date in sources %}
         <tr>
           <td>{{publisher}}</td>
@@ -73,6 +89,7 @@
           <td>{{date}}</td>
         </tr>
       {% endfor %}
+      <tbody>
     </table>
     <p class="footnote">Public Health England data at LTLA level is mapped to NHS England regions using
         <a href="https://github.com/russss/local_authority_nhs_region">this mapping</a>, which is not exact.</p>

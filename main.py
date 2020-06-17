@@ -14,7 +14,7 @@ from graphs import (
     regional_cases,
     regional_deaths,
     triage_graph,
-    patients_in_hospital_graph,
+    #    patients_in_hospital_graph,
 )
 from score import calculate_score
 
@@ -106,6 +106,7 @@ ccg_lookup = (
 )
 
 uk_cases = coviddata.uk.cases_phe("countries")
+ecdc_cases = coviddata.world.cases_ecdc()
 
 provisional_days = 4
 
@@ -158,7 +159,7 @@ triage_pathways = pathways_triage_by_nhs_region()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": england_cases(uk_cases),
+        "confirmed_cases": england_cases(uk_cases, ecdc_cases),
         "deaths": england_deaths(uk_cases, excess_deaths),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
@@ -175,6 +176,12 @@ render_template(
         #        patients_in_hospital,
     ),
     sources=[
+        (
+            "European Centres for Disease Control",
+            "Data on the geographic distribution of COVID-19 cases worldwide",
+            "https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide",
+            ecdc_cases.attrs["date"],
+        ),
         (
             "Public Health England",
             "Coronavirus (COVID-19) in the UK",

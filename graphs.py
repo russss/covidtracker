@@ -3,6 +3,7 @@ from itertools import cycle
 from datetime import date, timedelta
 from bokeh.plotting import figure as bokeh_figure
 from bokeh.models import NumeralTickFormatter, DatetimeTickFormatter, Span
+from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2
 
 BAR_COLOUR = "#D5DFED"
@@ -25,6 +26,17 @@ england_interventions = [
     (date(2020, 6, 1), "Schools Open", "#50CCA5"),
     (date(2020, 6, 15), "Non-essential shops Open", "#50CCA5"),
 ]
+
+
+def region_hover_tool():
+    return HoverTool(
+        tooltips=[
+            ("Region", "$name"),
+            ("Value per 100,000", "$y{0.00}"),
+            ("Date", "$x{%d %b}"),
+        ],
+        formatters={"$x": "datetime"},
+    )
 
 
 def intervention(fig, date, label, colour="red"):
@@ -75,13 +87,19 @@ def figure(**kwargs):
     return fig
 
 
-def england_cases(uk_cases):
+def england_cases(uk_cases, ecdc_cases):
     provisional_days = 4
-    location = "England"
-
-    fig = figure(title="New confirmed cases in English hospitals")
-    cases = uk_cases.sel(location=location)["cases"].dropna("date").diff("date")
+    fig = figure(title="New confirmed cases")
+    cases = uk_cases.sel(location="England")["cases"].dropna("date").diff("date")
     rolling = cases[:-provisional_days].rolling({"date": 7}, center=True).mean()
+
+    total_cases = (
+        ecdc_cases.sel(location="United Kingdom")["cases"]
+        .dropna("date")
+        .diff("date")
+        .rolling({"date": 7}, center=True)
+        .mean()
+    )
 
     bar_width = 8640 * 10e3 * 0.7
     fig.vbar(
@@ -104,8 +122,18 @@ def england_cases(uk_cases):
         x=rolling["date"].values,
         y=rolling.values,
         name="7 day rolling mean",
+        legend_label='England "pillar 1" cases (date of sample)',
         line_width=2,
         line_color=LINE_COLOUR[0],
+    )
+
+    fig.line(
+        x=total_cases["date"].values,
+        y=total_cases.values,
+        name="UK Cases",
+        legend_label="UK cases (date of report)",
+        line_width=2,
+        line_color=LINE_COLOUR[1],
     )
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
@@ -151,9 +179,9 @@ def england_deaths(uk_cases, excess_deaths):
 
 
 def regional_cases(regions):
-    fig = figure(
-        title="New cases in hospital", tooltips=[("Region", "$name"), ("Value", "$y")]
-    )
+    fig = figure(title="New cases in hospital")
+
+    fig.add_tools(region_hover_tool())
 
     colours = cycle(Dark2[7])
 
@@ -184,9 +212,9 @@ def regional_cases(regions):
 
 
 def regional_deaths(nhs_deaths):
-    fig = figure(
-        title="Deaths in hospital", tooltips=[("Region", "$name"), ("Value", "$y")]
-    )
+    fig = figure(title="Deaths in hospital")
+
+    fig.add_tools(region_hover_tool())
 
     colours = cycle(Dark2[7])
 
@@ -218,7 +246,8 @@ def regional_deaths(nhs_deaths):
 
 
 def triage_graph(triage_online, title=""):
-    fig = figure(title=title, tooltips=[("Region", "$name"), ("Value", "$y")],)
+    fig = figure(title=title)
+    fig.add_tools(region_hover_tool())
 
     colours = cycle(Dark2[7])
     for loc in sorted([str(loc.item()) for loc in triage_online["region"]]):
@@ -239,9 +268,8 @@ def triage_graph(triage_online, title=""):
 
 
 def patients_in_hospital_graph(hosp):
-    fig = figure(
-        title="Patients in hospital", tooltips=[("Region", "$name"), ("Value", "$y")],
-    )
+    fig = figure(title="Patients in hospital",)
+    fig.add_tools(region_hover_tool())
 
     colours = cycle(Dark2[7])
 
