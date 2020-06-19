@@ -24,7 +24,6 @@ jobs:
       - name: Build
         run: |
           pip install -r ./requirements.txt
-          mkdir output
           python ./main.py
 
       - name: Deploy
