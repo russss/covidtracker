@@ -210,3 +210,31 @@ render_template(
         #        ),
     ],
 )
+
+
+by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
+populations = pd.read_csv("region_populations.csv", thousands=",").set_index("Code")[
+    "All ages"
+]
+
+provisional_days = 4
+
+data = (
+    by_ltla_gss["cases"]
+    .interpolate_na("date", method="nearest")
+    .fillna(0)[:, :-provisional_days]
+)
+weekly_cases = data.diff("date").rolling(date=7).sum()
+
+cases = {}
+
+for gss_code in data["gss_code"].values:
+    this_week = int(weekly_cases.sel(gss_code=gss_code).values[-1])
+    last_week = int(weekly_cases.sel(gss_code=gss_code).values[-7])
+    cases[gss_code] = {
+        "prevalence": (this_week / populations[gss_code]),
+        "cases": this_week,
+        "cases_prev_week": last_week,
+    }
+
+render_template("map.html", data=json.dumps(cases))
