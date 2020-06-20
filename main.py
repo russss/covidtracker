@@ -7,6 +7,7 @@ from bokeh.themes import Theme
 from bokeh.embed import json_item
 from urllib.error import URLError
 import coviddata.uk
+import coviddata.uk.scotland
 import coviddata.world
 
 from graphs import (
@@ -17,6 +18,7 @@ from graphs import (
     triage_graph,
     #    patients_in_hospital_graph,
 )
+from map import map_data
 from score import calculate_score
 
 curdoc().theme = Theme("./theme.yaml")
@@ -220,32 +222,23 @@ render_template(
 
 
 by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
+scot_data = coviddata.uk.scotland.cases("gss_code").drop_sel(gss_code="S92000003")
 populations = pd.read_csv("region_populations.csv", thousands=",").set_index("Code")[
     "All ages"
 ]
+scot_populations = pd.read_csv("scot_populations.csv", thousands=",").set_index(
+    "gss code"
+)["population"]
 
 provisional_days = 4
-history_days = 45
-
-data = (
-    by_ltla_gss["cases"]
-    .interpolate_na("date", method="nearest")
-    .fillna(0)[:, :-provisional_days]
+render_template(
+    "map.html",
+    data=json.dumps(
+        map_data(
+            by_ltla_gss, scot_data, populations, scot_populations, provisional_days
+        )
+    ),
+    data_date=pd.to_datetime(
+        by_ltla_gss["cases"][:, :-provisional_days]["date"][-1].values
+    ).date(),
 )
-new_cases = data.diff("date")
-weekly_cases = new_cases.rolling(date=7).sum()
-
-cases = {}
-
-for gss_code in data["gss_code"].values:
-    this_week = int(weekly_cases.sel(gss_code=gss_code).values[-1])
-    last_week = int(weekly_cases.sel(gss_code=gss_code).values[-7])
-    history = new_cases[:,-history_days:].sel(gss_code=gss_code).values
-    cases[gss_code] = {
-        "prevalence": (this_week / populations[gss_code]),
-        "cases": this_week,
-        "history": list(map(int, history)),
-    }
-
-render_template("map.html", data=json.dumps(cases),
-                data_date=pd.to_datetime(data['date'][-1].values).date())

@@ -25,9 +25,9 @@
       "type": "vector",
       "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=4HQAZUSrAg563kYxgVEy"
     },
-    "local_authorities": {
+    "areas": {
       "type": "vector",
-      "url": "https://api.maptiler.com/tiles/3db8fa8a-2771-463b-b9a1-17c9cc4a1ddf/tiles.json?key=4HQAZUSrAg563kYxgVEy"
+      "url": "https://api.maptiler.com/tiles/04747990-ec66-4071-9b8e-5d5f1b291796/tiles.json?key=4HQAZUSrAg563kYxgVEy"
     }
   },
   "sprite": "https://openmaptiles.github.io/positron-gl-style/sprite",
@@ -653,8 +653,21 @@
       "id": "la_boundary",
       "type": "line",
       "filter": ["==", ["slice", ["get", "lad19cd"], 0, 1], "E"],
-      "source": "local_authorities",
+      "source": "areas",
       "source-layer": "local_authorities",
+      "minzoom": 6,
+      "paint": {
+        "line-color": "rgba(100, 100, 100, 1)",
+        "line-blur": 1.5,
+        "line-opacity": {"base": 1.4, "stops": [[6, 0], [11, 1]]},
+	"line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
+      }
+    },
+    {
+      "id": "shb_boundary",
+      "type": "line",
+      "source": "areas",
+      "source-layer": "scottish_health_boards",
       "minzoom": 6,
       "paint": {
         "line-color": "rgba(100, 100, 100, 1)",
