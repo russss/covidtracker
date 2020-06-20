@@ -40,7 +40,7 @@ def map_data(by_ltla_gss, scot_data, populations, scot_populations, provisional_
     eng_weekly_cases = eng_new_cases.rolling(date=7).sum()
 
     scot_new_cases = (
-        scot_data["cases"]
+        scot_data["corrected_cases"]
         .interpolate_na("date", method="nearest")
         .fillna(0)
         .diff("date")
