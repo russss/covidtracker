@@ -1,86 +1,22 @@
 {% extends "_base.html" %}
-{% block title %}Map - COVID-19 Tracker{% endblock %}
+{% block title %}Map &mdash; COVID-19 Tracker{% endblock %}
 {% block head %}
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.js"></script>
-<link href="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.0.15/svg.min.js"></script>
+<script src="map.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css" rel="stylesheet">
 {% endblock %}
 {% block body %}
 <div id="body">
-  <h1>COVID-19 Hotspot Map</h1>
-  <p>This map shows the last week's number of positive "pillar 1" COVID-19 cases per capita, by local authority district -
+  <h2>Hotspot Map</h2>
+  <p>This map shows the last week's number of positive "pillar 1" COVID-19 cases per capita, by local authority district
+      &mdash;
       these are positive tests in hospital patients or NHS staff, and so represent a small proportion of total
       cases. Nonetheless, it should be representative of the relative prevalence of COVID-19 across England.</p>
+  <p>The most recent four days of data are ignored as they may be incomplete. This map covers the seven days ending on {{data_date}}.</p>
   <div id="map"></div>
 </div>
 <script>
-
-const data = {{data|safe}};
-
-var map = new mapboxgl.Map({
-  container: 'map',
-  style: 'style.json',
-  center: [-1.82, 53],
-  zoom: 6,
-  maxBounds: [
-    [-17.1, 49.4],
-    [11.2, 61.4]
-  ]
-});
-map.touchZoomRotate.disableRotation();
-map.addControl(new mapboxgl.NavigationControl());
-
-map.on('load', () => {
-
-  const max_prevalence = Math.max(...Object.entries(data).map((v) => v[1]['prevalence']));
-
-  const colours = ['#fef0d9', '#fdcc8a', '#fc8d59', '#d7301f'];
-  const zero_colour = '#ececec';
-
-  var expression = ['match', ['get', 'lad19cd']];
-
-  for (const gss_id in data) {
-    var colour = null;
-    if (data[gss_id]['cases'] == 0) { 
-      colour = zero_colour;
-    } else {
-      const idx = Math.round((data[gss_id]['prevalence'] / max_prevalence) * (colours.length - 1));
-      colour = colours[idx];
-    }
-    expression.push(gss_id, colour);
-  }
-  expression.push('#ffffff');
-
-  map.addLayer({
-    'id': 'la_cases',
-    'type': 'fill',
-    // Filter to restrict to English LAs only at the moment
-    'filter': ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'E'], 
-    'source': 'local_authorities',
-    'source-layer': 'local_authorities',
-    'paint': {
-      'fill-color': expression,
-      'fill-opacity': 0.7
-    }
-  }, 'la_boundary');
-
-
-  map.on('click', 'la_cases', function(e) {
-    var feature = e.features[0];
-    let html = "<h3>" + feature.properties.lad19nm + "</h3>";
-
-    html += "<p>Weekly cases: " + data[feature.properties.lad19cd]['cases'] + "</p>"
-    html += "<p>Prevalence: " + (data[feature.properties.lad19cd]['prevalence'] * 100000).toFixed(2) + " per 100,000</p>"
-    new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(html).addTo(map);
-  });
-
-  map.on('mouseenter', 'la_cases', function() {
-    map.getCanvas().style.cursor = 'pointer';
-  });
-
-  map.on('mouseleave', 'la_cases', function() {
-    map.getCanvas().style.cursor = '';
-  });
-});
-
+initMap({{data|safe}});
 </script>
 {% endblock %}

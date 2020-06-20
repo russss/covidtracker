@@ -93,14 +93,6 @@ def england_cases(uk_cases, ecdc_cases):
     cases = uk_cases.sel(location="England")["cases"].dropna("date").diff("date")
     rolling = cases[:-provisional_days].rolling({"date": 7}, center=True).mean()
 
-    total_cases = (
-        ecdc_cases.sel(location="United Kingdom")["cases"]
-        .dropna("date")
-        .diff("date")
-        .rolling({"date": 7}, center=True)
-        .mean()
-    )
-
     bar_width = 8640 * 10e3 * 0.7
     fig.vbar(
         x=cases["date"].values[:-provisional_days],
@@ -127,14 +119,23 @@ def england_cases(uk_cases, ecdc_cases):
         line_color=LINE_COLOUR[0],
     )
 
-    fig.line(
-        x=total_cases["date"].values,
-        y=total_cases.values,
-        name="UK Cases",
-        legend_label="UK cases (date of report)",
-        line_width=2,
-        line_color=LINE_COLOUR[1],
-    )
+    if ecdc_cases:
+        total_cases = (
+            ecdc_cases.sel(location="United Kingdom")["cases"]
+            .dropna("date")
+            .diff("date")
+            .rolling({"date": 7}, center=True)
+            .mean()
+        )
+
+        fig.line(
+            x=total_cases["date"].values,
+            y=total_cases.values,
+            name="UK Cases",
+            legend_label="UK cases (date of report)",
+            line_width=2,
+            line_color=LINE_COLOUR[1],
+        )
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
 

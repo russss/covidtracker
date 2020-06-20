@@ -5,6 +5,7 @@ from datetime import datetime, date
 from bokeh.plotting import curdoc
 from bokeh.themes import Theme
 from bokeh.embed import json_item
+from urllib.error import URLError
 import coviddata.uk
 import coviddata.world
 
@@ -106,7 +107,12 @@ ccg_lookup = (
 )
 
 uk_cases = coviddata.uk.cases_phe("countries")
-ecdc_cases = coviddata.world.cases_ecdc()
+try:
+    ecdc_cases = coviddata.world.cases_ecdc()
+except URLError as e:
+    print("Error fetching ECDC cases", e)
+    ecdc_cases = None
+
 
 provisional_days = 4
 
@@ -179,8 +185,9 @@ render_template(
         (
             "European Centres for Disease Control",
             "Data on the geographic distribution of COVID-19 cases worldwide",
-            "https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide",
-            ecdc_cases.attrs["date"],
+            "https://www.ecdc.europa.eu/en/publications-data/"
+            "download-todays-data-geographic-distribution-covid-19-cases-worldwide",
+            ecdc_cases.attrs["date"] if ecdc_cases else "Data unavailable",
         ),
         (
             "Public Health England",
@@ -218,23 +225,27 @@ populations = pd.read_csv("region_populations.csv", thousands=",").set_index("Co
 ]
 
 provisional_days = 4
+history_days = 45
 
 data = (
     by_ltla_gss["cases"]
     .interpolate_na("date", method="nearest")
     .fillna(0)[:, :-provisional_days]
 )
-weekly_cases = data.diff("date").rolling(date=7).sum()
+new_cases = data.diff("date")
+weekly_cases = new_cases.rolling(date=7).sum()
 
 cases = {}
 
 for gss_code in data["gss_code"].values:
     this_week = int(weekly_cases.sel(gss_code=gss_code).values[-1])
     last_week = int(weekly_cases.sel(gss_code=gss_code).values[-7])
+    history = new_cases[:,-history_days:].sel(gss_code=gss_code).values
     cases[gss_code] = {
         "prevalence": (this_week / populations[gss_code]),
         "cases": this_week,
-        "cases_prev_week": last_week,
+        "history": list(map(int, history)),
     }
 
-render_template("map.html", data=json.dumps(cases))
+render_template("map.html", data=json.dumps(cases),
+                data_date=pd.to_datetime(data['date'][-1].values).date())

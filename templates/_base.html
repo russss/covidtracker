@@ -6,95 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
   {% block head %}{% endblock %}
-  <style>
-    body {
-      color: #333;
-      font-family: 'Noto Sans', sans-serif;
-    }
-
-    a, a:visited, a:hover {
-      color: #323;
-    }
-
-    .footnote {
-      font-size: 0.7em;
-    }
-
-    table.sources {
-      font-size: 0.8em;
-    }
-
-    #body {
-      width: 80%;
-      margin: auto;
-      min-width: 700px;
-      max-width: 1200px;
-    }
-
-    .graph {
-      margin-bottom: 2em;
-      min-height: 250px;
-    }
-
-    table {
-      border-spacing: 0;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 8px;
-    }
-
-    td, th {
-      padding: 3px;
-    }
-
-    td.score {
-      text-align: center;
-      width: 100px;
-    }
-
-    tfoot {
-      font-size: 0.7em;
-      color: #666;
-      text-align: center;
-    }
-
-    .score_rise_small {
-      background-color: #DEB4AF;
-    }
-
-    .score_rise_large {
-      background-color: #DE5243;
-      color: #eee;
-    }
-
-    .score_fall_small {
-      background-color: #AFB9DE;
-    }
-
-    .score_fall_large {
-      background-color: #4362DE;
-      color: #eee;
-    }
-
-    .score_neutral {
-      background-color: #DEDEDE;
-    }
-    
-    #footer {
-      color: #666;
-      margin-top: 10em;
-      width: 100%;
-      text-align: center;
-      font-size: 0.7em;
-    }
-
-    #map {
-      width: 100%;
-      height: 900px;
-    }
-  </style>
+  <link href="main.css" rel="stylesheet">
 </head>
 <body>
+  <header>
+    <h1>UK COVID-19 Tracker</h1>
+    <ul>
+      <li><a href="index.html">Stats</a></li>
+      <li><a href="map.html">Hotspot Map</a></li>
+    </ul>
+  </header>
   <noscript>I'm afraid you will need Javascript enabled to view the graphs.</noscript>
   {% block body %}{% endblock %}
   <div id="footer">
