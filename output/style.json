@@ -27,7 +27,78 @@
     },
     "areas": {
       "type": "vector",
-      "url": "https://api.maptiler.com/tiles/04747990-ec66-4071-9b8e-5d5f1b291796/tiles.json?key=4HQAZUSrAg563kYxgVEy"
+      "url": "https://api.maptiler.com/tiles/0c4947fb-ecad-4dcc-aeb3-db1420826982/tiles.json?key=4HQAZUSrAg563kYxgVEy"
+    },
+    "nhs_england_region_label": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 1,
+              "nhser20cd": "E40000003",
+              "nhser20nm": "London"
+            },
+            "geometry": {"type": "Point", "coordinates": [-0.10563, 51.48892]}
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 2,
+              "nhser20cd": "E40000005",
+              "nhser20nm": "South East"
+            },
+            "geometry": {"type": "Point", "coordinates": [-1.07878, 51.34446]}
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 3,
+              "nhser20cd": "E40000006",
+              "nhser20nm": "South West"
+            },
+            "geometry": {"type": "Point", "coordinates": [-2.29544, 51.28774]}
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 4,
+              "nhser20cd": "E40000007",
+              "nhser20nm": "East of England"
+            },
+            "geometry": {"type": "Point", "coordinates": [0.55427, 52.21867]}
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 5,
+              "nhser20cd": "E40000008",
+              "nhser20nm": "Midlands"
+            },
+            "geometry": {"type": "Point", "coordinates": [-1.62784, 52.71505]}
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 6,
+              "nhser20cd": "E40000009",
+              "nhser20nm": "North East and Yorkshire"
+            },
+            "geometry": {"type": "Point", "coordinates": [-2.01152, 54.64748]}
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "objectid": 7,
+              "nhser20cd": "E40000010",
+              "nhser20nm": "North West"
+            },
+            "geometry": {"type": "Point", "coordinates": [-2.65542, 53.6966]}
+          }
+        ]
+      }
     }
   },
   "sprite": "https://openmaptiles.github.io/positron-gl-style/sprite",
@@ -660,7 +731,21 @@
         "line-color": "rgba(100, 100, 100, 1)",
         "line-blur": 1.5,
         "line-opacity": {"base": 1.4, "stops": [[6, 0], [11, 1]]},
-	"line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
+        "line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
+      }
+    },
+    {
+      "id": "nhs_england_region_boundary",
+      "type": "line",
+      "source": "areas",
+      "source-layer": "nhs_england_regions",
+      "minzoom": 4.5,
+      "maxzoom": 8.5,
+      "paint": {
+        "line-color": "rgba(140, 140, 170, 1)",
+        "line-blur": 2,
+        "line-opacity": {"base": 1.4, "stops": [[5, 0.6], [9, 1]]},
+        "line-width": {"base": 1.4, "stops": [[5, 1], [9, 2]]}
       }
     },
     {
@@ -668,12 +753,12 @@
       "type": "line",
       "source": "areas",
       "source-layer": "scottish_health_boards",
-      "minzoom": 6,
+      "minzoom": 4.5,
       "paint": {
         "line-color": "rgba(100, 100, 100, 1)",
-        "line-blur": 1.5,
-        "line-opacity": {"base": 1.4, "stops": [[6, 0], [11, 1]]},
-	"line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
+        "line-blur": 2,
+        "line-opacity": {"base": 1.4, "stops": [[5, 0.6], [11, 1]]},
+        "line-width": {"base": 1.4, "stops": [[5, 1], [14, 2]]}
       }
     },
     {
@@ -749,7 +834,7 @@
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 1
+        "text-halo-width": 2
       }
     },
     {
@@ -775,7 +860,7 @@
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 1
+        "text-halo-width": 2
       }
     },
     {
@@ -784,6 +869,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
+      "minzoom": 8,
       "maxzoom": 15,
       "filter": ["all", ["==", "$type", "Point"], ["==", "class", "town"]],
       "layout": {
@@ -802,7 +888,7 @@
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 1
+        "text-halo-width": 2
       }
     },
     {
@@ -811,6 +897,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
+      "minzoom": 5,
       "maxzoom": 14,
       "filter": [
         "all",
@@ -833,7 +920,7 @@
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 1
+        "text-halo-width": 2
       }
     },
     {
@@ -873,6 +960,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
+      "minzoom": 5,
       "maxzoom": 12,
       "filter": [
         "all",
@@ -904,111 +992,21 @@
       }
     },
     {
-      "id": "place_state",
+      "id": "nhs_england_region_label",
       "type": "symbol",
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 12,
-      "filter": ["all", ["==", "$type", "Point"], ["==", "class", "state"]],
+      "source": "nhs_england_region_label",
+      "maxzoom": 8.5,
       "layout": {
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": "{nhser20nm}",
         "text-font": ["Metropolis Regular", "Noto Sans Regular"],
-        "text-size": 10,
-        "visibility": "visible"
+        "text-size": {"base": 1, "stops": [[5, 11], [8.5, 16]]}
       },
       "paint": {
         "text-color": "rgb(113, 129, 144)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
         "text-halo-width": 1
-      }
-    },
-    {
-      "id": "place_country_other",
-      "type": "symbol",
-      "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 8,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["==", "class", "country"],
-        ["!has", "iso_a2"]
-      ],
-      "layout": {
-        "text-field": "{name:latin}",
-        "text-font": ["Metropolis Light Italic", "Noto Sans Italic"],
-        "text-size": {"base": 1, "stops": [[0, 9], [6, 11]]},
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": {
-          "base": 1,
-          "stops": [[3, "rgb(157,169,177)"], [4, "rgb(153, 153, 153)"]]
-        },
-        "text-halo-color": "rgba(236,236,234,0.7)",
-        "text-halo-width": 1.4
-      }
-    },
-    {
-      "id": "place_country_minor",
-      "type": "symbol",
-      "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 8,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["==", "class", "country"],
-        [">=", "rank", 2],
-        ["has", "iso_a2"]
-      ],
-      "layout": {
-        "text-field": "{name:latin}",
-        "text-font": ["Metropolis Regular", "Noto Sans Regular"],
-        "text-size": {"base": 1, "stops": [[0, 10], [6, 12]]},
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": {
-          "base": 1,
-          "stops": [[3, "rgb(157,169,177)"], [4, "rgb(153, 153, 153)"]]
-        },
-        "text-halo-color": "rgba(236,236,234,0.7)",
-        "text-halo-width": 1.4
-      }
-    },
-    {
-      "id": "place_country_major",
-      "type": "symbol",
-      "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
-      "source": "openmaptiles",
-      "source-layer": "place",
-      "maxzoom": 6,
-      "filter": [
-        "all",
-        ["==", "$type", "Point"],
-        ["<=", "rank", 1],
-        ["==", "class", "country"],
-        ["has", "iso_a2"]
-      ],
-      "layout": {
-        "text-anchor": "center",
-        "text-field": "{name:latin}",
-        "text-font": ["Metropolis Regular", "Noto Sans Regular"],
-        "text-size": {"base": 1.4, "stops": [[0, 10], [3, 12], [4, 14]]},
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-color": {
-          "base": 1,
-          "stops": [[3, "rgb(157,169,177)"], [4, "rgb(153, 153, 153)"]]
-        },
-        "text-halo-color": "rgba(236,236,234,0.7)",
-        "text-halo-width": 1.4
       }
     }
   ],
