@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
 {% block title %}Map &mdash; COVID-19 Tracker{% endblock %}
 {% block head %}
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.js"></script>
@@ -10,13 +11,21 @@
 <div id="body">
   <h2>Hotspot Map</h2>
   <p>This map shows the per-capita prevalence of COVID-19 across the UK for the last seven days that reliable data
-    is available. <strong>The data from England and Scotland are derived from different sources, and are not directly
+    is available. <strong>The data from the different nations are derived from different sources, and are not directly
     comparable.</strong> For this reason they are shown in different colours.</p>
 
+  <p>Please <a href="#sources">see below</a> for more information on the data sources used and their limitations.</p>
+
+  <p>You can click on an area on the map to see the current numbers and a history of the last 45 days of daily cases.</p>
+
+  <div id="map"></div>
+
+  <h2 id="sources">Sources</h2>
   <p>In England, the map shows the last week's number of positive "pillar 1" COVID-19 cases per capita, by local
       authority district &mdash;
       these are positive tests in hospital patients or NHS staff, and so represent a small proportion of total
       cases. Nonetheless, it should be representative of the relative prevalence of COVID-19 across England.</p>
+
   <p>English data is reported by date of sample, so the most recent four days of data are ignored as they may be
       incomplete. This map covers the seven days ending on {{data_date}}.</p>
 
@@ -24,8 +33,9 @@
       of people showing COVID-19 symptoms outside of hospitals, so this data should be more complete. Pillar 2 data
       was added to the Scottish numbers on 15 June, and a crude correction has been applied to smooth this discontinuity.</p>
 
-  <p>You can click on an area on the map to see the current numbers and a history of the last 45 days of daily cases.</p>
-  <div id="map"></div>
+  <p>Welsh data also includes "pillar 2" tests, but is reported by date of sample as in England.</p>
+
+  {{sources_table(sources)}}
 </div>
 <script>
 initMap({{data|safe}});

@@ -8,6 +8,7 @@ from bokeh.embed import json_item
 from urllib.error import URLError
 import coviddata.uk
 import coviddata.uk.scotland
+import coviddata.uk.wales
 import coviddata.world
 
 from graphs import (
@@ -110,7 +111,8 @@ ccg_lookup = (
 
 uk_cases = coviddata.uk.cases_phe("countries")
 try:
-    ecdc_cases = coviddata.world.cases_ecdc()
+    #ecdc_cases = coviddata.world.cases_ecdc()
+    ecdc_cases = None
 except URLError as e:
     print("Error fetching ECDC cases", e)
     ecdc_cases = None
@@ -223,6 +225,8 @@ render_template(
 
 by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
 scot_data = coviddata.uk.scotland.cases("gss_code").drop_sel(gss_code="S92000003")
+wales_data = coviddata.uk.wales.cases("gss_code")
+
 populations = pd.read_csv("region_populations.csv", thousands=",").set_index("Code")[
     "All ages"
 ]
@@ -235,10 +239,30 @@ render_template(
     "map.html",
     data=json.dumps(
         map_data(
-            by_ltla_gss, scot_data, populations, scot_populations, provisional_days
+            by_ltla_gss, wales_data, scot_data, populations, scot_populations, provisional_days
         )
     ),
     data_date=pd.to_datetime(
         by_ltla_gss["cases"][:, :-provisional_days]["date"][-1].values
     ).date(),
+    sources=[
+        (
+            "Public Health England",
+            "Coronavirus (COVID-19) in the UK",
+            "https://coronavirus.data.gov.uk",
+            by_ltla_gss.attrs["date"],
+        ),
+        (
+            scot_data.attrs["source"],
+            "Coronavirus - COVID-19 - Management Information",
+            scot_data.attrs["source_url"],
+            scot_data.attrs["date"],
+        ),
+        (
+            wales_data.attrs["source"],
+            "Rapid COVID-19 Surveillance",
+            wales_data.attrs["source_url"],
+            wales_data.attrs["date"],
+        ),
+    ],
 )

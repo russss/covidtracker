@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
 {% block title %}COVID-19 Tracker{% endblock %}
 
 {% macro score_cell(value) %}
@@ -72,24 +73,7 @@
     <div id="triage_online" class="graph"></div>
     <div id="triage_pathways" class="graph"></div>
     <h2>Sources</h2>
-    <table class="sources">
-      <thead>
-        <tr>
-          <th>Publisher</th>
-          <th>Data Source</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for publisher, name, url, date in sources %}
-        <tr>
-          <td>{{publisher}}</td>
-          <td><a href="{{url}}">{{name}}</a></td>
-          <td>{{date}}</td>
-        </tr>
-      {% endfor %}
-      <tbody>
-    </table>
+    {{sources_table(sources)}}
     <p class="footnote">Public Health England data at LTLA level is mapped to NHS England regions using
         <a href="https://github.com/russss/local_authority_nhs_region">this mapping</a>, which is not exact.</p>
   </div>

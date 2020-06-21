@@ -26,47 +26,44 @@ def correct_scottish_data(scot_data):
     return scot_data
 
 
-def map_data(by_ltla_gss, scot_data, populations, scot_populations, provisional_days):
+def region_data(new_cases, populations):
     history_days = 45
+    weekly_cases = new_cases.rolling(date=7).sum()
 
-    scot_data = correct_scottish_data(scot_data)
-
-    eng_new_cases = (
-        by_ltla_gss["cases"]
-        .interpolate_na("date", method="nearest")
-        .fillna(0)[:, :-provisional_days]
-        .diff("date")
-    )
-    eng_weekly_cases = eng_new_cases.rolling(date=7).sum()
-
-    scot_new_cases = (
-        scot_data["corrected_cases"]
-        .interpolate_na("date", method="nearest")
-        .fillna(0)
-        .diff("date")
-    )
-    scot_weekly_cases = scot_new_cases.rolling(date=7).sum()
-
-    cases_england = {}
-
-    for gss_code in eng_weekly_cases["gss_code"].values:
-        this_week = int(eng_weekly_cases.sel(gss_code=gss_code).values[-1])
-        history = eng_new_cases[:, -history_days:].sel(gss_code=gss_code).values
-        cases_england[gss_code] = {
+    cases = {}
+    for gss_code in weekly_cases["gss_code"].values:
+        this_week = int(weekly_cases.sel(gss_code=gss_code).values[-1])
+        history = new_cases[:, -history_days:].sel(gss_code=gss_code).values
+        cases[gss_code] = {
             "prevalence": (this_week / populations[gss_code]),
             "cases": this_week,
             "history": list(map(int, history)),
         }
+    return cases
 
-    cases_scotland = {}
 
-    for gss_code in scot_weekly_cases["gss_code"].values:
-        this_week = int(scot_weekly_cases.sel(gss_code=gss_code).values[-1])
-        history = scot_new_cases[:, -history_days:].sel(gss_code=gss_code).values
-        cases_scotland[gss_code] = {
-            "prevalence": (this_week / scot_populations[gss_code]),
-            "cases": this_week,
-            "history": list(map(int, history)),
-        }
+def map_data(eng_data, wales_data, scot_data, populations, scot_populations, provisional_days):
+    scot_data = correct_scottish_data(scot_data)
+    eng_new_cases = (
+        eng_data["cases"]
+        .ffill("date")
+        .fillna(0)[:, :-provisional_days]
+        .diff("date")
+    )
+    wales_new_cases = (
+        wales_data["cases"]
+        .ffill("date")
+        .fillna(0)[:, :-provisional_days]
+        .diff("date")
+    )
+    scot_new_cases = (
+        scot_data["corrected_cases"]
+        .ffill("date")
+        .fillna(0)
+        .diff("date")
+    )
 
-    return {"england": cases_england, "scotland": cases_scotland}
+    cases_england = region_data(eng_new_cases, populations)
+    cases_wales = region_data(wales_new_cases, populations)
+    cases_scotland = region_data(scot_new_cases, scot_populations)
+    return {"england": cases_england, "scotland": cases_scotland, "wales": cases_wales}

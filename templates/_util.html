@@ -1,0 +1,20 @@
+{% macro sources_table(sources) -%}
+  <table class="sources">
+    <thead>
+      <tr>
+        <th>Publisher</th>
+        <th>Data Source</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for publisher, name, url, date in sources %}
+      <tr>
+        <td>{{publisher}}</td>
+        <td><a href="{{url}}">{{name}}</a></td>
+        <td>{{date}}</td>
+      </tr>
+    {% endfor %}
+    <tbody>
+  </table>
+{% endmacro %}

@@ -87,11 +87,17 @@ function initMap(data) {
   map.addControl(new mapboxgl.NavigationControl({showCompass: false}));
 
   map.on('load', () => {
+
+    const opacity_func = ["interpolate", ["exponential", 1.4], ["zoom"],
+      5, 0.85,
+      12, 0.5
+    ];
+
     map.addLayer(
       {
         id: 'la_cases',
         type: 'fill',
-        // Filter to restrict to English LAs only at the moment
+        // Filter to restrict to English LAs only
         filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'E'],
         source: 'areas',
         'source-layer': 'local_authorities',
@@ -102,11 +108,32 @@ function initMap(data) {
             ['#fef0d9', '#fdcc8a', '#fc8d59', '#d7301f'],
             '#ececec',
           ),
-          'fill-opacity': 0.7,
+          'fill-opacity': opacity_func,
         },
       },
       'la_boundary',
     );
+
+    map.addLayer(
+      {
+        id: 'wales_cases',
+        type: 'fill',
+        // Filter to restrict to Welsh LAs only
+        filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'W'],
+        source: 'areas',
+        'source-layer': 'local_authorities',
+        paint: {
+          'fill-color': styleExpression(
+            data.wales,
+            'lad19cd',
+            ['#edf8fb','#b3cde3','#8c96c6','#88419d'],
+            '#ececec',
+          ),
+          'fill-opacity': 0.7,
+        },
+      },
+      'la_boundary',
+    )
 
     map.addLayer(
       {
@@ -134,11 +161,16 @@ function initMap(data) {
     );
     map.on(
       'click',
+      'wales_cases',
+      popupRenderer(map, data.wales, 'lad19nm', 'lad19cd'),
+    );
+    map.on(
+      'click',
       'scot_cases',
       popupRenderer(map, data.scotland, 'HBName', 'HBCode'),
     );
 
-    for (const layer of ['la_cases', 'scot_cases']) {
+    for (const layer of ['la_cases', 'scot_cases', 'wales_cases']) {
       map.on('mouseenter', layer, function() {
         map.getCanvas().style.cursor = 'pointer';
       });
