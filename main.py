@@ -111,8 +111,7 @@ ccg_lookup = (
 
 uk_cases = coviddata.uk.cases_phe("countries")
 try:
-    #ecdc_cases = coviddata.world.cases_ecdc()
-    ecdc_cases = None
+    ecdc_cases = coviddata.world.cases_ecdc()
 except URLError as e:
     print("Error fetching ECDC cases", e)
     ecdc_cases = None
