@@ -203,7 +203,7 @@ render_template(
             "Deaths registered weekly in England and Wales, provisional",
             "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
             "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
-            date(2020, 6, 16),
+            date(2020, 6, 23),
         ),
         (
             "NHS",
