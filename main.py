@@ -1,10 +1,9 @@
-from jinja2 import Environment, FileSystemLoader, select_autoescape
 import json
 import pandas as pd
-from datetime import datetime, date
+import xarray as xr
+from datetime import date
 from bokeh.plotting import curdoc
 from bokeh.themes import Theme
-from bokeh.embed import json_item
 from urllib.error import URLError
 import coviddata.uk
 import coviddata.uk.scotland
@@ -12,33 +11,18 @@ import coviddata.uk.wales
 import coviddata.world
 
 from graphs import (
-    england_cases,
+    uk_cases_graph,
     england_deaths,
     regional_cases,
     regional_deaths,
     triage_graph,
-    #    patients_in_hospital_graph,
 )
+from template import render_template
 from map import map_data
 from score import calculate_score
+from corrections import correct_scottish_data
 
 curdoc().theme = Theme("./theme.yaml")
-
-env = Environment(
-    loader=FileSystemLoader("templates"), autoescape=select_autoescape(["html", "xml"])
-)
-
-
-def render_template(name, graphs={}, **kwargs):
-    print(f"Rendering {name}...")
-
-    graphs_data = json.dumps([json_item(graph, name) for name, graph in graphs.items()])
-
-    generated = datetime.now()
-
-    template = env.get_template(name)
-    with open(f"output/{name}", "w") as f:
-        f.write(template.render(graphs=graphs_data, generated=generated, **kwargs))
 
 
 def cases_by_nhs_region():
@@ -116,6 +100,10 @@ except URLError as e:
     print("Error fetching ECDC cases", e)
     ecdc_cases = None
 
+by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
+scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
+wales_cases = coviddata.uk.wales.cases()
+wales_by_gss = coviddata.uk.wales.cases("gss_code")
 
 provisional_days = 4
 
@@ -152,11 +140,16 @@ nhs_region_cases["cases_rolling_provisional"] = (
     .dropna("date")
 )
 
-# patients_in_hospital = coviddata.uk.people_in_hospital()
-# patients_in_hospital["patients_rolling_3"] = (
-#    patients_in_hospital["patients"].rolling(date=3, center=True).mean().dropna("date")
-# )
-
+uk_cases_combined = xr.concat(
+    [
+        uk_cases.sel(location="England")["cases"],
+        scot_data.sel(gss_code="S92000003").assign_coords(location="Scotland")[
+            "corrected_cases"
+        ],
+        wales_cases.sum("location").assign_coords(location="Wales")["cases"],
+    ],
+    "location",
+)
 
 excess_deaths = pd.read_csv(
     "./excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
@@ -168,13 +161,12 @@ triage_pathways = pathways_triage_by_nhs_region()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": england_cases(uk_cases, ecdc_cases),
+        "confirmed_cases": uk_cases_graph(uk_cases_combined, ecdc_cases),
         "deaths": england_deaths(uk_cases, excess_deaths),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage"),
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
-        #        "patients": patients_in_hospital_graph(patients_in_hospital),
     },
     scores=calculate_score(
         nhs_deaths,
@@ -182,7 +174,6 @@ render_template(
         triage_online,
         triage_pathways,
         None
-        #        patients_in_hospital,
     ),
     sources=[
         (
@@ -212,19 +203,21 @@ render_template(
             "/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online",
             pd.Timestamp(triage_online["date"].max().item(0)).date(),
         ),
-        #        (
-        #            "UK Government",
-        #            "Slides and datasets from daily press conference",
-        #            patients_in_hospital.attrs["source_url"],
-        #            patients_in_hospital.attrs["date"].date(),
-        #        ),
+        (
+            scot_data.attrs["source"],
+            "Coronavirus - COVID-19 - Management Information",
+            scot_data.attrs["source_url"],
+            scot_data.attrs["date"],
+        ),
+        (
+            wales_by_gss.attrs["source"],
+            "Rapid COVID-19 Surveillance",
+            wales_by_gss.attrs["source_url"],
+            wales_by_gss.attrs["date"],
+        ),
     ],
 )
 
-
-by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
-scot_data = coviddata.uk.scotland.cases("gss_code").drop_sel(gss_code="S92000003")
-wales_data = coviddata.uk.wales.cases("gss_code")
 
 populations = pd.read_csv("region_populations.csv", thousands=",").set_index("Code")[
     "All ages"
@@ -238,7 +231,12 @@ render_template(
     "map.html",
     data=json.dumps(
         map_data(
-            by_ltla_gss, wales_data, scot_data, populations, scot_populations, provisional_days
+            by_ltla_gss,
+            wales_by_gss,
+            scot_data,
+            populations,
+            scot_populations,
+            provisional_days,
         )
     ),
     data_date=pd.to_datetime(
@@ -258,10 +256,10 @@ render_template(
             scot_data.attrs["date"],
         ),
         (
-            wales_data.attrs["source"],
+            wales_by_gss.attrs["source"],
             "Rapid COVID-19 Surveillance",
-            wales_data.attrs["source_url"],
-            wales_data.attrs["date"],
+            wales_by_gss.attrs["source_url"],
+            wales_by_gss.attrs["date"],
         ),
     ],
 )

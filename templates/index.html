@@ -1,6 +1,7 @@
 {% extends "_base.html" %}
 {% from '_util.html' import sources_table %}
-{% block title %}COVID-19 Tracker{% endblock %}
+{% block title %}UK COVID-19 Tracker{% endblock %}
+{% block description %}Stats and graphs on COVID-19 spread in the UK.{% endblock %}
 
 {% macro score_cell(value) %}
   <td class="score score_
@@ -58,9 +59,10 @@
         date of report, rather than the date the sample was taken. Data from England shows that new cases are
         being reported from samples dated several weeks ago, so recently reported numbers are
         likely to be higher than the true number of positive tests for that date.</p>
-    <p>England reports data from "pillar 1" testing (cases in hospital and NHS workers) based on the date of
-        sample, which is shown on the chart below in blue. This is likely provide a more accurate picture of
-        the rate of new cases.</p>
+    <p>The chart below shows the headline testing figures reported by the national governments. There is still a
+      significant difference between these numbers and the UK-wide total, which is probably explained by the English
+      numbers including only "pillar 1" tests &mdash; on patients and NHS staff &mdash; and not the wider "pillar 2"
+      tests on everyone reporting symptoms.</p>
     <div id="confirmed_cases" class="graph"></div>
     <div id="deaths" class="graph"></div>
     <div id="regional_cases" class="graph"></div>
@@ -75,6 +77,8 @@
     <h2>Sources</h2>
     {{sources_table(sources)}}
     <p class="footnote">Public Health England data at LTLA level is mapped to NHS England regions using
-        <a href="https://github.com/russss/local_authority_nhs_region">this mapping</a>, which is not exact.</p>
+        <a href="https://github.com/russss/local_authority_nhs_region">this mapping</a>, which is not exact.
+        Pillar 2 data was added to the Scottish numbers on 15 June, and a crude correction has been applied to smooth this discontinuity.
+    </p>
   </div>
 {% endblock %}

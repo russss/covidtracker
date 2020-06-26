@@ -2,7 +2,12 @@ import numpy as np
 from itertools import cycle
 from datetime import date, timedelta
 from bokeh.plotting import figure as bokeh_figure
-from bokeh.models import NumeralTickFormatter, DatetimeTickFormatter, Span
+from bokeh.models import (
+    NumeralTickFormatter,
+    DatetimeTickFormatter,
+    Span,
+    ColumnDataSource,
+)
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2
 
@@ -24,7 +29,8 @@ england_interventions = [
     (date(2020, 3, 23), "Lockdown", "#CC5450"),
     (date(2020, 5, 10), "Stay Alert", "#50CCA5"),
     (date(2020, 6, 1), "Schools Open", "#50CCA5"),
-    (date(2020, 6, 15), "Non-essential shops Open", "#50CCA5"),
+    (date(2020, 6, 15), "Non-essential shops open", "#50CCA5"),
+    (date(2020, 7, 4), "1m plus distancing, pubs open", "#50CCA5")
 ]
 
 
@@ -87,37 +93,61 @@ def figure(**kwargs):
     return fig
 
 
-def england_cases(uk_cases, ecdc_cases):
-    provisional_days = 4
-    fig = figure(title="New confirmed cases")
-    cases = uk_cases.sel(location="England")["cases"].dropna("date").diff("date")
-    rolling = cases[:-provisional_days].rolling({"date": 7}, center=True).mean()
+def stack_datasource(source, series):
+    data = {}
+    for i in range(0, len(series)):
+        y = sum(source.sel(location=loc) for loc in series[0 : i + 1]).values
+        data[series[i]] = y
 
+    data["date"] = source["date"].values
+    return ColumnDataSource(data)
+
+
+def uk_cases_graph(uk_cases, ecdc_cases):
+    provisional_days = 4
     bar_width = 8640 * 10e3 * 0.7
-    fig.vbar(
-        x=cases["date"].values[:-provisional_days],
-        top=cases.values[:-provisional_days],
-        width=bar_width,
-        name="Cases",
-        line_width=0,
-        fill_color=BAR_COLOUR,
+
+    fig = figure(title="New cases")
+
+    uk_cases = uk_cases.ffill("date").diff("date")
+
+    rolling = (
+        uk_cases[:, :-provisional_days]
+        .rolling({"date": 7}, center=True)
+        .mean()
+        .dropna("date")
     )
-    fig.vbar(
-        x=cases["date"].values[-provisional_days:],
-        top=cases.values[-provisional_days:],
-        width=bar_width,
-        name="Provisional cases",
-        line_width=0,
-        fill_color="#EDEDED",
-    )
-    fig.line(
-        x=rolling["date"].values,
-        y=rolling.values,
-        name="7 day rolling mean",
-        legend_label='England "pillar 1" cases (date of sample)',
-        line_width=2,
-        line_color=LINE_COLOUR[0],
-    )
+
+    layers = ["England", "Scotland", "Wales"]
+    colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B"}
+
+    cases_ds = stack_datasource(uk_cases, layers)
+    rolling_ds = stack_datasource(rolling, layers)
+
+    lower = 0
+    for layer in layers:
+        label = layer
+        if label == 'England':
+            label = 'England (pillar 1 only)'
+        fig.vbar(
+            source=cases_ds,
+            x='date',
+            bottom=lower,
+            top=layer,
+            width=bar_width,
+            line_width=0,
+            fill_color=colours[layer],
+            fill_alpha=0.3
+        )
+        fig.line(
+            source=rolling_ds,
+            x="date",
+            y=layer,
+            line_color=colours[layer],
+            line_width=1.5,
+            legend_label=label
+        )
+        lower = layer
 
     if ecdc_cases:
         total_cases = (

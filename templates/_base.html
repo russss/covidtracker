@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <title>{% block title %}{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="twitter:creator" content="@russss" />
+  <meta name="twitter:site" content="@russss" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="og:title" content="{{ self.title() }}" />
+  <meta name="og:description" content="{% block description %}{% endblock %}"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
   {% block head %}{% endblock %}
   <link href="main.css" rel="stylesheet">
