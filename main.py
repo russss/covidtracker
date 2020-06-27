@@ -90,7 +90,7 @@ def pathways_triage_by_nhs_region():
 
 
 ccg_lookup = (
-    pd.read_csv("ccg_region.csv").drop_duplicates("CCG20CD").set_index("CCG20CD")
+    pd.read_csv("./data/ccg_region.csv").drop_duplicates("CCG20CD").set_index("CCG20CD")
 )
 
 uk_cases = coviddata.uk.cases_phe("countries")
@@ -152,7 +152,7 @@ uk_cases_combined = xr.concat(
 )
 
 excess_deaths = pd.read_csv(
-    "./excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
+    "./data/excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
 )
 triage_online = online_triage_by_nhs_region()
 triage_pathways = pathways_triage_by_nhs_region()
@@ -219,10 +219,10 @@ render_template(
 )
 
 
-populations = pd.read_csv("region_populations.csv", thousands=",").set_index("Code")[
+populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_index("Code")[
     "All ages"
 ]
-scot_populations = pd.read_csv("scot_populations.csv", thousands=",").set_index(
+scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
     "gss code"
 )["population"]
 
