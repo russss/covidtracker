@@ -29,7 +29,7 @@ function styleExpression(data, propname, colours, zero_colour) {
 
   for (const gss_id in data) {
     var colour = null;
-    if (data[gss_id]['cases'] == 0) {
+    if (data[gss_id]['prevalence'] == 0) {
       colour = zero_colour;
     } else {
       const idx = Math.round(
