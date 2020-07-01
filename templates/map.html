@@ -13,11 +13,11 @@
   <h2>Hotspot Map</h2>
   <p>This map shows the per-capita prevalence of COVID-19 across the UK for the last seven days that reliable data
     is available. The data from the different nations are derived from different sources, and are not directly
-    comparable.For this reason they are shown in different colours.</p>
+    comparable. For this reason they are shown in different colours.</p>
 
-  <p>Specifically, <strong>the data for England is based on "pillar 1" which represents less than 30% of total 
-      cases</strong>. The UK government has still not released data from "pillar 2" which contains the rest of these
-    cases.</p>
+  <p>This data <strong>does now include "pillar 2" tests for England</strong>. Weekly rates are taken from a spreadsheet
+  published by Public Health England, history is not available, and the data is older than that from Wales and Scotland.
+  For this reason, the data from the separate nations is shown in different colours.</p>
 
   <p>Please <a href="#sources">see below</a> for more information on the data sources used and their limitations.</p>
 
@@ -26,20 +26,6 @@
   <div id="map"></div>
 
   <h2 id="sources">Sources</h2>
-  <p>In England, the map shows the last week's number of positive "pillar 1" COVID-19 cases per capita, by local
-      authority district &mdash;
-      these are positive tests in hospital patients or NHS staff, and so represent a small proportion of total
-      cases. Nonetheless, it should be representative of the relative prevalence of COVID-19 across England.</p>
-
-  <p>English data is reported by date of sample, so the most recent four days of data are ignored as they may be
-      incomplete. This map covers the seven days ending on {{data_date}}.</p>
-
-  <p>In Scotland, the government statistics are aggregated by local health board, and also include "pillar 2" tests
-      of people showing COVID-19 symptoms outside of hospitals, so this data should be more complete. Pillar 2 data
-      was added to the Scottish numbers on 15 June, and a crude correction has been applied to smooth this discontinuity.</p>
-
-  <p>Welsh data also includes "pillar 2" tests, but is reported by date of sample as in England.</p>
-
   {{sources_table(sources)}}
 </div>
 <script>

@@ -51,7 +51,11 @@ function popupRenderer(map, data, name_field, gss_field) {
 
     let item = data[props[gss_field]];
     html += '<table>';
-    html += '<tr><th>Weekly cases</th><td>' + item['cases'] + '</td></tr>';
+
+    if (item['cases']) {
+      html += '<tr><th>Weekly cases</th><td>' + item['cases'] + '</td></tr>';
+    }
+
     html +=
       '<tr><th>Prevalence</th><td>' +
       (item['prevalence'] * 100000).toFixed(2) +
@@ -61,8 +65,11 @@ function popupRenderer(map, data, name_field, gss_field) {
     let div = window.document.createElement('div');
     div.innerHTML = html;
 
-    let graph = makeGraph(200, 30, item['history']);
-    div.appendChild(graph.node);
+    if (item['history']) {
+
+      let graph = makeGraph(200, 30, item['history']);
+      div.appendChild(graph.node);
+    }
 
     new mapboxgl.Popup()
       .setLngLat(e.lngLat)
@@ -95,17 +102,17 @@ function initMap(data) {
 
     map.addLayer(
       {
-        id: 'la_cases',
+        id: 'england_cases',
         type: 'fill',
         // Filter to restrict to English LAs only
-        filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'E'],
+        filter: ['==', ['slice', ['get', 'ctyua19cd'], 0, 1], 'E'],
         source: 'areas',
-        'source-layer': 'local_authorities',
+        'source-layer': 'utla',
         paint: {
           'fill-color': styleExpression(
             data.england,
-            'lad19cd',
-            ['#fef0d9', '#fdcc8a', '#fc8d59', '#d7301f'],
+            'ctyua19cd',
+            ['#fef0d9','#fdd49e','#fdbb84','#fc8d59','#e34a33','#b30000'],
             '#ececec',
           ),
           'fill-opacity': opacity_func,
@@ -126,7 +133,7 @@ function initMap(data) {
           'fill-color': styleExpression(
             data.wales,
             'lad19cd',
-            ['#edf8fb','#b3cde3','#8c96c6','#88419d'],
+            ['#edf8fb','#bfd3e6','#9ebcda','#8c96c6','#8856a7','#810f7c'],
             '#ececec',
           ),
           'fill-opacity': 0.7,
@@ -145,7 +152,7 @@ function initMap(data) {
           'fill-color': styleExpression(
             data.scotland,
             'HBCode',
-            ['#f0f9e8', '#bae4bc', '#7bccc4', '#2b8cbe'],
+            ['#edf8fb','#b2e2e2','#66c2a4','#238b45'],
             '#ececec',
           ),
           'fill-opacity': 0.7,
@@ -156,8 +163,8 @@ function initMap(data) {
 
     map.on(
       'click',
-      'la_cases',
-      popupRenderer(map, data.england, 'lad19nm', 'lad19cd'),
+      'england_cases',
+      popupRenderer(map, data.england, 'ctyua19nm', 'ctyua19cd'),
     );
     map.on(
       'click',

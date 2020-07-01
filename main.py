@@ -169,11 +169,7 @@ render_template(
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
     },
     scores=calculate_score(
-        nhs_deaths,
-        nhs_region_cases,
-        triage_online,
-        triage_pathways,
-        None
+        nhs_deaths, nhs_region_cases, triage_online, triage_pathways, None
     ),
     sources=[
         (
@@ -219,19 +215,31 @@ render_template(
 )
 
 
-populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_index("Code")[
-    "All ages"
-]
+populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_index(
+    "Code"
+)["All ages"]
 scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
     "gss code"
 )["population"]
+
+both_pillars_by_utla = (
+    pd.read_excel(
+        "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/"
+        "attachment_data/file/896777/Weekly_COVID19_report_data_current.xlsx",
+        sheet_name="Figure 9. Weekly rates UTLA",
+        skiprows=7,
+        usecols="B:D",
+    )
+    .drop(columns=["UTLA name"])
+    .rename(columns={"UTLA code": "gss_code", "Rate per 100,000 population": "rate"})
+)
 
 provisional_days = 4
 render_template(
     "map.html",
     data=json.dumps(
         map_data(
-            by_ltla_gss,
+            both_pillars_by_utla,
             wales_by_gss,
             scot_data,
             populations,
@@ -245,9 +253,9 @@ render_template(
     sources=[
         (
             "Public Health England",
-            "Coronavirus (COVID-19) in the UK",
-            "https://coronavirus.data.gov.uk",
-            by_ltla_gss.attrs["date"],
+            "National COVID-19 surveillance data report (week 26)",
+            "https://www.gov.uk/government/publications/national-covid-19-surveillance-reports",
+            date(2020, 6, 25),
         ),
         (
             scot_data.attrs["source"],
