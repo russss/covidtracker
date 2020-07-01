@@ -177,7 +177,7 @@ function initMap(data) {
       popupRenderer(map, data.scotland, 'HBName', 'HBCode'),
     );
 
-    for (const layer of ['la_cases', 'scot_cases', 'wales_cases']) {
+    for (const layer of ['england_cases', 'scot_cases', 'wales_cases']) {
       map.on('mouseenter', layer, function() {
         map.getCanvas().style.cursor = 'pointer';
       });
