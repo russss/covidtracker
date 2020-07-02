@@ -20,10 +20,10 @@ function makeGraph(width, height, data) {
 }
 
 function styleExpression(data, propname, colours, zero_colour) {
-  const max_prevalence = Math.max(
+  const max_prevalence = Math.min(Math.max(
     ...Object.entries(data).map(v => v[1]['prevalence']),
     15/100000 // Maximum won't go below 15 per 100,000
-  );
+  ), 75/100000);
 
   var expression = ['match', ['get', propname]];
 
@@ -32,9 +32,9 @@ function styleExpression(data, propname, colours, zero_colour) {
     if (data[gss_id]['prevalence'] == 0) {
       colour = zero_colour;
     } else {
-      const idx = Math.round(
+      const idx = Math.min(Math.round(
         (data[gss_id]['prevalence'] / max_prevalence) * (colours.length - 1),
-      );
+      ), colours.length - 1);
       colour = colours[idx];
     }
     expression.push(gss_id, colour);
@@ -53,11 +53,11 @@ function popupRenderer(map, data, name_field, gss_field) {
     html += '<table>';
 
     if (item['cases']) {
-      html += '<tr><th>Weekly cases</th><td>' + item['cases'] + '</td></tr>';
+      html += '<tr><th>Cases</th><td>' + item['cases'] + '</td></tr>';
     }
 
     html +=
-      '<tr><th>Weekly prevalence</th><td>' +
+      '<tr><th>Prevalence</th><td>' +
       (item['prevalence'] * 100000).toFixed(2) +
       ' per 100,000</td></tr>';
     html += '</table>';
