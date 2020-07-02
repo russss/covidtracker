@@ -57,7 +57,7 @@ function popupRenderer(map, data, name_field, gss_field) {
     }
 
     html +=
-      '<tr><th>Prevalence</th><td>' +
+      '<tr><th>Weekly prevalence</th><td>' +
       (item['prevalence'] * 100000).toFixed(2) +
       ' per 100,000</td></tr>';
     html += '</table>';
