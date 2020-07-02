@@ -1,5 +1,7 @@
 def region_data(new_cases, populations):
     history_days = 45
+    # Filter out numbers below 0 which happen when cases are un-reported.
+    new_cases = new_cases.where(new_cases > 0, 0)
     weekly_cases = new_cases.rolling(date=7).sum()
 
     cases = {}
