@@ -82,6 +82,13 @@ function popupRenderer(map, data, name_field, gss_field) {
 }
 
 function initMap(data) {
+  if (!mapboxgl.supported()) {
+    const map = document.getElementById('body');
+    map.innerHTML = 'Your browser does not support this map.<br/>' +
+        '<a href="http://webglreport.com">WebGL</a> with hardware acceleration is required';
+    return;
+  }
+
   var map = new mapboxgl.Map({
     container: 'map',
     style: 'style.json',
