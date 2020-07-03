@@ -127,8 +127,6 @@ def uk_cases_graph(uk_cases, ecdc_cases):
     lower = 0
     for layer in layers:
         label = layer
-        if label == 'England':
-            label = 'England (pillar 1 only)'
         fig.vbar(
             source=cases_ds,
             x='date',
@@ -210,7 +208,7 @@ def england_deaths(uk_cases, excess_deaths):
 
 
 def regional_cases(regions):
-    fig = figure(title="New cases in hospital")
+    fig = figure(title="New cases by region")
 
     fig.add_tools(region_hover_tool())
 
