@@ -38,6 +38,8 @@ def cases_by_nhs_region():
         name = str(a.data)
         if name == "Cornwall and Isles of Scilly":
             name = "Cornwall"
+        if name == "Hackney and City of London":
+            name = "Hackney"
         nhs_regions.append(la_region_mapping["nhs_name"][name])
 
     regions = regions.assign_coords({"location": nhs_regions})
