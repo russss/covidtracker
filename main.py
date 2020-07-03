@@ -222,32 +222,12 @@ scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set
     "gss code"
 )["population"]
 
-both_pillars_by_utla = (
-    pd.read_excel(
-        "https://assets.publishing.service.gov.uk/government/uploads/system/uploads"
-        "/attachment_data/file/897200/Weekly_COVID19_report_data_w27.xlsx",
-        sheet_name="Figure 9. Weekly rates UTLA",
-        skiprows=7,
-        usecols="B:D",
-    )
-    .drop(columns=["UTLA name"])
-    .rename(columns={"UTLA code": "gss_code", "Rate per 100,000 population": "rate"})
-)
-both_pillars_by_utla = both_pillars_by_utla[
-    both_pillars_by_utla["gss_code"].str.match("E.*") == True
-]
-both_pillars_by_utla["rate"] = (
-    pd.to_numeric(both_pillars_by_utla["rate"], errors="coerce")
-    .astype("float64")
-    .fillna(0)
-)
-
 provisional_days = 4
 render_template(
     "map.html",
     data=json.dumps(
         map_data(
-            both_pillars_by_utla,
+            by_ltla_gss,
             wales_by_gss,
             scot_data,
             populations,
@@ -255,15 +235,12 @@ render_template(
             provisional_days,
         )
     ),
-    data_date=pd.to_datetime(
-        by_ltla_gss["cases"][:, :-provisional_days]["date"][-1].values
-    ).date(),
     sources=[
         (
             "Public Health England",
-            "National COVID-19 surveillance data report (week 27)",
-            "https://www.gov.uk/government/publications/national-covid-19-surveillance-reports",
-            date(2020, 7, 2),
+            "Coronavirus (COVID-19) in the UK",
+            "https://coronavirus.data.gov.uk",
+            uk_cases.attrs["date"],
         ),
         (
             scot_data.attrs["source"],

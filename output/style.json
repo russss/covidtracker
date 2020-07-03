@@ -27,7 +27,7 @@
     },
     "areas": {
       "type": "vector",
-      "url": "https://api.maptiler.com/tiles/9209c6c1-5fa5-4afb-bfe9-4c69b14e3885/tiles.json?key=4HQAZUSrAg563kYxgVEy"
+      "url": "https://api.maptiler.com/tiles/0c4947fb-ecad-4dcc-aeb3-db1420826982/tiles.json?key=4HQAZUSrAg563kYxgVEy"
     },
     "nhs_england_region_label": {
       "type": "geojson",
@@ -723,7 +723,10 @@
     {
       "id": "la_boundary",
       "type": "line",
-      "filter": ["==", ["slice", ["get", "lad19cd"], 0, 1], "W"],
+      "filter": ["any",
+	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "W"],
+	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "E"]
+      ],
       "source": "areas",
       "source-layer": "local_authorities",
       "minzoom": 6,
@@ -734,21 +737,6 @@
         "line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
       }
     },
-    {
-      "id": "utla_boundary",
-      "type": "line",
-      "filter": ["==", ["slice", ["get", "ctyua19cd"], 0, 1], "E"],
-      "source": "areas",
-      "source-layer": "utla",
-      "minzoom": 6,
-      "paint": {
-        "line-color": "rgba(100, 100, 100, 1)",
-        "line-blur": 1.5,
-        "line-opacity": {"base": 1.4, "stops": [[5, 0], [11, 1]]},
-        "line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
-      }
-    },
-
     {
       "id": "shb_boundary",
       "type": "line",
