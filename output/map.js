@@ -1,4 +1,4 @@
-function makeGraph(width, height, data) {
+function makeGraph(width, height, data, provisional_days) {
   const gap = 1;
   var draw = SVG().size(width, height);
 
@@ -8,10 +8,14 @@ function makeGraph(width, height, data) {
   const bar_width = graph_width / data.length - gap;
   for (let i = 0; i < data.length; i++) {
     const bar_height = (data[i] / max_value) * graph_height;
-    draw
+    bar = draw
       .rect(bar_width, bar_height)
-      .move(i * (bar_width + gap) + 2, graph_height - bar_height)
-      .fill('#d44');
+      .move(i * (bar_width + gap) + 2, graph_height - bar_height);
+    if (i >= data.length - provisional_days) {
+      bar.fill('#E6C8C8');
+    } else {
+      bar.fill('#d44');
+    }
   }
   draw
     .line(1, height - 3, width, height - 3)
@@ -62,9 +66,13 @@ function popupRenderer(map, data, name_field, gss_field) {
 
     if (item['history']) {
 
-      let graph = makeGraph(200, 30, item['history']);
+      let graph = makeGraph(200, 30, item['history'], item['provisional_days']);
       div.appendChild(graph.node);
     }
+
+    // Prevent body from scrolling due to interactions on popup
+    div.ontouchend = (e) => {e.preventDefault()};
+    div.onwheel = (e) => {e.preventDefault()};
 
     new mapboxgl.Popup()
       .setLngLat(e.lngLat)
