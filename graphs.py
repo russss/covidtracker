@@ -7,6 +7,7 @@ from bokeh.models import (
     DatetimeTickFormatter,
     Span,
     ColumnDataSource,
+    Legend
 )
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2
@@ -87,7 +88,10 @@ def figure(**kwargs):
         **kwargs
     )
     add_interventions(fig)
-    fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b")
+    legend = Legend()
+    legend.click_policy = "hide"
+    fig.add_layout(legend)
+    fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.xgrid.visible = False
     fig.y_range.start = 0
     return fig
@@ -103,7 +107,7 @@ def stack_datasource(source, series):
     return ColumnDataSource(data)
 
 
-def uk_cases_graph(uk_cases, ecdc_cases):
+def uk_cases_graph(uk_cases):
     provisional_days = 4
     bar_width = 8640 * 10e3 * 0.7
 
@@ -147,23 +151,6 @@ def uk_cases_graph(uk_cases, ecdc_cases):
         )
         lower = layer
 
-    if ecdc_cases:
-        total_cases = (
-            ecdc_cases.sel(location="United Kingdom")["cases"]
-            .dropna("date")
-            .diff("date")
-            .rolling({"date": 7}, center=True)
-            .mean()
-        )
-
-        fig.line(
-            x=total_cases["date"].values,
-            y=total_cases.values,
-            name="UK Cases",
-            legend_label="UK cases (date of report)",
-            line_width=2,
-            line_color=LINE_COLOUR[1],
-        )
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
 

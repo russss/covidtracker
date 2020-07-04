@@ -96,11 +96,6 @@ ccg_lookup = (
 )
 
 uk_cases = coviddata.uk.cases_phe("countries")
-try:
-    ecdc_cases = coviddata.world.cases_ecdc()
-except URLError as e:
-    print("Error fetching ECDC cases", e)
-    ecdc_cases = None
 
 by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
@@ -163,7 +158,7 @@ triage_pathways = pathways_triage_by_nhs_region()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": uk_cases_graph(uk_cases_combined, ecdc_cases),
+        "confirmed_cases": uk_cases_graph(uk_cases_combined),
         "deaths": england_deaths(uk_cases, excess_deaths),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
@@ -174,13 +169,6 @@ render_template(
         nhs_deaths, nhs_region_cases, triage_online, triage_pathways, None
     ),
     sources=[
-        (
-            "European Centres for Disease Control",
-            "Data on the geographic distribution of COVID-19 cases worldwide",
-            "https://www.ecdc.europa.eu/en/publications-data/"
-            "download-todays-data-geographic-distribution-covid-19-cases-worldwide",
-            ecdc_cases.attrs["date"] if ecdc_cases else "Data unavailable",
-        ),
         (
             "Public Health England",
             "Coronavirus (COVID-19) in the UK",
