@@ -37,6 +37,11 @@ function styleExpression(data, propname, colours, zero_colour, max_prevalence) {
       colour = colours[idx];
     }
     expression.push(gss_id, colour);
+    if (gss_id == 'E09000012') {
+      expression.push('E09000001', colour);
+    } else if (gss_id == 'E06000052') {
+      expression.push('E06000053', colour);
+    }
   }
 
   expression.push('#ffffff');
@@ -46,13 +51,30 @@ function styleExpression(data, propname, colours, zero_colour, max_prevalence) {
 function popupRenderer(map, data, name_field, gss_field) {
   return function(e) {
     var props = e.features[0].properties;
-    let html = '<h3>' + props[name_field] + '</h3>';
+    let gss = props[gss_field];
+    console.log(gss);
+    let name = props[name_field];
+    let sub_name = null;
+    if (gss == 'E09000001' || gss == 'E09000012') { // City of London
+      gss = 'E09000012'; // Hackney
+      name = 'Hackney';
+      sub_name = '(including City of London)';
+    } else if (gss == 'E06000053' || gss == 'E06000052') { // Isles of Scilly
+      gss = 'E06000052'; // Cornwall
+      name = 'Cornwall';
+      sub_name = '(including Isles of Scilly)';
+    }
+    let item = data[gss];
 
-    let item = data[props[gss_field]];
+    let html = '<h3>' + name + '</h3>';
+    if (sub_name) {
+      html += '<p>' + sub_name + '</p>';
+    }
+
     html += '<table>';
 
     if (item['cases']) {
-      html += '<tr><th>Cases</th><td>' + item['cases'] + '</td></tr>';
+      html += '<tr><th>Weekly cases</th><td>' + item['cases'] + '</td></tr>';
     }
 
     html +=

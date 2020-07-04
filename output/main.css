@@ -158,6 +158,10 @@ table.sources {
   display: none;
 }
 
+.mapboxgl-popup-content p {
+  margin: 0;
+}
+
 @media only screen and (max-width: 750px) {
   #map {
     position: absolute;
