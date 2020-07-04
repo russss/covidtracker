@@ -1,19 +1,42 @@
 body {
   color: #333;
   margin: 0px;
+  margin-top: 40px;
   font-family: 'Noto Sans', sans-serif;
+}
+
+header {
+  background-color: #eeeeee;
+  padding: 5px 15px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: 40px;
+  margin-top: -40px;
+  overflow: hidden;
 }
 
 a, a:visited, a:hover {
   color: #323;
 }
 
-.footnote {
-  font-size: 0.7em;
+header h1, header ul, header ul li {
+  display: inline;
 }
 
-table.sources {
-  font-size: 0.8em;
+header h1 {
+  margin: auto 0;
+  font-size: 26px;
+}
+
+header ul {
+  margin: auto 0;
+  display: flex;
+  flex-direction: row;
+}
+
+header ul li {
+  margin-right: 20px;
 }
 
 #body {
@@ -22,10 +45,24 @@ table.sources {
   max-width: 1200px;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 750px) {
   #body {
     width: 100%;
     margin: 0;
+  }
+
+  #body > p, #body > h2 {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  header {
+    font-size: 12px;
+    padding: 1px 5px;
+  }
+
+  header h1 {
+    font-size: 18px;
   }
 }
 
@@ -56,6 +93,14 @@ tfoot {
   text-align: center;
 }
 
+.footnote {
+  font-size: 0.7em;
+}
+
+table.sources {
+  font-size: 0.8em;
+}
+
 .score_rise_small {
   background-color: #DEB4AF;
 }
@@ -77,34 +122,6 @@ tfoot {
 .score_neutral {
   background-color: #DEDEDE;
 }
-
-header {
-  background-color: #eeeeee;
-  padding: 5px 15px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-}
-
-header h1, header ul, header ul li {
-  display: inline;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 26px;
-}
-
-header ul {
-  margin: auto 0;
-  display: flex;
-  flex-direction: row;
-}
-
-header ul li {
-  margin-right: 20px;
-}
-
 
 #footer {
   color: #666;
@@ -135,4 +152,43 @@ header ul li {
 
 #map th {
   text-align: left;
+}
+
+#map-intro-close {
+  display: none;
+}
+
+@media only screen and (max-width: 750px) {
+  #map {
+    position: absolute;
+    top: 40px;
+    bottom: 0;
+    height: auto;
+    border: 0;
+    z-index: 10;
+  }
+
+  #map-intro {
+    position: absolute;
+    top: 100px;
+    right: 10px;
+    left: 10px;
+    padding: 10px;
+    height: auto;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #aaa;
+    z-index: 20;
+    box-shadow: 5px 5px 5px #aaa;
+  }
+
+  #map-intro h2 {
+    margin-top: 0;
+  }
+
+  #map-intro-close {
+    display: block;
+    font-size: 18px;
+    margin: 0 auto;
+  }
 }

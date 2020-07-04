@@ -10,11 +10,14 @@
 {% endblock %}
 {% block body %}
 <div id="body">
-  <h2>Hotspot Map</h2>
-  <p>This map shows the weekly per-capita prevalence of COVID-19 across the UK for the last seven days that reliable data
-    is available.</p>
+  <div id="map-intro">
+    <h2>Hotspot Map</h2>
+    <p>This map shows the weekly per-capita prevalence of COVID-19 across the UK for the last seven days that reliable data
+      is available.</p>
 
-  <p>You can click on an area on the map to see the current numbers and a history of the last 45 days of daily cases (where available).</p>
+    <p>You can click on an area on the map to see the current numbers and a history of the last 45 days of daily cases (where available).</p>
+    <button id="map-intro-close">Close</button>
+  </div>
 
   <div id="map"></div>
 
@@ -25,6 +28,11 @@
   {{sources_table(sources)}}
 </div>
 <script>
-initMap({{data|safe}});
+  initMap({{data|safe}});
+
+  let close_button = document.getElementById('map-intro-close');
+  close_button.onclick = (e) => {
+    document.getElementById('map-intro').style.display = 'none';
+  };
 </script>
 {% endblock %}
