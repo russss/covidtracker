@@ -52,7 +52,6 @@ function popupRenderer(map, data, name_field, gss_field) {
   return function(e) {
     var props = e.features[0].properties;
     let gss = props[gss_field];
-    console.log(gss);
     let name = props[name_field];
     let sub_name = null;
     if (gss == 'E09000001' || gss == 'E09000012') { // City of London
