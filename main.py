@@ -4,7 +4,6 @@ import xarray as xr
 from datetime import date
 from bokeh.plotting import curdoc
 from bokeh.themes import Theme
-from urllib.error import URLError
 import coviddata.uk
 import coviddata.uk.scotland
 import coviddata.uk.wales
@@ -21,6 +20,7 @@ from template import render_template
 from map import map_data
 from score import calculate_score
 from corrections import correct_scottish_data
+from normalise import normalise_population
 
 curdoc().theme = Theme("./theme.yaml")
 
@@ -95,14 +95,28 @@ ccg_lookup = (
     pd.read_csv("./data/ccg_region.csv").drop_duplicates("CCG20CD").set_index("CCG20CD")
 )
 
+populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_index(
+    "Code"
+)["All ages"]
+scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
+    "gss code"
+)["population"]
+
+
 uk_cases = coviddata.uk.cases_phe("countries")
 
-by_ltla_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
+eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
+eng_by_gss = eng_by_gss.merge(normalise_population(eng_by_gss["cases"], populations, "cases_norm"))
+
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
+
 wales_cases = coviddata.uk.wales.cases()
 wales_by_gss = coviddata.uk.wales.cases("gss_code")
+wales_by_gss = wales_by_gss.merge(
+    normalise_population(wales_by_gss["cases"], populations, "cases_norm")
+)
 
-provisional_days = 4
+provisional_days = 5
 
 nhs_deaths = coviddata.uk.deaths_nhs()
 nhs_deaths["deaths_rolling"] = (
@@ -140,9 +154,7 @@ nhs_region_cases["cases_rolling_provisional"] = (
 uk_cases_combined = xr.concat(
     [
         uk_cases.sel(location="England")["cases"],
-        scot_data.sel(gss_code="S92000003").assign_coords(location="Scotland")[
-            "corrected_cases"
-        ],
+        scot_data.sel(gss_code="S92000003").assign_coords(location="Scotland")["cases"],
         wales_cases.sum("location").assign_coords(location="Wales")["cases"],
     ],
     "location",
@@ -205,26 +217,12 @@ render_template(
 )
 
 
-populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_index(
-    "Code"
-)["All ages"]
-scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
-    "gss code"
-)["population"]
+scot_data = scot_data.drop_sel(gss_code="S92000003")
+scot_data = scot_data.merge(normalise_population(scot_data["cases"], scot_populations, "cases_norm"))
 
-provisional_days = 4
 render_template(
     "map.html",
-    data=json.dumps(
-        map_data(
-            by_ltla_gss,
-            wales_by_gss,
-            scot_data,
-            populations,
-            scot_populations,
-            provisional_days,
-        )
-    ),
+    data=json.dumps(map_data(eng_by_gss, wales_by_gss, scot_data, provisional_days,)),
     sources=[
         (
             "Public Health England",
