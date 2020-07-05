@@ -6,6 +6,7 @@ def region_data(data, provisional_days):
     data = data.where(data > 0, 0)
 
     weekly = data.rolling(date=7).sum()
+    weekly = weekly.where(weekly > 0, 0)
 
     result = {}
     for gss_code in weekly["gss_code"].values:
