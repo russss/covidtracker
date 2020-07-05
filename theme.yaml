@@ -23,6 +23,8 @@ attrs:
     axis_label_text_font_style: normal
     axis_label_text_font: 'Noto Sans'
     major_label_text_font: 'Noto Sans'
+    axis_label_text_color: '#555555'
+    axis_label_standoff: 8
 
   Legend:
     title_text_font: 'Noto Sans'
