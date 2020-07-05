@@ -15,6 +15,7 @@ from graphs import (
     regional_cases,
     regional_deaths,
     triage_graph,
+    la_rate_plot,
 )
 from template import render_template
 from map import map_data
@@ -25,14 +26,15 @@ from normalise import normalise_population
 curdoc().theme = Theme("./theme.yaml")
 
 
+la_region_mapping = pd.read_csv(
+    "https://raw.githubusercontent.com/russss/local_authority_nhs_region"
+    "/master/local_authority_nhs_region.csv",
+    index_col=["la_name"],
+)
+
+
 def cases_by_nhs_region():
     regions = coviddata.uk.cases_phe("ltlas").interpolate_na("date", "nearest")
-    la_region_mapping = pd.read_csv(
-        "https://raw.githubusercontent.com/russss/local_authority_nhs_region"
-        "/master/local_authority_nhs_region.csv",
-        index_col=["la_name"],
-    )
-
     nhs_regions = []
     for a in regions["location"]:
         name = str(a.data)
@@ -42,8 +44,8 @@ def cases_by_nhs_region():
             name = "Hackney"
         nhs_regions.append(la_region_mapping["nhs_name"][name])
 
-    regions = regions.assign_coords({"location": nhs_regions})
-    return regions.groupby("location").sum()
+    res = regions.assign_coords({"location": nhs_regions})
+    return res.groupby("location").sum()
 
 
 def online_triage_by_nhs_region():
@@ -100,13 +102,15 @@ populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_in
 )["All ages"]
 scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
     "gss code"
-)["population"]
+)
 
 
 uk_cases = coviddata.uk.cases_phe("countries")
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
-eng_by_gss = eng_by_gss.merge(normalise_population(eng_by_gss["cases"], populations, "cases_norm"))
+eng_by_gss = eng_by_gss.merge(
+    normalise_population(eng_by_gss["cases"], populations, "cases_norm")
+)
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
@@ -218,7 +222,11 @@ render_template(
 
 
 scot_data = scot_data.drop_sel(gss_code="S92000003")
-scot_data = scot_data.merge(normalise_population(scot_data["cases"], scot_populations, "cases_norm"))
+scot_data = scot_data.merge(
+    normalise_population(
+        scot_data["cases"], scot_populations["population"], "cases_norm"
+    )
+)
 
 render_template(
     "map.html",
@@ -244,3 +252,25 @@ render_template(
         ),
     ],
 )
+
+
+def slugify(string):
+    return string.lower().replace(" ", "-")
+
+
+heat_plots = {}
+
+la_region = la_region_mapping.reset_index().set_index("la_gss")
+
+for region in la_region["nhs_name"].unique():
+    las = la_region[la_region["nhs_name"] == region]
+    region_data = eng_by_gss.where(
+        eng_by_gss["gss_code"].isin(list(las.index)), drop=True
+    )
+    names = (
+        la_region["la_name"].sort_values(ascending=False)
+    )
+    heat_plots[slugify(region)] = la_rate_plot(region_data, names, region)
+
+
+render_template("areas.html", graphs=heat_plots)

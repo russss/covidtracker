@@ -7,7 +7,8 @@ from bokeh.models import (
     DatetimeTickFormatter,
     Span,
     ColumnDataSource,
-    Legend
+    Legend,
+    DatetimeAxis,
 )
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2
@@ -31,7 +32,7 @@ england_interventions = [
     (date(2020, 5, 10), "Stay Alert", "#50CCA5"),
     (date(2020, 6, 1), "Schools Open", "#50CCA5"),
     (date(2020, 6, 15), "Non-essential shops open", "#50CCA5"),
-    (date(2020, 7, 4), "1m plus distancing, pubs open", "#50CCA5")
+    (date(2020, 7, 4), "1m plus distancing, pubs open", "#50CCA5"),
 ]
 
 
@@ -133,13 +134,13 @@ def uk_cases_graph(uk_cases):
         label = layer
         fig.vbar(
             source=cases_ds,
-            x='date',
+            x="date",
             bottom=lower,
             top=layer,
             width=bar_width,
             line_width=0,
             fill_color=colours[layer],
-            fill_alpha=0.3
+            fill_alpha=0.3,
         )
         fig.line(
             source=rolling_ds,
@@ -147,7 +148,7 @@ def uk_cases_graph(uk_cases):
             y=layer,
             line_color=colours[layer],
             line_width=1.5,
-            legend_label=label
+            legend_label=label,
         )
         lower = layer
 
@@ -247,7 +248,10 @@ def regional_deaths(nhs_deaths):
         )
         fig.line(
             x=s["date"].values,
-            y=s["deaths_rolling_provisional"].values / nhs_region_pops[loc] * 100000 * 7,
+            y=s["deaths_rolling_provisional"].values
+            / nhs_region_pops[loc]
+            * 100000
+            * 7,
             legend_label=loc,
             name=loc,
             color=color,
@@ -308,4 +312,81 @@ def patients_in_hospital_graph(hosp):
 
     fig.legend.location = "top_right"
     fig.yaxis.axis_label = "Patients per 100,000 population"
+    return fig
+
+
+def la_rate_plot(data, names, region, rolling_days=7):
+    data = (
+        data["cases_norm"]
+        .resample(date="1D")
+        .nearest(tolerance="1D")
+        .ffill("date")
+        .fillna(0)
+        .diff("date")[:, :-4]
+        .rolling(date=rolling_days, center=True)
+        .sum()
+        .dropna("date")
+    )
+
+    palette = [
+        (0, "#f1f1f1"),
+        (5, "#fef0d9"),
+        (10, "#fdd49e"),
+        (25, "#fdbb84"),
+        (50, "#fc8d59"),
+        (100, "#e34a33"),
+        (100000, "#b30000"),
+    ]
+
+    def colour_val(cases):
+        for threshold, colour in palette:
+            if cases <= threshold:
+                return colour
+        return palette[-1][1]
+
+    colours = []
+    y_range = []
+    yname = []
+    xname = []
+    for la in names.index:
+        if la not in data['gss_code']:
+            continue
+        name = names[la]
+        y_range.append(name)
+        xname += list(data["date"].values)
+        for val in (
+            data.sel(gss_code=la).values * 100000 * (7 / rolling_days)
+        ):
+            yname.append(name)
+            colours.append(colour_val(val))
+
+    x_range = [data["date"].min().values, data["date"].max().values]
+    height = len(y_range) * 12 + 100
+    fig = bokeh_figure(
+        y_range=y_range,
+        x_range=x_range,
+        width=1200,
+        height=height,
+        title=region,
+        sizing_mode="scale_width",
+        tools="",
+        toolbar_location=None,
+    )
+
+    data_source = {"y": yname, "x": xname, "colours": colours}
+    fig.rect(
+        "x",
+        "y",
+        1.01 * (60 * 60 * 24 * 1000),
+        0.85,
+        source=data_source,
+        color="colours",
+        line_color=None,
+        dilate=True,
+    )
+    fig.axis.axis_line_color = None
+    fig.grid.grid_line_color = None
+    fig.yaxis.major_tick_line_color = None
+    fig.add_layout(DatetimeAxis(), "above")
+    fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     return fig

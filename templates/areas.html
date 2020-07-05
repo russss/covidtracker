@@ -1,0 +1,15 @@
+{% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
+{% block title %}UK COVID-19 Tracker{% endblock %}
+{% block description %}Stats and graphs on COVID-19 spread in the UK.{% endblock %}
+{% block body %}
+  <div id="body">
+    <div id="london"></div>
+    <div id="south-east"></div>
+    <div id="south-west"></div>
+    <div id="midlands"></div>
+    <div id="east-of-england"></div>
+    <div id="north-west"></div>
+    <div id="north-east-and-yorkshire"></div>
+  </div>
+{% endblock %}
