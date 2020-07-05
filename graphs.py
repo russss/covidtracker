@@ -206,7 +206,7 @@ def regional_cases(regions):
         color = next(colours)
         fig.line(
             x=s["date"].values,
-            y=s["cases_rolling"].values / nhs_region_pops[loc] * 100000,
+            y=s["cases_rolling"].values / nhs_region_pops[loc] * 100000 * 7,
             legend_label=loc,
             name=loc,
             color=color,
@@ -214,7 +214,7 @@ def regional_cases(regions):
         )
         fig.line(
             x=s["date"].values,
-            y=s["cases_rolling_provisional"].values / nhs_region_pops[loc] * 100000,
+            y=s["cases_rolling_provisional"].values / nhs_region_pops[loc] * 100000 * 7,
             legend_label=loc,
             name=loc,
             color=color,
@@ -223,7 +223,7 @@ def regional_cases(regions):
         )
 
     fig.legend.location = "top_right"
-    fig.yaxis.axis_label = "Cases per 100,000 population"
+    fig.yaxis.axis_label = "Weekly cases per 100,000"
     return fig
 
 
@@ -239,7 +239,7 @@ def regional_deaths(nhs_deaths):
         color = next(colours)
         fig.line(
             x=s["date"].values,
-            y=s["deaths_rolling"].values / nhs_region_pops[loc] * 100000,
+            y=s["deaths_rolling"].values / nhs_region_pops[loc] * 100000 * 7,
             legend_label=loc,
             name=loc,
             color=color,
@@ -247,7 +247,7 @@ def regional_deaths(nhs_deaths):
         )
         fig.line(
             x=s["date"].values,
-            y=s["deaths_rolling_provisional"].values / nhs_region_pops[loc] * 100000,
+            y=s["deaths_rolling_provisional"].values / nhs_region_pops[loc] * 100000 * 7,
             legend_label=loc,
             name=loc,
             color=color,
@@ -257,7 +257,7 @@ def regional_deaths(nhs_deaths):
 
     fig.legend.location = "top_right"
     fig.xaxis.axis_label = "Date of death"
-    fig.yaxis.axis_label = "Deaths per 100,000 population"
+    fig.yaxis.axis_label = "Weekly deaths per 100,000"
     return fig
 
 
@@ -271,7 +271,7 @@ def triage_graph(triage_online, title=""):
         color = next(colours)
         fig.line(
             x=s["date"].values,
-            y=s["count_rolling_7"].values / nhs_region_pops[loc] * 100000,
+            y=s["count_rolling_7"].values / nhs_region_pops[loc] * 100000 * 7,
             legend_label=loc,
             name=loc,
             color=color,
@@ -279,7 +279,7 @@ def triage_graph(triage_online, title=""):
         )
 
     fig.legend.location = "top_right"
-    fig.yaxis.axis_label = "Instances per 100,000 population"
+    fig.yaxis.axis_label = "Weekly instances per 100,000"
     return fig
 
 
