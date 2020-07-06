@@ -28,7 +28,7 @@ function styleExpression(data, propname, colours, zero_colour, max_prevalence) {
 
   for (const gss_id in data) {
     var colour = null;
-    if (data[gss_id]['prevalence'] == 0) {
+    if (data[gss_id]['prevalence'] < 0.00000001) {
       colour = zero_colour;
     } else {
       const idx = Math.min(Math.round(
@@ -64,6 +64,7 @@ function popupRenderer(map, data, name_field, gss_field) {
       sub_name = '(including Isles of Scilly)';
     }
     let item = data[gss];
+    console.log(item);
 
     let html = '<h3>' + name + '</h3>';
     if (sub_name) {
