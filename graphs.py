@@ -289,7 +289,7 @@ def triage_graph(triage_online, title=""):
 
 def hospital_admissions_graph(hosp):
     hosp = hosp.diff("date").rolling(date=7).mean()
-    fig = figure(title="Hospital Admissions")
+    fig = figure(title="Hospital admissions")
     fig.add_tools(region_hover_tool())
 
     colours = cycle(Dark2[7])
