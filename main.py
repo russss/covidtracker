@@ -16,7 +16,7 @@ from graphs import (
     regional_deaths,
     triage_graph,
     la_rate_plot,
-    hospital_admissions_graph
+    hospital_admissions_graph,
 )
 from template import render_template
 from map import map_data
@@ -166,6 +166,13 @@ uk_cases_combined = xr.concat(
 )
 
 hospital_admissions = coviddata.uk.hospitalisations_phe()
+hospital_admissions["admissions_rolling"] = (
+    hospital_admissions["admissions"]
+    .diff("date")
+    .rolling(date=7, center=True)
+    .mean()
+    .dropna("date")
+)
 
 excess_deaths = pd.read_csv(
     "./data/excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
@@ -183,10 +190,14 @@ render_template(
         "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage"),
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
-        "hospital_admissions": hospital_admissions_graph(hospital_admissions)
+        "hospital_admissions": hospital_admissions_graph(hospital_admissions),
     },
     scores=calculate_score(
-        nhs_deaths, nhs_region_cases, triage_online, triage_pathways, None
+        nhs_deaths,
+        nhs_region_cases,
+        triage_online,
+        triage_pathways,
+        hospital_admissions,
     ),
     sources=[
         (
@@ -271,9 +282,7 @@ for region in la_region["nhs_name"].unique():
     region_data = eng_by_gss.where(
         eng_by_gss["gss_code"].isin(list(las.index)), drop=True
     )
-    names = (
-        la_region["la_name"].sort_values(ascending=False)
-    )
+    names = la_region["la_name"].sort_values(ascending=False)
     heat_plots[slugify(region)] = la_rate_plot(region_data, names, region)
 
 
