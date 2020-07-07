@@ -287,23 +287,19 @@ def triage_graph(triage_online, title=""):
     return fig
 
 
-def patients_in_hospital_graph(hosp):
-    fig = figure(title="Patients in hospital",)
+def hospital_admissions_graph(hosp):
+    hosp = hosp.diff("date").rolling(date=7).mean()
+    fig = figure(title="Hospital Admissions")
     fig.add_tools(region_hover_tool())
 
     colours = cycle(Dark2[7])
 
-    locations = sorted(
-        set(str(loc.item()) for loc in hosp["location"])
-        - {"Scotland", "Wales", "Northern Ireland"}
-    )
-
-    for loc in locations:
+    for loc in hosp['location'].values:
         s = hosp.sel(location=loc)
         color = next(colours)
         fig.line(
             x=s["date"].values,
-            y=s["patients_rolling_3"].values / nhs_region_pops[loc] * 100000,
+            y=s["admissions"].values / nhs_region_pops[loc] * 100000,
             legend_label=loc,
             name=loc,
             color=color,
@@ -311,7 +307,7 @@ def patients_in_hospital_graph(hosp):
         )
 
     fig.legend.location = "top_right"
-    fig.yaxis.axis_label = "Patients per 100,000 population"
+    fig.yaxis.axis_label = "Daily admissions per 100,000"
     return fig
 
 
