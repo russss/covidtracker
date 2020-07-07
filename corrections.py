@@ -1,4 +1,5 @@
 import numpy as np
+import coviddata.uk
 from datetime import date, timedelta
 
 
@@ -23,3 +24,18 @@ def correct_scottish_data(scot_data):
         ser[off : off + spread_days] += offset_cases
 
     return scot_data
+
+
+def cases_by_nhs_region(la_region_mapping):
+    regions = coviddata.uk.cases_phe("ltlas").interpolate_na("date", "nearest")
+    nhs_regions = []
+    for a in regions["location"]:
+        name = str(a.data)
+        if name == "Cornwall and Isles of Scilly":
+            name = "Cornwall"
+        if name == "Hackney and City of London":
+            name = "Hackney"
+        nhs_regions.append(la_region_mapping["nhs_name"][name])
+
+    res = regions.assign_coords({"location": nhs_regions})
+    return res.groupby("location").sum()

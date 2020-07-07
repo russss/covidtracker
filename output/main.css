@@ -45,10 +45,30 @@ header ul li {
   max-width: 1200px;
 }
 
+#mobile-warning {
+  display: none;
+}
+
+.warning {
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #ffeeee;
+  font-weight: bold;
+}
+
 @media only screen and (max-width: 750px) {
   #body {
     width: 100%;
     margin: 0;
+  }
+
+  .graphs-body {
+    min-width: 750px;
+  }
+
+  #mobile-warning {
+    display: block;
+    width: 100%;
   }
 
   #body > p, #body > h2 {

@@ -21,7 +21,7 @@ from graphs import (
 from template import render_template
 from map import map_data
 from score import calculate_score
-from corrections import correct_scottish_data
+from corrections import correct_scottish_data, cases_by_nhs_region
 from normalise import normalise_population
 
 curdoc().theme = Theme("./theme.yaml")
@@ -32,21 +32,6 @@ la_region_mapping = pd.read_csv(
     "/master/local_authority_nhs_region.csv",
     index_col=["la_name"],
 )
-
-
-def cases_by_nhs_region():
-    regions = coviddata.uk.cases_phe("ltlas").interpolate_na("date", "nearest")
-    nhs_regions = []
-    for a in regions["location"]:
-        name = str(a.data)
-        if name == "Cornwall and Isles of Scilly":
-            name = "Cornwall"
-        if name == "Hackney and City of London":
-            name = "Hackney"
-        nhs_regions.append(la_region_mapping["nhs_name"][name])
-
-    res = regions.assign_coords({"location": nhs_regions})
-    return res.groupby("location").sum()
 
 
 def online_triage_by_nhs_region():
@@ -136,7 +121,7 @@ nhs_deaths["deaths_rolling_provisional"] = (
     nhs_deaths["deaths"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
 )
 
-nhs_region_cases = cases_by_nhs_region()
+nhs_region_cases = cases_by_nhs_region(la_region_mapping)
 
 nhs_region_cases["cases_rolling"] = (
     nhs_region_cases["cases"][:, :-provisional_days]
