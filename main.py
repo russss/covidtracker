@@ -2,8 +2,6 @@ import json
 import pandas as pd
 import xarray as xr
 from datetime import date
-from bokeh.plotting import curdoc
-from bokeh.themes import Theme
 import coviddata.uk
 import coviddata.uk.scotland
 import coviddata.uk.wales
@@ -23,8 +21,6 @@ from map import map_data
 from score import calculate_score
 from corrections import correct_scottish_data, cases_by_nhs_region
 from normalise import normalise_population
-
-curdoc().theme = Theme("./theme.yaml")
 
 
 la_region_mapping = pd.read_csv(
