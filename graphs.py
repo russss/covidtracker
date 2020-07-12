@@ -70,6 +70,15 @@ def intervention(fig, date, label, colour="red"):
     # fig.add_layout(span_label)
 
 
+def xr_to_cds(xr, x_series="date"):
+    data = {}
+    for series in xr:
+        data[series] = xr[series].values
+
+    data[x_series] = xr[x_series].values
+    return ColumnDataSource(data=data)
+
+
 def add_interventions(fig):
     for when, label, colour in england_interventions:
         intervention(fig, when, label, colour)
@@ -156,41 +165,83 @@ def uk_cases_graph(uk_cases):
     return fig
 
 
-def england_deaths(uk_cases, excess_deaths):
+def england_deaths(phe_deaths, excess_deaths, uk_cases):
     fig = figure(title="Deaths in England & Wales")
 
-    deaths_england = uk_cases["deaths"].sel(location="England").diff("date").fillna(0)
-    deaths_wales = uk_cases["deaths"].sel(location="Wales").diff("date").fillna(0)
-    deaths = deaths_england + deaths_wales
-    deaths_mean = deaths.rolling(date=7, center=True).mean().dropna("date")
+    fig.add_tools(
+        HoverTool(
+            tooltips=[
+                ("Date", "$x{%d %b}"),
+                ("Deaths", "@deaths{0}"),
+                ("Reported deaths", "@deaths_report_date{0}"),
+                ("Excess deaths", "@excess_deaths{0}"),
+            ],
+            formatters={"$x": "datetime"},
+        )
+    )
+
+    data = phe_deaths.ffill("date").sum("location").diff("date")
+    data["deaths_rolling"] = data["deaths"].rolling(date=7, center=True).mean()
+    data["deaths_rolling"][-7:] = np.nan
+
+    data["deaths_report_date"] = (
+        uk_cases.sel(location=["England", "Wales"])["deaths"]
+        .ffill("date")
+        .sum("location")
+        .diff("date")
+        .rolling(date=7, center=True)
+        .mean()
+    )
+
+    data["excess_deaths"] = excess_deaths["deaths"]
+    data["excess_deaths"] = (
+        data["excess_deaths"].interpolate_na("date", method="akima") / 7
+    )
+
+    data = xr_to_cds(data)
 
     bar_width = 8640 * 10e3 * 0.7
     fig.vbar(
-        x=deaths["date"].values,
-        top=deaths.values,
+        x="date",
+        top="deaths",
+        source=data,
         width=bar_width,
-        legend_label="Reported COVID-19 deaths",
+        legend_label="Deaths (date of death)",
+        name="Deaths",
         line_width=0,
         fill_color=BAR_COLOUR,
     )
+
     fig.line(
-        x=deaths_mean["date"].values,
-        y=deaths_mean.values,
+        x="date",
+        y="deaths_rolling",
+        source=data,
         line_width=2,
-        legend_label="7 day average",
         line_color=LINE_COLOUR[0],
+        legend_label="Rolling average",
+        name="Rolling average",
     )
 
-    excess = excess_deaths["deaths"].interpolate() / 7
     fig.line(
-        x=excess.index,
-        y=excess.values,
+        x="date",
+        y="deaths_report_date",
+        source=data,
+        line_width=2,
+        line_color="#666666",
+        line_dash="dashed",
+        legend_label="Deaths (date of report, rolling avg)",
+    )
+
+    fig.line(
+        x="date",
+        y="excess_deaths",
+        source=data,
         line_width=2,
         line_color=LINE_COLOUR[1],
-        legend_label="Excess deaths (weekly)",
+        legend_label="Excess deaths (weekly, smoothed)",
+        name="Excess deaths",
     )
 
-    fig.xaxis.axis_label = "Date of report"
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
 
@@ -293,7 +344,7 @@ def hospital_admissions_graph(hosp):
 
     colours = cycle(Dark2[7])
 
-    for loc in hosp['location'].values:
+    for loc in hosp["location"].values:
         s = hosp.sel(location=loc)
         color = next(colours)
         fig.line(
@@ -344,14 +395,12 @@ def la_rate_plot(data, names, region, rolling_days=7):
     yname = []
     xname = []
     for la in names.index:
-        if la not in data['gss_code']:
+        if la not in data["gss_code"]:
             continue
         name = names[la]
         y_range.append(name)
         xname += list(data["date"].values)
-        for val in (
-            data.sel(gss_code=la).values * 100000 * (7 / rolling_days)
-        ):
+        for val in data.sel(gss_code=la).values * 100000 * (7 / rolling_days):
             yname.append(name)
             colours.append(colour_val(val))
 

@@ -165,12 +165,13 @@ excess_deaths = pd.read_csv(
 triage_online = online_triage_by_nhs_region()
 triage_pathways = pathways_triage_by_nhs_region()
 
+phe_deaths = coviddata.uk.deaths_phe()
 
 render_template(
     "index.html",
     graphs={
         "confirmed_cases": uk_cases_graph(uk_cases_combined),
-        "deaths": england_deaths(uk_cases, excess_deaths),
+        "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage"),
