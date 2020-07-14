@@ -156,7 +156,7 @@ def uk_cases_graph(uk_cases):
             x="date",
             y=layer,
             line_color=colours[layer],
-            line_width=1.5,
+            line_width=1.8,
             legend_label=label,
         )
         lower = layer
@@ -181,8 +181,9 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
     )
 
     data = phe_deaths.ffill("date").sum("location").diff("date")
+    data["deaths_provisional"] = data["deaths"][-7:]
+    data["deaths"][-7:] = np.nan
     data["deaths_rolling"] = data["deaths"].rolling(date=7, center=True).mean()
-    data["deaths_rolling"][-7:] = np.nan
 
     data["deaths_report_date"] = (
         uk_cases.sel(location=["England", "Wales"])["deaths"]
@@ -198,24 +199,34 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
         data["excess_deaths"].interpolate_na("date", method="akima") / 7
     )
 
-    data = xr_to_cds(data)
+    ds = xr_to_cds(data)
 
     bar_width = 8640 * 10e3 * 0.7
     fig.vbar(
         x="date",
         top="deaths",
-        source=data,
+        source=ds,
         width=bar_width,
         legend_label="Deaths (date of death)",
         name="Deaths",
         line_width=0,
         fill_color=BAR_COLOUR,
     )
+    fig.vbar(
+        x="date",
+        top="deaths_provisional",
+        source=ds,
+        width=bar_width,
+        name="Deaths",
+        line_width=0,
+        fill_color=BAR_COLOUR,
+        fill_alpha=0.4,
+    )
 
     fig.line(
         x="date",
         y="deaths_rolling",
-        source=data,
+        source=ds,
         line_width=2,
         line_color=LINE_COLOUR[0],
         legend_label="Rolling average",
@@ -225,7 +236,7 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
     fig.line(
         x="date",
         y="deaths_report_date",
-        source=data,
+        source=ds,
         line_width=2,
         line_color="#666666",
         line_dash="dashed",
@@ -235,7 +246,7 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
     fig.line(
         x="date",
         y="excess_deaths",
-        source=data,
+        source=ds,
         line_width=2,
         line_color=LINE_COLOUR[1],
         legend_label="Excess deaths (weekly, smoothed)",
