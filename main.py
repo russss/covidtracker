@@ -166,7 +166,7 @@ phe_deaths = coviddata.uk.deaths_phe()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": uk_cases_graph(uk_cases_combined),
+        "confirmed_cases": uk_cases_graph(uk_cases_combined, uk_cases),
         "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),

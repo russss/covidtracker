@@ -117,26 +117,26 @@ def stack_datasource(source, series):
     return ColumnDataSource(data)
 
 
-def uk_cases_graph(uk_cases):
-    provisional_days = 4
-    bar_width = 8640 * 10e3 * 0.7
+def uk_cases_graph(uk_cases_national, uk_cases):
+    # provisional_days = 4
+    bar_width = 8640 * 10e3 * 0.8
 
     fig = figure(title="New cases")
 
-    uk_cases = uk_cases.ffill("date").diff("date")
+    uk_cases_national = uk_cases_national.ffill("date").diff("date")
 
-    rolling = (
-        uk_cases[:, :-provisional_days]
-        .rolling({"date": 7}, center=True)
+    uk_cases = (
+        uk_cases.ffill("date")
+        .sum("location")
+        .diff("date")
+        .rolling(date=7, center=True)
         .mean()
-        .dropna("date")
-    )
+    )['cases']
 
     layers = ["England", "Scotland", "Wales"]
     colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B"}
 
-    cases_ds = stack_datasource(uk_cases, layers)
-    rolling_ds = stack_datasource(rolling, layers)
+    cases_ds = stack_datasource(uk_cases_national, layers)
 
     lower = 0
     for layer in layers:
@@ -149,17 +149,18 @@ def uk_cases_graph(uk_cases):
             width=bar_width,
             line_width=0,
             fill_color=colours[layer],
-            fill_alpha=0.3,
-        )
-        fig.line(
-            source=rolling_ds,
-            x="date",
-            y=layer,
-            line_color=colours[layer],
-            line_width=1.8,
+            fill_alpha=0.4,
             legend_label=label,
         )
         lower = layer
+
+    #fig.line(
+    #    x=uk_cases["date"].values,
+    #    y=uk_cases.values,
+    #    line_color=LINE_COLOUR[0],
+    #    line_width=2,
+    #    legend_label="UK (rolling avg)",
+    #)
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
