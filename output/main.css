@@ -182,6 +182,15 @@ table.sources {
   margin: 0;
 }
 
+.colour-key {
+  width: 40px;
+  overflow: hidden;
+}
+
+.colour-key-cell {
+  padding: 0 3px;
+}
+
 @media only screen and (max-width: 750px) {
   #map {
     position: absolute;

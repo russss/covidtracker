@@ -120,6 +120,37 @@ function popupRenderer(map, data, name_field, gss_field) {
   };
 }
 
+class LegendControl {
+  onAdd(map) {
+    this._map = map;
+    this._container = document.createElement("div");
+    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl colour-key";
+
+    /*
+    let title = document.createElement("h3");
+    title.innerHTML = "Key";
+    this._container.appendChild(title);
+    let p = document.createElement("p");
+    p.innerHTML = "cases per 100,000";
+    this._container.appendChild(p);
+    */
+
+    for (const element of colour_ramp) {
+      let div = document.createElement("div");
+      div.title = "Cases per 100,000 population";
+      div.className = "colour-key-cell";
+      div.innerHTML = element[0];
+      div.style.backgroundColor = element[1];
+      if (element[0] > 50) {
+        div.style.color = '#f0f0f0';
+      }
+      this._container.appendChild(div);
+    }
+    return this._container;
+  }
+}
+
+
 function initMap(data) {
   if (!mapboxgl.supported()) {
     const map = document.getElementById('body');
@@ -142,6 +173,7 @@ function initMap(data) {
 
   map.touchZoomRotate.disableRotation();
   map.addControl(new mapboxgl.NavigationControl({showCompass: false}));
+  map.addControl(new LegendControl(), 'bottom-right');
 
   map.on('load', () => {
     const opacity_func = [
