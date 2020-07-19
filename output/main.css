@@ -201,6 +201,12 @@ table.sources {
     z-index: 10;
   }
 
+  .colour-key {
+    font-size: 0.8em;
+    width: 25px;
+    line-height: 1.8em;
+  }
+
   #map-intro {
     position: absolute;
     top: 100px;
