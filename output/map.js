@@ -1,3 +1,15 @@
+const colour_ramp = [
+  [100, '#b30000'],
+  [75, '#e34a33'],
+  [50, '#fc8d59'],
+  [25, '#fdbb84'],
+  [10, '#fdd49e'],
+  [0.01, '#fef0d9'],
+  [0, '#ececec'],
+];
+
+
+
 function makeGraph(width, height, data, provisional_days) {
   const gap = 1;
   var draw = SVG().size(width, height);
@@ -23,19 +35,20 @@ function makeGraph(width, height, data, provisional_days) {
   return draw;
 }
 
-function styleExpression(data, propname, colours, zero_colour, max_prevalence) {
+function styleExpression(data, propname) {
   var expression = ['match', ['get', propname]];
 
   for (const gss_id in data) {
     var colour = null;
-    if (data[gss_id]['prevalence'] < 0.00000001) {
-      colour = zero_colour;
-    } else {
-      const idx = Math.min(Math.round(
-        (data[gss_id]['prevalence'] / max_prevalence) * (colours.length - 1),
-      ), colours.length - 1);
-      colour = colours[idx];
+    const prevalence = (data[gss_id]['prevalence'] * 100000).toFixed(2);
+
+    for (const element of colour_ramp) {
+      if (prevalence >= element[0]) {
+        colour = element[1];
+        break;
+      }
     }
+
     expression.push(gss_id, colour);
     if (gss_id == 'E09000012') {
       expression.push('E09000001', colour);
@@ -54,17 +67,18 @@ function popupRenderer(map, data, name_field, gss_field) {
     let gss = props[gss_field];
     let name = props[name_field];
     let sub_name = null;
-    if (gss == 'E09000001' || gss == 'E09000012') { // City of London
+    if (gss == 'E09000001' || gss == 'E09000012') {
+      // City of London
       gss = 'E09000012'; // Hackney
       name = 'Hackney';
       sub_name = '(including City of London)';
-    } else if (gss == 'E06000053' || gss == 'E06000052') { // Isles of Scilly
+    } else if (gss == 'E06000053' || gss == 'E06000052') {
+      // Isles of Scilly
       gss = 'E06000052'; // Cornwall
       name = 'Cornwall';
       sub_name = '(including Isles of Scilly)';
     }
     let item = data[gss];
-    console.log(item);
 
     let html = '<h3>' + name + '</h3>';
     if (sub_name) {
@@ -87,14 +101,17 @@ function popupRenderer(map, data, name_field, gss_field) {
     div.innerHTML = html;
 
     if (item['history']) {
-
       let graph = makeGraph(200, 30, item['history'], item['provisional_days']);
       div.appendChild(graph.node);
     }
 
     // Prevent body from scrolling due to interactions on popup
-    div.ontouchend = (e) => {e.preventDefault()};
-    div.onwheel = (e) => {e.preventDefault()};
+    div.ontouchend = e => {
+      e.preventDefault();
+    };
+    div.onwheel = e => {
+      e.preventDefault();
+    };
 
     new mapboxgl.Popup()
       .setLngLat(e.lngLat)
@@ -106,8 +123,9 @@ function popupRenderer(map, data, name_field, gss_field) {
 function initMap(data) {
   if (!mapboxgl.supported()) {
     const map = document.getElementById('body');
-    map.innerHTML = 'Your browser does not support this map.<br/>' +
-        '<a href="http://webglreport.com">WebGL</a> with hardware acceleration is required';
+    map.innerHTML =
+      'Your browser does not support this map.<br/>' +
+      '<a href="http://webglreport.com">WebGL</a> with hardware acceleration is required';
     return;
   }
 
@@ -126,20 +144,15 @@ function initMap(data) {
   map.addControl(new mapboxgl.NavigationControl({showCompass: false}));
 
   map.on('load', () => {
-
-    const opacity_func = ["interpolate", ["exponential", 1.4], ["zoom"],
-      5, 0.85,
-      12, 0.5
+    const opacity_func = [
+      'interpolate',
+      ['exponential', 1.4],
+      ['zoom'],
+      5,
+      0.85,
+      12,
+      0.5,
     ];
-
-    const max_prevalence = Math.min(Math.max(
-      ...Object.entries(data.england).map(v => v[1]['prevalence']),
-      ...Object.entries(data.wales).map(v => v[1]['prevalence']),
-      ...Object.entries(data.scotland).map(v => v[1]['prevalence']),
-      15/100000 // Maximum won't go below 15 per 100,000
-    ), 75/100000);
-
-    const colour_ramp = ['#fef0d9','#fdd49e','#fdbb84','#fc8d59','#e34a33','#b30000'];
 
     map.addLayer(
       {
@@ -150,13 +163,7 @@ function initMap(data) {
         source: 'areas',
         'source-layer': 'local_authorities',
         paint: {
-          'fill-color': styleExpression(
-            data.england,
-            'lad19cd',
-            colour_ramp,
-            '#ececec',
-            max_prevalence
-          ),
+          'fill-color': styleExpression(data.england, 'lad19cd'),
           'fill-opacity': opacity_func,
         },
       },
@@ -172,18 +179,12 @@ function initMap(data) {
         source: 'areas',
         'source-layer': 'local_authorities',
         paint: {
-          'fill-color': styleExpression(
-            data.wales,
-            'lad19cd',
-            colour_ramp,
-            '#ececec',
-            max_prevalence
-          ),
+          'fill-color': styleExpression(data.wales, 'lad19cd'),
           'fill-opacity': 0.7,
         },
       },
       'la_boundary',
-    )
+    );
 
     map.addLayer(
       {
@@ -192,13 +193,7 @@ function initMap(data) {
         source: 'areas',
         'source-layer': 'scottish_health_boards',
         paint: {
-          'fill-color': styleExpression(
-            data.scotland,
-            'HBCode',
-            colour_ramp,
-            '#ececec',
-            max_prevalence
-          ),
+          'fill-color': styleExpression(data.scotland, 'HBCode'),
           'fill-opacity': 0.7,
         },
       },
