@@ -8,30 +8,56 @@ const colour_ramp = [
   [0, '#ececec'],
 ];
 
-
-
 function makeGraph(width, height, data, provisional_days) {
   const gap = 1;
   var draw = SVG().size(width, height);
 
-  const graph_height = height - 3;
-  const graph_width = width - 3;
-  const max_value = Math.max(...data);
+  const left_margin = 18;
+  const top_margin = 5;
+  const bottom_margin = 5;
+  const graph_height = height - top_margin - bottom_margin;
+  const graph_width = width - left_margin;
+  const max_value = Math.max(...data, 5);
   const bar_width = graph_width / data.length - gap;
   for (let i = 0; i < data.length; i++) {
     const bar_height = (data[i] / max_value) * graph_height;
+
     bar = draw
       .rect(bar_width, bar_height)
-      .move(i * (bar_width + gap) + 2, graph_height - bar_height);
+      .move(
+        i * (bar_width + gap) + left_margin,
+        graph_height - bar_height + top_margin - 1,
+      );
+
     if (i >= data.length - provisional_days) {
       bar.fill('#E6C8C8');
     } else {
       bar.fill('#d44');
     }
   }
+
   draw
-    .line(1, height - 3, width, height - 3)
-    .stroke({width: 0.5, color: '#bbb'});
+    .text(max_value.toString())
+    .attr({x: left_margin - 4, y: top_margin + 3})
+    .font({fill: '#333', family: 'Noto Sans', size: 9, anchor: 'end'});
+
+  draw
+    .text('0')
+    .attr({x: left_margin - 4, y: graph_height + top_margin + 3})
+    .font({fill: '#333', family: 'Noto Sans', size: 9, anchor: 'end'});
+
+  draw
+    .line(left_margin - 2, top_margin, left_margin + 1, top_margin)
+    .stroke({width: 1, color: '#aaa'});
+
+  draw
+    .line(
+      left_margin - 2,
+      height - bottom_margin - 1,
+      width,
+      height - bottom_margin - 1,
+    )
+    .stroke({width: 0.5, color: '#aaa'});
   return draw;
 }
 
@@ -101,7 +127,7 @@ function popupRenderer(map, data, name_field, gss_field) {
     div.innerHTML = html;
 
     if (item['history']) {
-      let graph = makeGraph(200, 30, item['history'], item['provisional_days']);
+      let graph = makeGraph(210, 45, item['history'], item['provisional_days']);
       div.appendChild(graph.node);
     }
 
@@ -123,8 +149,8 @@ function popupRenderer(map, data, name_field, gss_field) {
 class LegendControl {
   onAdd(map) {
     this._map = map;
-    this._container = document.createElement("div");
-    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl colour-key";
+    this._container = document.createElement('div');
+    this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl colour-key';
 
     /*
     let title = document.createElement("h3");
@@ -136,9 +162,9 @@ class LegendControl {
     */
 
     for (const element of colour_ramp) {
-      let div = document.createElement("div");
-      div.title = "Cases per 100,000 population";
-      div.className = "colour-key-cell";
+      let div = document.createElement('div');
+      div.title = 'Cases per 100,000 population';
+      div.className = 'colour-key-cell';
       div.innerHTML = element[0];
       div.style.backgroundColor = element[1];
       if (element[0] > 50) {
@@ -149,7 +175,6 @@ class LegendControl {
     return this._container;
   }
 }
-
 
 function initMap(data) {
   if (!mapboxgl.supported()) {

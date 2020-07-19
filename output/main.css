@@ -152,6 +152,7 @@ table.sources {
 }
 
 #map {
+  user-select: none;
   width: 100%;
   height: 900px;
   border: 1px solid #aaa;
@@ -180,6 +181,10 @@ table.sources {
 
 .mapboxgl-popup-content p {
   margin: 0;
+}
+
+.mapboxgl-popup-content svg {
+  margin-left: -6px;
 }
 
 .colour-key {
