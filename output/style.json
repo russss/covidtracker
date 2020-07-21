@@ -4,7 +4,7 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "url": "https://tiles.russss.dev/services/osm-europe"
+      "url": "https://tiles.russss.dev/services/osm"
     },
     "areas": {
       "type": "vector",
