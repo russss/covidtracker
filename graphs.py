@@ -44,6 +44,7 @@ def region_hover_tool():
             ("Date", "$x{%d %b}"),
         ],
         formatters={"$x": "datetime"},
+        toggleable=False,
     )
 
 
@@ -88,15 +89,16 @@ def figure(**kwargs):
     fig = bokeh_figure(
         width=1200,
         height=500,
-        toolbar_location=None,
+        toolbar_location="right",
         x_range=(
             np.datetime64(date(2020, 3, 1)),
             np.datetime64(date.today() + timedelta(days=1)),
         ),
         sizing_mode="scale_width",
-        tools="",
+        tools="reset,box_zoom",
         **kwargs
     )
+    fig.toolbar.logo = None
     add_interventions(fig)
     legend = Legend()
     legend.click_policy = "hide"
@@ -131,7 +133,7 @@ def uk_cases_graph(uk_cases_national, uk_cases):
         .diff("date")
         .rolling(date=7, center=True)
         .mean()
-    )['cases']
+    )["cases"]
 
     layers = ["England", "Scotland", "Wales"]
     colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B"}
@@ -154,13 +156,13 @@ def uk_cases_graph(uk_cases_national, uk_cases):
         )
         lower = layer
 
-    #fig.line(
+    # fig.line(
     #    x=uk_cases["date"].values,
     #    y=uk_cases.values,
     #    line_color=LINE_COLOUR[0],
     #    line_width=2,
     #    legend_label="UK (rolling avg)",
-    #)
+    # )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
@@ -178,6 +180,7 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
                 ("Excess deaths", "@excess_deaths{0}"),
             ],
             formatters={"$x": "datetime"},
+            toggleable=False,
         )
     )
 
