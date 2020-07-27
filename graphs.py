@@ -203,6 +203,11 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
         data["excess_deaths"].interpolate_na("date", method="akima") / 7
     )
 
+    data["recorded_deaths"] = excess_deaths["covid_deaths"]
+    data["recorded_deaths"] = (
+        data["recorded_deaths"].interpolate_na("date", method="akima") / 7
+    )
+
     ds = xr_to_cds(data)
 
     bar_width = 8640 * 10e3 * 0.7
@@ -241,7 +246,7 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
         x="date",
         y="deaths_report_date",
         source=ds,
-        line_width=2,
+        line_width=1.5,
         line_color="#666666",
         line_dash="dashed",
         legend_label="Deaths (date of report, rolling avg)",
@@ -251,10 +256,20 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
         x="date",
         y="excess_deaths",
         source=ds,
-        line_width=2,
+        line_width=1.5,
         line_color=LINE_COLOUR[1],
         legend_label="Excess deaths (weekly, smoothed)",
         name="Excess deaths",
+    )
+
+    fig.line(
+        x="date",
+        y="recorded_deaths",
+        source=ds,
+        line_width=1.5,
+        line_color="#DEB53A",
+        legend_label="Recorded deaths (weekly, smoothed)",
+        name="Recorded deaths",
     )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
