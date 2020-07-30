@@ -201,12 +201,12 @@ def england_deaths(phe_deaths, excess_deaths, uk_cases):
     data["excess_deaths"] = excess_deaths["deaths"]
     data["excess_deaths"] = (
         data["excess_deaths"].interpolate_na("date", method="akima") / 7
-    )
+    ).shift(date=-4)
 
     data["recorded_deaths"] = excess_deaths["covid_deaths"]
     data["recorded_deaths"] = (
         data["recorded_deaths"].interpolate_na("date", method="akima") / 7
-    )
+    ).shift(date=-4)
 
     ds = xr_to_cds(data)
 
