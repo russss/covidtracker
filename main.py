@@ -79,9 +79,10 @@ ccg_lookup = (
     pd.read_csv("./data/ccg_region.csv").drop_duplicates("CCG20CD").set_index("CCG20CD")
 )
 
-populations = pd.read_csv("./data/region_populations.csv", thousands=",").set_index(
-    "Code"
-)["All ages"]
+populations = pd.read_csv("./data/region_populations.csv", thousands=",")
+populations = populations[populations['Code'].str.len() == 9]
+populations = populations.rename(columns={"Code": "gss_code"}).set_index('gss_code')['All ages'].to_xarray()
+
 scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
     "gss code"
 )
@@ -90,17 +91,12 @@ scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set
 uk_cases = coviddata.uk.cases_phe("countries")
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
-eng_by_gss = eng_by_gss.merge(
-    normalise_population(eng_by_gss["cases"], populations, "cases_norm")
-)
+eng_by_gss = eng_by_gss.merge((eng_by_gss["cases"] / populations).rename('cases_norm'))
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
-wales_cases = coviddata.uk.wales.cases()
 wales_by_gss = coviddata.uk.wales.cases("gss_code")
-wales_by_gss = wales_by_gss.merge(
-    normalise_population(wales_by_gss["cases"], populations, "cases_norm")
-)
+wales_by_gss = wales_by_gss.merge((wales_by_gss["cases"] / populations).rename("cases_norm"))
 
 provisional_days = 5
 
@@ -137,15 +133,6 @@ nhs_region_cases["cases_rolling_provisional"] = (
     .dropna("date")
 )
 
-uk_cases_combined = xr.concat(
-    [
-        uk_cases.sel(location="England")["cases"],
-        scot_data.sel(gss_code="S92000003").assign_coords(location="Scotland")["cases"],
-        wales_cases.sum("location").assign_coords(location="Wales")["cases"],
-    ],
-    "location",
-)
-
 hospital_admissions = coviddata.uk.hospitalisations_phe()
 hospital_admissions["admissions_rolling"] = (
     hospital_admissions["admissions"]
@@ -166,7 +153,7 @@ phe_deaths = coviddata.uk.deaths_phe()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": uk_cases_graph(uk_cases_combined, uk_cases),
+        "confirmed_cases": uk_cases_graph(uk_cases['cases']),
         "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),

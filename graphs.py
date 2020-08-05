@@ -13,6 +13,8 @@ from bokeh.models import (
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2
 
+from util import dict_to_xr
+
 BAR_COLOUR = "#D5DFED"
 LINE_COLOUR = ["#3D6CB3", "#B33D43"]
 
@@ -26,6 +28,13 @@ nhs_region_pops = {
     "South East": 8852361,
     "South West": 5605997,
 }
+
+nation_populations = dict_to_xr({
+    'England': 56287000,
+    'Wales': 3152900,
+    'Scotland': 5463300,
+    'Northern Ireland': 1893700
+}, 'location')
 
 england_interventions = [
     (date(2020, 3, 23), "Lockdown", "#CC5450"),
@@ -119,52 +128,36 @@ def stack_datasource(source, series):
     return ColumnDataSource(data)
 
 
-def uk_cases_graph(uk_cases_national, uk_cases):
-    # provisional_days = 4
-    bar_width = 8640 * 10e3 * 0.8
+def uk_cases_graph(cases):
+    fig = figure(title="New cases by nation")
 
-    fig = figure(title="New cases")
-
-    uk_cases_national = uk_cases_national.ffill("date").diff("date")
-
-    uk_cases = (
-        uk_cases.ffill("date")
-        .sum("location")
-        .diff("date")
-        .rolling(date=7, center=True)
-        .mean()
-    )["cases"]
+    uk_cases_national = cases.ffill("date").diff("date").rolling(date=7, center=True).mean()
+    uk_cases_national = uk_cases_national / nation_populations * 100000 * 7
 
     layers = ["England", "Scotland", "Wales"]
-    colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B"}
-
-    cases_ds = stack_datasource(uk_cases_national, layers)
+    colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B", "Northern Ireland": "#E0C795"}
 
     lower = 0
     for layer in layers:
         label = layer
-        fig.vbar(
-            source=cases_ds,
-            x="date",
-            bottom=lower,
-            top=layer,
-            width=bar_width,
-            line_width=0,
-            fill_color=colours[layer],
-            fill_alpha=0.4,
+        fig.line(
+            x=uk_cases_national['date'].values[:-5],
+            y=uk_cases_national.sel(location=layer).values[:-5],
+            line_width=2,
+            line_color=colours[layer],
             legend_label=label,
         )
-        lower = layer
+        fig.line(
+            x=uk_cases_national['date'].values[-6:],
+            y=uk_cases_national.sel(location=layer).values[-6:],
+            line_width=2,
+            line_alpha=0.4,
+            line_color=colours[layer],
+            legend_label=label,
+        )
 
-    # fig.line(
-    #    x=uk_cases["date"].values,
-    #    y=uk_cases.values,
-    #    line_color=LINE_COLOUR[0],
-    #    line_width=2,
-    #    legend_label="UK (rolling avg)",
-    # )
-
-    fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
+    fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
+    fig.yaxis.axis_label = "Weekly cases per 100,000"
     return fig
 
 
