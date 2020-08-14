@@ -706,7 +706,8 @@
       "type": "line",
       "filter": ["any",
 	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "W"],
-	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "E"]
+	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "E"],
+	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "S"]
       ],
       "source": "areas",
       "source-layer": "local_authorities",
@@ -715,19 +716,6 @@
         "line-color": "rgba(100, 100, 100, 1)",
         "line-blur": 1.5,
         "line-opacity": {"base": 1.4, "stops": [[5, 0], [11, 1]]},
-        "line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
-      }
-    },
-    {
-      "id": "shb_boundary",
-      "type": "line",
-      "source": "areas",
-      "source-layer": "scottish_health_boards",
-      "minzoom": 6,
-      "paint": {
-        "line-color": "rgba(100, 100, 100, 1)",
-        "line-blur": 2,
-        "line-opacity": {"base": 1.4, "stops": [[5, 0], [10, 1]]},
         "line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
       }
     },

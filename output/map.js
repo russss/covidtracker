@@ -247,10 +247,11 @@ function initMap(data) {
       {
         id: 'scot_cases',
         type: 'fill',
+        filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'S'],
         source: 'areas',
-        'source-layer': 'scottish_health_boards',
+        'source-layer': 'local_authorities',
         paint: {
-          'fill-color': styleExpression(data.scotland, 'HBCode'),
+          'fill-color': styleExpression(data.scotland, 'lad19cd'),
           'fill-opacity': 0.7,
         },
       },
@@ -270,7 +271,7 @@ function initMap(data) {
     map.on(
       'click',
       'scot_cases',
-      popupRenderer(map, data.scotland, 'HBName', 'HBCode'),
+      popupRenderer(map, data.scotland, 'lad19nm', 'lad19cd'),
     );
 
     for (const layer of ['england_cases', 'scot_cases', 'wales_cases']) {

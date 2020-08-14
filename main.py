@@ -80,8 +80,12 @@ ccg_lookup = (
 )
 
 populations = pd.read_csv("./data/region_populations.csv", thousands=",")
-populations = populations[populations['Code'].str.len() == 9]
-populations = populations.rename(columns={"Code": "gss_code"}).set_index('gss_code')['All ages'].to_xarray()
+populations = populations[populations["Code"].str.len() == 9]
+populations = (
+    populations.rename(columns={"Code": "gss_code"})
+    .set_index("gss_code")["All ages"]
+    .to_xarray()
+)
 
 scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set_index(
     "gss code"
@@ -91,12 +95,14 @@ scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set
 uk_cases = coviddata.uk.cases_phe("countries")
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
-eng_by_gss = eng_by_gss.merge((eng_by_gss["cases"] / populations).rename('cases_norm'))
+eng_by_gss = eng_by_gss.merge((eng_by_gss["cases"] / populations).rename("cases_norm"))
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
 wales_by_gss = coviddata.uk.wales.cases("gss_code")
-wales_by_gss = wales_by_gss.merge((wales_by_gss["cases"] / populations).rename("cases_norm"))
+wales_by_gss = wales_by_gss.merge(
+    (wales_by_gss["cases"] / populations).rename("cases_norm")
+)
 
 provisional_days = 5
 
@@ -153,8 +159,8 @@ triage_pathways = pathways_triage_by_nhs_region()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": uk_cases_graph(uk_cases['cases']),
-#        "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
+        "confirmed_cases": uk_cases_graph(uk_cases["cases"]),
+        #        "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage"),
@@ -204,17 +210,12 @@ render_template(
     ],
 )
 
-
-scot_data = scot_data.drop_sel(gss_code="S92000003")
-scot_data = scot_data.merge(
-    normalise_population(
-        scot_data["cases"], scot_populations["population"], "cases_norm"
-    )
-)
+scot_by_gss = coviddata.uk.scotland.cases_by_la()
+scot_by_gss["cases_norm"] = scot_by_gss["cases"] / populations
 
 render_template(
     "map.html",
-    data=json.dumps(map_data(eng_by_gss, wales_by_gss, scot_data, provisional_days,)),
+    data=json.dumps(map_data(eng_by_gss, wales_by_gss, scot_by_gss, provisional_days,)),
     sources=[
         (
             "Public Health England",
@@ -223,10 +224,10 @@ render_template(
             uk_cases.attrs["date"],
         ),
         (
-            scot_data.attrs["source"],
-            "Coronavirus - COVID-19 - Management Information",
-            scot_data.attrs["source_url"],
-            scot_data.attrs["date"],
+            scot_by_gss.attrs["source"],
+            "Daily Case Trends By Council Area",
+            scot_by_gss.attrs["source_url"],
+            scot_by_gss.attrs["date"],
         ),
         (
             wales_by_gss.attrs["source"],
