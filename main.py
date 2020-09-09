@@ -181,13 +181,13 @@ render_template(
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
         ),
-        (
-            "ONS",
-            "Deaths registered weekly in England and Wales, provisional",
-            "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
-            "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
-            date(2020, 7, 28),
-        ),
+#        (
+#            "ONS",
+#            "Deaths registered weekly in England and Wales, provisional",
+#            "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
+#            "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
+#            date(2020, 7, 28),
+#        ),
         (
             "NHS",
             "Potential COVID-19 symptoms reported through NHS Pathways and 111 online",
