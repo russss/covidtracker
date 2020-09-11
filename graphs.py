@@ -49,7 +49,19 @@ def region_hover_tool():
     return HoverTool(
         tooltips=[
             ("Region", "$name"),
-            ("Value per 100,000", "$y{0.00}"),
+            ("Cases per 100,000", "$y{0.00}"),
+            ("Date", "$x{%d %b}"),
+        ],
+        formatters={"$x": "datetime"},
+        toggleable=False,
+    )
+
+
+def country_hover_tool():
+    return HoverTool(
+        tooltips=[
+            ("Country", "$name"),
+            ("Cases per 100,000", "$y{0.00}"),
             ("Date", "$x{%d %b}"),
         ],
         formatters={"$x": "datetime"},
@@ -130,30 +142,33 @@ def stack_datasource(source, series):
 
 def uk_cases_graph(cases):
     fig = figure(title="New cases by nation")
+    fig.add_tools(country_hover_tool())
 
     uk_cases_national = cases.ffill("date").diff("date").rolling(date=7, center=True).mean()
     uk_cases_national = uk_cases_national / nation_populations * 100000 * 7
 
-    layers = ["England", "Scotland", "Wales"]
+    layers = ["England", "Scotland", "Wales", "Northern Ireland"]
     colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B", "Northern Ireland": "#E0C795"}
 
     lower = 0
     for layer in layers:
         label = layer
         fig.line(
-            x=uk_cases_national['date'].values[:-5],
-            y=uk_cases_national.sel(location=layer).values[:-5],
+            x=uk_cases_national['date'].values[:-7],
+            y=uk_cases_national.sel(location=layer).values[:-7],
             line_width=2,
             line_color=colours[layer],
             legend_label=label,
+            name=layer
         )
         fig.line(
-            x=uk_cases_national['date'].values[-6:],
-            y=uk_cases_national.sel(location=layer).values[-6:],
+            x=uk_cases_national['date'].values[-8:],
+            y=uk_cases_national.sel(location=layer).values[-8:],
             line_width=2,
             line_alpha=0.4,
             line_color=colours[layer],
             legend_label=label,
+            name=layer
         )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
