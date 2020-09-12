@@ -15,6 +15,8 @@ from graphs import (
     triage_graph,
     la_rate_plot,
     hospital_admissions_graph,
+    uk_test_positivity,
+    uk_test_capacity,
 )
 from template import render_template
 from map import map_data
@@ -181,13 +183,13 @@ render_template(
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
         ),
-#        (
-#            "ONS",
-#            "Deaths registered weekly in England and Wales, provisional",
-#            "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
-#            "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
-#            date(2020, 7, 28),
-#        ),
+        #        (
+        #            "ONS",
+        #            "Deaths registered weekly in England and Wales, provisional",
+        #            "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
+        #            "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
+        #            date(2020, 7, 28),
+        #        ),
         (
             "NHS",
             "Potential COVID-19 symptoms reported through NHS Pathways and 111 online",
@@ -209,6 +211,36 @@ render_template(
         ),
     ],
 )
+
+testing = coviddata.uk.tests_phe()
+
+cases_by_publish_date = coviddata.uk.cases_phe(by="overview", basis="report")
+uk_cases_pub_date = cases_by_publish_date.sel(location="United Kingdom").diff("date")[
+    "cases"
+]
+uk_cases_pub_date = uk_cases_pub_date.where(uk_cases_pub_date > 0)
+positivity = uk_cases_pub_date / (
+    testing["newPillarOneTestsByPublishDate"]
+    + testing["newPillarTwoTestsByPublishDate"]
+)
+
+
+render_template(
+    "testing.html",
+    graphs={
+        "positivity": uk_test_positivity(positivity),
+        "test_capacity": uk_test_capacity(testing),
+    },
+    sources=[
+        (
+            testing.attrs["source"],
+            "Coronavirus (COVID-19) in the UK",
+            testing.attrs["source_url"],
+            testing.attrs["date"],
+        )
+    ],
+)
+
 
 scot_by_gss = coviddata.uk.scotland.cases_by_la()
 scot_by_gss["cases_norm"] = scot_by_gss["cases"] / populations

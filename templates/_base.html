@@ -18,6 +18,7 @@
     <h1>UK COVID-19 Tracker</h1>
     <ul>
       <li><a href="index.html">Stats</a></li>
+      <li><a href="testing.html">Testing</a></li>
       <li><a href="map.html">Hotspot Map</a></li>
     </ul>
   </header>
@@ -27,8 +28,8 @@
     <p>Made by <a href="https://russ.garrett.co.uk">Russ Garrett</a> (<a href="https://twitter.com/russss">@russss</a>), code <a href="https://github.com/russss/covidtracker">on Github</a>. Page updated on {{generated}}.</p>
   </div>
   {% if graphs|length > 2 %}
-  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.0.2.min.js"></script>
-  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.0.2.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.2.1.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.2.1.min.js"></script>
   <script>
     const graphs = {{graphs|safe}};
     window.onload = (ev) => {

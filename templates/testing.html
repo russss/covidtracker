@@ -1,0 +1,19 @@
+{% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
+{% block title %}Testing Capacity - UK COVID Tracker{% endblock %}
+{% block description %}Stats on COVID-19 testing capacity in the UK.{% endblock %}
+
+{% block body %}
+  <div id="body" class="graphs-body">
+    {% include "_width_warning.html" %}
+    <p>This page shows more detail on the testing system in the UK, focusing on antigen swab
+        tests &nbsp; "pillars" 1 and 2 in the government's terminology.
+        urther graphs on testing are <a href="https://coronavirus.data.gov.uk/testing">available on coronavirus.data.gov.uk</a>.</p>
+    <p>This plot shows the "test positivity" &mdash; how many tests were positive, based on the date the results were reported:</p>
+    <div id="positivity" class="graph"></div>
+    <p>This plot shows the percentage of available testing capacity which was being used:</p>
+    <div id="test_capacity" class="graph"></div>
+    <h2>Sources</h2>
+    {{sources_table(sources)}}
+  </div>
+{% endblock %}

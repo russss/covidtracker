@@ -68,7 +68,7 @@ header ul li {
 
   #mobile-warning {
     display: block;
-    width: 100%;
+    width: 80vw;
   }
 
   #body > p, #body > h2 {
@@ -82,7 +82,7 @@ header ul li {
   }
 
   header h1 {
-    font-size: 18px;
+    font-size: 14px;
   }
 }
 

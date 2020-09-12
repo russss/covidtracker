@@ -14,12 +14,7 @@
 {%- endmacro %}
 {% block body %}
   <div id="body" class="graphs-body">
-    <div id="mobile-warning" class="warning">
-      <p>
-      Unfortunately due to the way the graphs on this page are generated, they don't look great on smaller screens.
-      You may have better luck rotating your device to a landscape orientation.
-      </p>
-    </div>
+    {% include "_width_warning.html" %}
     <p>This is a collection of what I consider to be the most useful COVID-19 data for the UK. It is updated
         from the latest source data every 30 minutes.</p>
     <p>The majority of the data here is for England at the moment. The other nations of the UK compile their

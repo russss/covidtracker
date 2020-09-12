@@ -1,4 +1,5 @@
 import numpy as np
+import xarray as xr
 from itertools import cycle
 from datetime import date, timedelta
 from bokeh.plotting import figure as bokeh_figure
@@ -29,12 +30,15 @@ nhs_region_pops = {
     "South West": 5605997,
 }
 
-nation_populations = dict_to_xr({
-    'England': 56287000,
-    'Wales': 3152900,
-    'Scotland': 5463300,
-    'Northern Ireland': 1893700
-}, 'location')
+nation_populations = dict_to_xr(
+    {
+        "England": 56287000,
+        "Wales": 3152900,
+        "Scotland": 5463300,
+        "Northern Ireland": 1893700,
+    },
+    "location",
+)
 
 england_interventions = [
     (date(2020, 3, 23), "Lockdown", "#CC5450"),
@@ -144,31 +148,38 @@ def uk_cases_graph(cases):
     fig = figure(title="New cases by nation")
     fig.add_tools(country_hover_tool())
 
-    uk_cases_national = cases.ffill("date").diff("date").rolling(date=7, center=True).mean()
+    uk_cases_national = (
+        cases.ffill("date").diff("date").rolling(date=7, center=True).mean()
+    )
     uk_cases_national = uk_cases_national / nation_populations * 100000 * 7
 
     layers = ["England", "Scotland", "Wales", "Northern Ireland"]
-    colours = {"England": "#E6A6A1", "Scotland": "#A1A3E6", "Wales": "#A6C78B", "Northern Ireland": "#E0C795"}
+    colours = {
+        "England": "#E6A6A1",
+        "Scotland": "#A1A3E6",
+        "Wales": "#A6C78B",
+        "Northern Ireland": "#E0C795",
+    }
 
     lower = 0
     for layer in layers:
         label = layer
         fig.line(
-            x=uk_cases_national['date'].values[:-7],
+            x=uk_cases_national["date"].values[:-7],
             y=uk_cases_national.sel(location=layer).values[:-7],
             line_width=2,
             line_color=colours[layer],
             legend_label=label,
-            name=layer
+            name=layer,
         )
         fig.line(
-            x=uk_cases_national['date'].values[-8:],
+            x=uk_cases_national["date"].values[-8:],
             y=uk_cases_national.sel(location=layer).values[-8:],
             line_width=2,
             line_alpha=0.4,
             line_color=colours[layer],
             legend_label=label,
-            name=layer
+            name=layer,
         )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
@@ -471,4 +482,81 @@ def la_rate_plot(data, names, region, rolling_days=7):
     fig.yaxis.major_tick_line_color = None
     fig.add_layout(DatetimeAxis(), "above")
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
+    return fig
+
+
+def uk_test_positivity(positivity):
+    fig = figure(title="Test positivity")
+
+    fig.add_tools(
+        HoverTool(
+            tooltips=[("Positivity", "$y{0.0%}"), ("Date", "$x{%d %b}"),],
+            formatters={"$x": "datetime"},
+            toggleable=False,
+        )
+    )
+
+    fig.line(
+        x=positivity["date"].values, y=positivity.values, line_width=2,
+    )
+
+    fig.yaxis.formatter = NumeralTickFormatter(format="0%")
+    fig.xaxis.axis_label = "Date of report"
+    return fig
+
+
+def uk_test_capacity(testing):
+    fig = figure(title="Testing capacity")
+
+    fig.add_tools(
+        HoverTool(
+            tooltips=[("Pillar 1", "@p1{0.0%}"),
+                      ("Pillar 2", "@p2{0.0%}"),
+                      ("Date", "$x{%d %b}"),],
+            formatters={"$x": "datetime"},
+            toggleable=False,
+        )
+    )
+
+    colours = cycle(Dark2[4])
+
+    ds = xr_to_cds(
+        xr.merge(
+            [
+                {
+                    "p1": testing["newPillarOneTestsByPublishDate"]
+                    / testing["capacityPillarOne"]
+                },
+                {
+                    "p2": testing["newPillarTwoTestsByPublishDate"]
+                    / testing["capacityPillarTwo"]
+                },
+            ]
+        )
+    )
+
+    fig.line(
+        source=ds,
+        x="date",
+        y="p1",
+        line_width=2,
+        color=next(colours),
+        legend_label="Pillar 1",
+        name="Pillar 1",
+    )
+
+    fig.line(
+        source=ds,
+        x="date",
+        y="p2",
+        line_width=2,
+        color=next(colours),
+        legend_label="Pillar 2",
+        name="Pillar 2",
+    )
+
+    fig.yaxis.formatter = NumeralTickFormatter(format="0%")
+    fig.legend.location = "top_left"
+    fig.yaxis.axis_label = "Capacity used"
+    fig.xaxis.axis_label = "Date of report"
     return fig
