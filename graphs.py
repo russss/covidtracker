@@ -323,7 +323,7 @@ def regional_cases(regions):
             line_alpha=0.4,
         )
 
-    fig.legend.location = "top_right"
+    fig.legend.location = "top_center"
     fig.yaxis.axis_label = "Weekly cases per 100,000"
     return fig
 
