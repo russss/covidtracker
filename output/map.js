@@ -121,6 +121,10 @@ function popupRenderer(map, data, name_field, gss_field) {
       '<tr><th>Prevalence</th><td>' +
       (item['prevalence'] * 100000).toFixed(2) +
       ' per 100,000</td></tr>';
+    html +=
+      '<tr><th>Weekly change</th><td>' +
+      (item['change'] * 100).toFixed(0) +
+      '%</td></tr>';
     html += '</table>';
 
     let div = window.document.createElement('div');
@@ -151,15 +155,6 @@ class LegendControl {
     this._map = map;
     this._container = document.createElement('div');
     this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl colour-key';
-
-    /*
-    let title = document.createElement("h3");
-    title.innerHTML = "Key";
-    this._container.appendChild(title);
-    let p = document.createElement("p");
-    p.innerHTML = "cases per 100,000";
-    this._container.appendChild(p);
-    */
 
     for (const element of colour_ramp) {
       let div = document.createElement('div');
@@ -213,75 +208,30 @@ function initMap(data) {
 
     map.addLayer(
       {
-        id: 'england_cases',
+        id: 'cases',
         type: 'fill',
-        // Filter to restrict to English LAs only
-        filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'E'],
         source: 'areas',
         'source-layer': 'local_authorities',
         paint: {
-          'fill-color': styleExpression(data.england, 'lad19cd'),
+          'fill-color': styleExpression(data, 'lad19cd'),
           'fill-opacity': opacity_func,
         },
       },
       'la_boundary',
     );
 
-    map.addLayer(
-      {
-        id: 'wales_cases',
-        type: 'fill',
-        // Filter to restrict to Welsh LAs only
-        filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'W'],
-        source: 'areas',
-        'source-layer': 'local_authorities',
-        paint: {
-          'fill-color': styleExpression(data.wales, 'lad19cd'),
-          'fill-opacity': 0.7,
-        },
-      },
-      'la_boundary',
-    );
-
-    map.addLayer(
-      {
-        id: 'scot_cases',
-        type: 'fill',
-        filter: ['==', ['slice', ['get', 'lad19cd'], 0, 1], 'S'],
-        source: 'areas',
-        'source-layer': 'local_authorities',
-        paint: {
-          'fill-color': styleExpression(data.scotland, 'lad19cd'),
-          'fill-opacity': 0.7,
-        },
-      },
-      'la_boundary',
-    );
-
     map.on(
       'click',
-      'england_cases',
-      popupRenderer(map, data.england, 'lad19nm', 'lad19cd'),
-    );
-    map.on(
-      'click',
-      'wales_cases',
-      popupRenderer(map, data.wales, 'lad19nm', 'lad19cd'),
-    );
-    map.on(
-      'click',
-      'scot_cases',
-      popupRenderer(map, data.scotland, 'lad19nm', 'lad19cd'),
+      'cases',
+      popupRenderer(map, data, 'lad19nm', 'lad19cd'),
     );
 
-    for (const layer of ['england_cases', 'scot_cases', 'wales_cases']) {
-      map.on('mouseenter', layer, function() {
-        map.getCanvas().style.cursor = 'pointer';
-      });
+    map.on('mouseenter', 'cases', function() {
+      map.getCanvas().style.cursor = 'pointer';
+    });
 
-      map.on('mouseleave', layer, function() {
-        map.getCanvas().style.cursor = '';
-      });
-    }
+    map.on('mouseleave', 'cases', function() {
+      map.getCanvas().style.cursor = '';
+    });
   });
 }

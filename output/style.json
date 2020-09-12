@@ -704,11 +704,6 @@
     {
       "id": "la_boundary",
       "type": "line",
-      "filter": ["any",
-	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "W"],
-	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "E"],
-	      ["==", ["slice", ["get", "lad19cd"], 0, 1], "S"]
-      ],
       "source": "areas",
       "source-layer": "local_authorities",
       "minzoom": 6,

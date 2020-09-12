@@ -97,14 +97,9 @@ scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set
 uk_cases = coviddata.uk.cases_phe("countries")
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
-eng_by_gss = eng_by_gss.merge((eng_by_gss["cases"] / populations).rename("cases_norm"))
+eng_by_gss["cases_norm"] = eng_by_gss["cases"] / populations
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
-
-wales_by_gss = coviddata.uk.wales.cases("gss_code")
-wales_by_gss = wales_by_gss.merge(
-    (wales_by_gss["cases"] / populations).rename("cases_norm")
-)
 
 provisional_days = 5
 
@@ -203,12 +198,6 @@ render_template(
             scot_data.attrs["source_url"],
             scot_data.attrs["date"],
         ),
-        (
-            wales_by_gss.attrs["source"],
-            "Rapid COVID-19 Surveillance",
-            wales_by_gss.attrs["source_url"],
-            wales_by_gss.attrs["date"],
-        ),
     ],
 )
 
@@ -242,30 +231,15 @@ render_template(
 )
 
 
-scot_by_gss = coviddata.uk.scotland.cases_by_la()
-scot_by_gss["cases_norm"] = scot_by_gss["cases"] / populations
-
 render_template(
     "map.html",
-    data=json.dumps(map_data(eng_by_gss, wales_by_gss, scot_by_gss, provisional_days,)),
+    data=json.dumps(map_data(eng_by_gss, provisional_days)),
     sources=[
         (
             "Public Health England",
             "Coronavirus (COVID-19) in the UK",
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
-        ),
-        (
-            scot_by_gss.attrs["source"],
-            "Daily Case Trends By Council Area",
-            scot_by_gss.attrs["source_url"],
-            scot_by_gss.attrs["date"],
-        ),
-        (
-            wales_by_gss.attrs["source"],
-            "Rapid COVID-19 Surveillance",
-            wales_by_gss.attrs["source_url"],
-            wales_by_gss.attrs["date"],
         ),
     ],
 )
