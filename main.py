@@ -25,10 +25,10 @@ from corrections import correct_scottish_data, cases_by_nhs_region
 from normalise import normalise_population
 
 
-la_region_mapping = pd.read_csv(
+la_region = pd.read_csv(
     "https://raw.githubusercontent.com/russss/local_authority_nhs_region"
     "/master/local_authority_nhs_region.csv",
-    index_col=["la_name"],
+    index_col=["la_gss"],
 )
 
 
@@ -116,7 +116,7 @@ nhs_deaths["deaths_rolling_provisional"] = (
     nhs_deaths["deaths"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
 )
 
-nhs_region_cases = cases_by_nhs_region(la_region_mapping)
+nhs_region_cases = cases_by_nhs_region(eng_by_gss, la_region)
 
 nhs_region_cases["cases_rolling"] = (
     nhs_region_cases["cases"][:, :-provisional_days]
@@ -250,8 +250,6 @@ def slugify(string):
 
 
 heat_plots = {}
-
-la_region = la_region_mapping.reset_index().set_index("la_gss")
 
 for region in la_region["nhs_name"].unique():
     las = la_region[la_region["nhs_name"] == region]

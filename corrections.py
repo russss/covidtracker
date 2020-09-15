@@ -4,9 +4,9 @@ from datetime import date, timedelta
 
 
 def correct_scottish_data(scot_data):
-    """ Scotland started adding the UK "pillar 2" tests to their figures on
-        2020-6-15. This causes a discontinuity. Spread the discontinuity over
-        the preceding 50 days. This is awful code but I can't work out how to do it better.
+    """Scotland started adding the UK "pillar 2" tests to their figures on
+    2020-6-15. This causes a discontinuity. Spread the discontinuity over
+    the preceding 50 days. This is awful code but I can't work out how to do it better.
     """
     spread_days = 50
     end = date(2020, 6, 15)
@@ -26,19 +26,22 @@ def correct_scottish_data(scot_data):
     return scot_data
 
 
-def cases_by_nhs_region(la_region_mapping):
-    regions = coviddata.uk.cases_phe("ltlas").ffill("date")
+def cases_by_nhs_region(data, la_region_mapping):
     nhs_regions = []
-    for a in regions["location"]:
+    for a in data["gss_code"]:
         name = str(a.data)
-        if name == "Cornwall and Isles of Scilly":
-            name = "Cornwall"
-        if name == "Hackney and City of London":
-            name = "Hackney"
-        try:
+        if name[0] == "E":
             nhs_regions.append(la_region_mapping["nhs_name"][name])
-        except KeyError:
-            nhs_regions.append('Not England')
+        elif name[0] == "W":
+            nhs_regions.append("Wales")
+        elif name[0] == "S":
+            nhs_regions.append("Scotland")
+        elif name[0] == "N":
+            nhs_regions.append("Northern Ireland")
 
-    res = regions.assign_coords({"location": nhs_regions})
-    return res.groupby("location").sum().drop_sel(location='Not England')
+    res = data.assign_coords({"gss_code": nhs_regions}).rename({'gss_code': 'location'})
+    return (
+        res.ffill("date").groupby("location")
+        .sum()
+        .drop_sel(location=["Wales", "Scotland", "Northern Ireland"])
+    )
