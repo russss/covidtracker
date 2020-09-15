@@ -15,20 +15,19 @@ def map_data(data, provisional_days):
         cases_norm = ser["cases_norm"].values[-1]
 
         change = (
-            ser["cases_norm"].values[-1]
-            / max(ser["cases_norm"].values[-8], 0.01/100000)
-        ) - 1
+            ser["cases_norm"].values[-1] - ser["cases_norm"].values[-8]
+        )
 
         if provisional_days is not None:
             cases = max(cases, ser["cases"].values[-provisional_days],)
             cases_norm = max(cases_norm, ser["cases_norm"].values[-provisional_days],)
-            change = max(change, ser["cases_norm"].values[-provisional_days] / 
-                         max(ser["cases_norm"].values[-(provisional_days+7)], 0.01/100000)) - 1
+            change = max(change, ser["cases_norm"].values[-provisional_days] - 
+                         ser["cases_norm"].values[-(provisional_days+7)])
 
         history = data.sel(gss_code=gss_code)["cases"].values[-history_days:]
         result[gss_code] = {
             "prevalence": cases_norm,
-            "change": round(change, 4),
+            "change": change,
             "cases": int(cases),
             "history": list(map(int, history)),
             "provisional_days": provisional_days,

@@ -4,11 +4,11 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "url": "https://tiles.russss.dev/services/osm"
+      "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=bdZZXIstoaveJs5lpEBC"
     },
     "areas": {
       "type": "vector",
-      "url": "https://tiles.russss.dev/services/uk-covid-regions"
+      "url": "https://api.maptiler.com/tiles/9161f823-c95c-4c2c-97b9-d44001c7d2ac/tiles.json?key=j2n3DQ0JbnQ3hn5tgeBm"
     },
     "nhs_england_region_label": {
       "type": "geojson",

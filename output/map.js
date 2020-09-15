@@ -1,20 +1,21 @@
 const colour_ramp = [
-  [100, "#b30000"],
-  [75, "#e34a33"],
-  [50, "#fc8d59"],
-  [25, "#fdbb84"],
-  [10, "#fdd49e"],
-  [0.01, "#fef0d9"],
-  [0, "#ececec"]
+  [100, 100, "#b30000"],
+  [75, 75, "#e34a33"],
+  [50, 50, "#fc8d59"],
+  [25, 25, "#fdbb84"],
+  [10, 10, "#fdd49e"],
+  [0.01, 0.01, "#fef0d9"],
+  [0, 0, "#ececec"]
 ];
 
 const change_colour_ramp = [
-  [2.5, "#c51b7d"],
-  [1, "#e9a3c9"],
-  [0, "#fde0ef"],
-  [-0.25, "#e6f5d0"],
-  [-0.5, "#a1d76a"],
-  [-1, "#4d9221"]
+  ["> 15", 15, "#c51b7d"],
+  ["> 10", 10, "#e9a3c9"],
+  ["> 2", 2, "#fde0ef"],
+  ["0", -2, "#EDEDED"],
+  ["< -2", -10, "#e6f5d0"],
+  ["< -10", -15, "#a1d76a"],
+  ["< -15", -20, "#4d9221"]
 ];
 
 function makeGraph(width, height, data, provisional_days) {
@@ -72,11 +73,11 @@ function makeGraph(width, height, data, provisional_days) {
 
 function getColour(ramp, value) {
   for (const element of ramp) {
-    if (value >= element[0]) {
-      return element[1];
+    if (value >= element[1]) {
+      return element[2];
     }
   }
-  return null;
+  return ramp[ramp.length - 1][2];
 }
 
 function styleExpression(data, propname) {
@@ -102,7 +103,7 @@ function diffStyleExpression(data, propname) {
   var expression = ["match", ["get", propname]];
 
   for (const gss_id in data) {
-    const change = data[gss_id].change;
+    const change = (data[gss_id].change * 100000).toFixed(2);
     var colour = getColour(change_colour_ramp, change);
 
     expression.push(gss_id, colour);
@@ -151,9 +152,9 @@ function popupRenderer(map, data, name_field, gss_field) {
       (item["prevalence"] * 100000).toFixed(2) +
       " per 100,000</td></tr>";
     html +=
-      "<tr><th>Weekly increase</th><td>" +
-      (item["change"] * 100).toFixed(0) +
-      "%</td></tr>";
+      "<tr><th>Weekly change</th><td>" +
+      (item["change"] * 100000).toFixed(2) +
+      " per 100,000</td></tr>";
     html += "</table>";
 
     let div = window.document.createElement("div");
@@ -189,19 +190,15 @@ class LegendControl {
     return this._container;
   }
 
-  setColours(ramp, percent) {
+  setColours(ramp) {
     let container = document.createElement("div");
 
     for (const element of ramp) {
       let div = document.createElement("div");
       div.className = "colour-key-cell";
-      if (percent) {
-        div.innerHTML = (element[0] * 100) + "%";
-      } else {
-        div.innerHTML = element[0];
-      }
-      div.style.backgroundColor = element[1];
-      if (element[0] > 50 || (percent && Math.abs(element[0]) >= 1)) {
+      div.innerHTML = element[0];
+      div.style.backgroundColor = element[2];
+      if (element[1] > 50) {
         div.style.color = "#f0f0f0";
       }
       container.appendChild(div);
@@ -242,7 +239,7 @@ class SwitchControl {
 
   setState(state) {
     if (state == 'rate') {
-      this._button.innerHTML = '%';
+      this._button.innerHTML = '↕';
       this._map.setLayoutProperty("cases_rel", "visibility", "none");
       this._map.setLayoutProperty("cases_abs", "visibility", "visible");
       this._legend.setColours(colour_ramp);
@@ -250,7 +247,7 @@ class SwitchControl {
       this._button.innerHTML = '↕';
       this._map.setLayoutProperty("cases_abs", "visibility", "none");
       this._map.setLayoutProperty("cases_rel", "visibility", "visible");
-      this._legend.setColours(change_colour_ramp, true);
+      this._legend.setColours(change_colour_ramp);
     }
     this._state = state;
   }
