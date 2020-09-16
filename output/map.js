@@ -225,7 +225,7 @@ class SwitchControl {
 
     this._button = document.createElement("button");
     this._state = 'rate';
-    this._button.innerHTML = '%';
+    this._button.innerHTML = '↕';
     this._button.onclick = (e) => {
       if (this._state == 'rate') {
         this.setState('change');
@@ -239,12 +239,10 @@ class SwitchControl {
 
   setState(state) {
     if (state == 'rate') {
-      this._button.innerHTML = '↕';
       this._map.setLayoutProperty("cases_rel", "visibility", "none");
       this._map.setLayoutProperty("cases_abs", "visibility", "visible");
       this._legend.setColours(colour_ramp);
     } else {
-      this._button.innerHTML = '↕';
       this._map.setLayoutProperty("cases_abs", "visibility", "none");
       this._map.setLayoutProperty("cases_rel", "visibility", "visible");
       this._legend.setColours(change_colour_ramp);
