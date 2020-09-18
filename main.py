@@ -3,7 +3,9 @@ import socket
 import logging
 import pandas as pd
 import xarray as xr
+import dns.resolver
 from datetime import date
+from urllib3.util import connection
 import coviddata.uk
 import coviddata.uk.scotland
 import coviddata.uk.wales
@@ -32,6 +34,23 @@ log = logging.getLogger(__name__)
 
 log.info("Generating pages...")
 log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
+resolver = dns.resolver.Resolver(configure=False)
+resolver.nameservers = ['8.8.8.8']
+log.info("via custom resolver: %s", resolver.resolve('api.coronavirus.data.gov.uk')[0].to_text())
+
+def monkeypatch_connection(resolver):
+    from urllib3.util import connection
+    _orig_create_connection = connection.create_connection
+
+    def patched_create_connection(address, *args, **kwargs):
+        host, port = address
+        hostname = resolver.resolve(host)[0].to_text()
+        return _orig_create_connection((hostname, port), *args, **kwargs)
+
+    connection.create_connection = patched_create_connection
+
+monkeypatch_connection(resolver)
+
 
 la_region = pd.read_csv(
     "https://raw.githubusercontent.com/russss/local_authority_nhs_region"
