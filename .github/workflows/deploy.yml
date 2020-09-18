@@ -21,11 +21,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.7' 
-      - name: Build
+      - name: Install Dependencies
         run: |
           pip install -r ./requirements.txt
+      - name: Build
+        run: |
           python ./main.py
-
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
