@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 log.info("Generating pages...")
 log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
 resolver = dns.resolver.Resolver(configure=False)
-resolver.nameservers = ['8.8.8.8']
+resolver.nameservers = ['1.1.1.1']
 log.info("via custom resolver: %s", resolver.resolve('api.coronavirus.data.gov.uk')[0].to_text())
 
 def monkeypatch_connection(resolver):
