@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 log.info("Generating pages...")
 log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
 resolver = dns.resolver.Resolver(configure=False)
-resolver.nameservers = ['https://1.1.1.1/dns-query']
+resolver.nameservers = ['https://dns.google/dns-query']
 
 api_ip = resolver.resolve('api.coronavirus.data.gov.uk')[0].to_text()
 log.info("via custom resolver: %s", api_ip)
