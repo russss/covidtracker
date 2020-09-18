@@ -1,4 +1,5 @@
 import json
+import socket
 import logging
 import pandas as pd
 import xarray as xr
@@ -26,10 +27,11 @@ from corrections import correct_scottish_data, cases_by_nhs_region
 from normalise import normalise_population
 
 logging.basicConfig(level=logging.DEBUG)
-#logging.getLogger("urllib3").setLevel(logging.INFO)
+logging.getLogger("urllib3").setLevel(logging.INFO)
 log = logging.getLogger(__name__)
 
 log.info("Generating pages...")
+log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
 
 la_region = pd.read_csv(
     "https://raw.githubusercontent.com/russss/local_authority_nhs_region"
