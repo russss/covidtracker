@@ -82,8 +82,7 @@
       }
     }
   },
-  "sprite": "https://openmaptiles.github.io/positron-gl-style/sprite",
-  "glyphs": "https://glfonts.lukasmartinelli.ch/fonts/{fontstack}/{range}.pbf",
+  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=j2n3DQ0JbnQ3hn5tgeBm",
   "layers": [
     {
       "id": "background",
