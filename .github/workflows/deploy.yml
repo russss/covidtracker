@@ -31,8 +31,6 @@ jobs:
           sudo systemctl restart systemd-resolved
           sudo systemd-resolve --status
           pip install -r ./requirements.txt
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Build
         run: |
           python ./main.py

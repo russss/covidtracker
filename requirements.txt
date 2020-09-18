@@ -7,3 +7,4 @@ xlrd==1.2.0
 scipy==1.4.1
 git+https://github.com/russss/coviddata#egg=coviddata
 dnspython==2.0.0
+requests-toolbelt==0.9.1
