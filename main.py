@@ -35,21 +35,26 @@ log = logging.getLogger(__name__)
 log.info("Generating pages...")
 log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
 resolver = dns.resolver.Resolver(configure=False)
-resolver.nameservers = ['1.1.1.1']
-log.info("via custom resolver: %s", resolver.resolve('api.coronavirus.data.gov.uk')[0].to_text())
+resolver.nameservers = ['https://1.1.1.1/dns-query']
 
-def monkeypatch_connection(resolver):
+api_ip = resolver.resolve('api.coronavirus.data.gov.uk')[0].to_text()
+log.info("via custom resolver: %s", api_ip)
+
+def monkeypatch_connection(api_ip):
     from urllib3.util import connection
     _orig_create_connection = connection.create_connection
 
     def patched_create_connection(address, *args, **kwargs):
         host, port = address
-        hostname = resolver.resolve(host)[0].to_text()
+        if host == 'api.coronavirus.data.gov.uk':
+            hostname = api_ip
+        else:
+            hostname = socket.gethostbyname(host)
         return _orig_create_connection((hostname, port), *args, **kwargs)
 
     connection.create_connection = patched_create_connection
 
-monkeypatch_connection(resolver)
+monkeypatch_connection(api_ip)
 
 
 la_region = pd.read_csv(
