@@ -23,13 +23,6 @@ jobs:
           python-version: '3.7' 
       - name: Install Dependencies
         run: |
-          cat /etc/systemd/resolved.conf
-          sudo sed -i 's/#DNS=/DNS=8.8.8.8 8.8.4.4/g' /etc/systemd/resolved.conf
-          cat /etc/systemd/resolved.conf
-          sudo systemctl daemon-reload
-          sudo systemctl restart systemd-networkd
-          sudo systemctl restart systemd-resolved
-          sudo systemd-resolve --status
           pip install -r ./requirements.txt
       - name: Build
         run: |
