@@ -73,9 +73,6 @@ def online_triage_by_nhs_region():
         .sum()
     )
 
-    triage["count_rolling_14"] = (
-        triage["count"].fillna(0).rolling(date=14, center=True).mean().dropna("date")
-    )
     triage["count_rolling_7"] = (
         triage["count"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
     )
@@ -97,9 +94,6 @@ def pathways_triage_by_nhs_region():
         .rename(ccg="region")
     )
 
-    triage["count_rolling_14"] = (
-        triage["count"].fillna(0).rolling(date=14, center=True).mean().dropna("date")
-    )
     triage["count_rolling_7"] = (
         triage["count"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
     )
@@ -180,7 +174,7 @@ excess_deaths = pd.read_csv(
 triage_online = online_triage_by_nhs_region()
 triage_pathways = pathways_triage_by_nhs_region()
 
-# phe_deaths = coviddata.uk.deaths_phe()
+#phe_deaths = coviddata.uk.deaths_phe()
 
 render_template(
     "index.html",
