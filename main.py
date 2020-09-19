@@ -34,10 +34,7 @@ log = logging.getLogger(__name__)
 
 log.info("Generating pages...")
 log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
-resolver = dns.resolver.Resolver(configure=False)
-resolver.nameservers = ['https://dns.google/dns-query']
-
-api_ip = resolver.resolve('api.coronavirus.data.gov.uk')[0].to_text()
+api_ip = '51.104.243.27'
 log.info("via custom resolver: %s", api_ip)
 
 def monkeypatch_connection(api_ip):
