@@ -21,6 +21,7 @@ from graphs import (
     hospital_admissions_graph,
     uk_test_positivity,
     uk_test_capacity,
+    age_heatmap
 )
 from template import render_template
 from map import map_data
@@ -176,6 +177,8 @@ triage_pathways = pathways_triage_by_nhs_region()
 
 #phe_deaths = coviddata.uk.deaths_phe()
 
+age_rate = coviddata.uk.case_rate_by_age()
+
 render_template(
     "index.html",
     graphs={
@@ -186,6 +189,7 @@ render_template(
         "triage_online": triage_graph(triage_online, "Online triage"),
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
+        "age_heatmap": age_heatmap(age_rate)
     },
     scores=calculate_score(
         nhs_deaths,
@@ -200,6 +204,12 @@ render_template(
             "Coronavirus (COVID-19) in the UK",
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
+        ),
+        (
+            "Public Health England",
+            "National COVID-19 surveillance report",
+            "https://www.gov.uk/government/publications/national-covid-19-surveillance-reports",
+            f"Week {age_rate.index.max() + 1}",
         ),
         #        (
         #            "ONS",

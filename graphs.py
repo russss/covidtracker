@@ -1,7 +1,9 @@
 import numpy as np
+import pandas as pd
 import xarray as xr
+import colorcet
 from itertools import cycle
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from bokeh.plotting import figure as bokeh_figure
 from bokeh.models import (
     NumeralTickFormatter,
@@ -11,8 +13,9 @@ from bokeh.models import (
     Legend,
     DatetimeAxis,
 )
+from bokeh.transform import log_cmap, linear_cmap
 from bokeh.models.tools import HoverTool
-from bokeh.palettes import Dark2
+from bokeh.palettes import Dark2, Inferno
 
 from util import dict_to_xr
 
@@ -485,6 +488,50 @@ def la_rate_plot(data, names, region, rolling_days=7):
     return fig
 
 
+def age_heatmap(age_rate):
+    age_rate = age_rate.copy()
+#    age_rate.index = [datetime.combine(date.fromisocalendar(2020, week, 7), datetime.min.time()) for week in age_rate.index]
+    age_rate.index.name = "Week Ending"
+    age_rate.columns.name = "Age"
+    fig = bokeh_figure(
+        width=1200,
+        height=300,
+        title="Infection rate in England by age",
+        tools="",
+        toolbar_location=None,
+        x_range=[age_rate.index[0], age_rate.index[-1]],
+        y_range=list(age_rate.columns),
+    )
+
+    fig.add_tools(HoverTool(
+        tooltips=[
+            ("Week", "@{Week Ending}"),
+            ("Age range", "@Age"),
+            ("Cases", "@rate{0.00} per 100,000"),
+        ],
+        toggleable=False,
+    ))
+
+
+    df = pd.DataFrame(age_rate.stack(), columns=["rate"]).reset_index()
+    ds = ColumnDataSource(df)
+
+    fig.rect(
+        "Week Ending",
+        "Age",
+        dilate=True,
+        width=1.001,
+        height=1.001,
+        source=ds,
+        line_color=None,
+        fill_color=linear_cmap('rate', palette=colorcet.kbc, low=1, high=180),
+    )
+
+    fig.xaxis.axis_label = "Week number"
+
+    return fig
+
+
 def uk_test_positivity(positivity):
     fig = figure(title="Test positivity")
 
@@ -510,9 +557,11 @@ def uk_test_capacity(testing):
 
     fig.add_tools(
         HoverTool(
-            tooltips=[("Pillar 1", "@p1{0.0%}"),
-                      ("Pillar 2", "@p2{0.0%}"),
-                      ("Date", "$x{%d %b}"),],
+            tooltips=[
+                ("Pillar 1", "@p1{0.0%}"),
+                ("Pillar 2", "@p2{0.0%}"),
+                ("Date", "$x{%d %b}"),
+            ],
             formatters={"$x": "datetime"},
             toggleable=False,
         )
