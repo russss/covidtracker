@@ -147,14 +147,11 @@ def stack_datasource(source, series):
     return ColumnDataSource(data)
 
 
-def uk_cases_graph(cases):
+def uk_cases_graph(uk_cases):
     fig = figure(title="New cases by nation")
     fig.add_tools(country_hover_tool())
 
-    uk_cases_national = (
-        cases.ffill("date").diff("date").rolling(date=7, center=True).mean()
-    )
-    uk_cases_national = uk_cases_national / nation_populations * 100000 * 7
+    uk_cases_national = uk_cases / nation_populations * 100000 * 7
 
     layers = ["England", "Scotland", "Wales", "Northern Ireland"]
     colours = {
@@ -168,16 +165,16 @@ def uk_cases_graph(cases):
     for layer in layers:
         label = layer
         fig.line(
-            x=uk_cases_national["date"].values[:-7],
-            y=uk_cases_national.sel(location=layer).values[:-7],
+            x=uk_cases_national["date"].values,
+            y=uk_cases_national.sel(location=layer)['cases_rolling'].values,
             line_width=2,
             line_color=colours[layer],
             legend_label=label,
             name=layer,
         )
         fig.line(
-            x=uk_cases_national["date"].values[-8:],
-            y=uk_cases_national.sel(location=layer).values[-8:],
+            x=uk_cases_national["date"].values,
+            y=uk_cases_national.sel(location=layer)['cases_rolling_provisional'].values,
             line_width=2,
             line_alpha=0.4,
             line_color=colours[layer],

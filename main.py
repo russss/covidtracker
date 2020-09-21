@@ -117,24 +117,38 @@ scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set
     "gss code"
 )
 
+provisional_days = 7
 
 uk_cases = coviddata.uk.cases_phe("countries")
+
+uk_cases["cases_rolling"] = (
+    uk_cases["cases"][:-provisional_days]
+    .diff("date")
+    .rolling(date=7, center=True)
+    .mean()
+    .dropna('date')
+)
+
+uk_cases["cases_rolling_provisional"] = (
+    uk_cases["cases"]
+    .diff("date")
+    .rolling(date=7, center=True)
+    .mean()
+    .dropna('date')
+)
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
 eng_by_gss["cases_norm"] = eng_by_gss["cases"] / populations
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
-provisional_days = 5
 
 nhs_deaths = coviddata.uk.deaths_nhs()
 nhs_deaths["deaths_rolling"] = (
     nhs_deaths["deaths"][:-provisional_days]
-    .fillna(0)
     .rolling(date=7, center=True)
     .mean()
     .dropna("date")
-    .fillna(0)
 )
 nhs_deaths["deaths_rolling_provisional"] = (
     nhs_deaths["deaths"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
@@ -144,7 +158,6 @@ nhs_region_cases = cases_by_nhs_region(eng_by_gss, la_region)
 
 nhs_region_cases["cases_rolling"] = (
     nhs_region_cases["cases"][:, :-provisional_days]
-    .fillna(0)
     .diff("date")
     .rolling(date=7, center=True)
     .mean()
@@ -153,7 +166,6 @@ nhs_region_cases["cases_rolling"] = (
 
 nhs_region_cases["cases_rolling_provisional"] = (
     nhs_region_cases["cases"]
-    .fillna(0)
     .diff("date")
     .rolling(date=7, center=True)
     .mean()
@@ -182,7 +194,7 @@ age_rate = coviddata.uk.case_rate_by_age()
 render_template(
     "index.html",
     graphs={
-        "confirmed_cases": uk_cases_graph(uk_cases["cases"]),
+        "confirmed_cases": uk_cases_graph(uk_cases),
         #        "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
