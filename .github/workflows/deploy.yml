@@ -30,6 +30,8 @@ jobs:
       - name: Build
         run: |
           python ./main.py
+        env:
+          PYTHONUNBUFFERED: 1
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
