@@ -43,12 +43,17 @@ nation_populations = dict_to_xr(
     "location",
 )
 
+LOCKDOWN_COLOUR = "#CC5050"
+RELEASE_COLOUR = "#50CCA5"
+
 england_interventions = [
-    (date(2020, 3, 23), "Lockdown", "#CC5450"),
-    (date(2020, 5, 10), "Stay Alert", "#50CCA5"),
-    (date(2020, 6, 1), "Schools Open", "#50CCA5"),
-    (date(2020, 6, 15), "Non-essential shops open", "#50CCA5"),
-    (date(2020, 7, 4), "1m plus distancing, pubs open", "#50CCA5"),
+    (date(2020, 3, 23), "Lockdown", LOCKDOWN_COLOUR),
+    (date(2020, 5, 10), "Stay Alert", RELEASE_COLOUR),
+    (date(2020, 6, 1), "Schools Open", RELEASE_COLOUR),
+    (date(2020, 6, 15), "Non-essential shops open", RELEASE_COLOUR),
+    (date(2020, 7, 4), "1m plus distancing, pubs open", RELEASE_COLOUR),
+    (date(2020, 9, 9), "Rule of six", LOCKDOWN_COLOUR),
+    (date(2020, 9, 24), "10pm pub closing", LOCKDOWN_COLOUR),
 ]
 
 
@@ -82,6 +87,7 @@ def intervention(fig, date, label, colour="red"):
         dimension="height",
         line_color=colour,
         line_width=1,
+        line_alpha=0.5,
         line_dash="dashed",
     )
     fig.add_layout(span)
