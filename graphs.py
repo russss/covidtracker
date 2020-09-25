@@ -114,14 +114,15 @@ def add_interventions(fig):
 
 
 def figure(**kwargs):
+    if 'x_range' not in kwargs:
+        kwargs['x_range'] = (
+            np.datetime64(date(2020, 3, 1)),
+            np.datetime64(date.today() + timedelta(days=1)),
+        )
     fig = bokeh_figure(
         width=1200,
         height=500,
         toolbar_location="right",
-        x_range=(
-            np.datetime64(date(2020, 3, 1)),
-            np.datetime64(date.today() + timedelta(days=1)),
-        ),
         sizing_mode="scale_width",
         tools="reset,box_zoom",
         **kwargs
@@ -605,4 +606,26 @@ def uk_test_capacity(testing):
     fig.legend.location = "top_left"
     fig.yaxis.axis_label = "Capacity used"
     fig.xaxis.axis_label = "Date of report"
+    return fig
+
+
+def app_keys(data):
+    counts = data.groupby(data.export_date.dt.date).size()
+    fig = figure(title="Exposure notification keys", x_range=(
+            np.datetime64(date(2020, 9, 10)),
+            np.datetime64(date.today() + timedelta(days=1)),
+    ))
+    fig.vbar(x=counts.index, top=counts, width=60*60*24 * 1000 * 0.9)
+    fig.xaxis.axis_label = 'Day of export'
+    return fig
+
+
+def risky_venues(risky_venues):
+    counts = risky_venues.groupby(risky_venues.export_date.dt.date).size()
+    fig = figure(title="Risky venues", x_range=(
+            np.datetime64(date(2020, 9, 10)),
+            np.datetime64(date.today() + timedelta(days=1)),
+    ))
+    fig.vbar(x=counts.index, top=counts, width=60*60*24 * 1000 * 0.9)
+    fig.xaxis.axis_label = 'Day of export'
     return fig

@@ -1,0 +1,20 @@
+{% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
+{% block title %}NHS App Data - UK COVID Tracker{% endblock %}
+{% block description %}Stats on the NHS COVID-19 App.{% endblock %}
+
+{% block body %}
+  <div id="body" class="graphs-body">
+    {% include "_width_warning.html" %}
+    <p>This page provides some statistics on the <a href="https://covid19.nhs.uk/">NHS COVID-19 App</a>, which have been
+        collected from the public API.</p>
+    <p>This graph shows the number of exposure notification keys which have been announced as broadcast by people who
+        were infected. Note that this is not the same as the number of people infected.</p>
+    <div id="app_keys" class="graph"></div>
+    <p>The app also fetches a list of "risky venues" to compare with its list of QR code checkins. This graph shows the
+        number of risky venues by date of announcement:</p>
+    <div id="risky_venues" class="graph"></div>
+    <h2>Sources</h2>
+    {{sources_table(sources)}}
+  </div>
+{% endblock %}

@@ -21,36 +21,45 @@ from graphs import (
     hospital_admissions_graph,
     uk_test_positivity,
     uk_test_capacity,
-    age_heatmap
+    age_heatmap,
+    risky_venues,
+    app_keys,
 )
 from template import render_template
 from map import map_data
 from score import calculate_score
 from corrections import correct_scottish_data, cases_by_nhs_region
 from normalise import normalise_population
+from nhs_app import NHSAppData
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 log = logging.getLogger(__name__)
 
 log.info("Generating pages...")
-log.info("api.coronavirus.data.gov.uk resolves to: %s", socket.gethostbyname('api.coronavirus.data.gov.uk'))
-api_ip = '51.104.243.27'
+log.info(
+    "api.coronavirus.data.gov.uk resolves to: %s",
+    socket.gethostbyname("api.coronavirus.data.gov.uk"),
+)
+api_ip = "51.104.243.27"
 log.info("via custom resolver: %s", api_ip)
+
 
 def monkeypatch_connection(api_ip):
     from urllib3.util import connection
+
     _orig_create_connection = connection.create_connection
 
     def patched_create_connection(address, *args, **kwargs):
         host, port = address
-        if host == 'api.coronavirus.data.gov.uk':
+        if host == "api.coronavirus.data.gov.uk":
             hostname = api_ip
         else:
             hostname = socket.gethostbyname(host)
         return _orig_create_connection((hostname, port), *args, **kwargs)
 
     connection.create_connection = patched_create_connection
+
 
 monkeypatch_connection(api_ip)
 
@@ -126,15 +135,11 @@ uk_cases["cases_rolling"] = (
     .diff("date")
     .rolling(date=7, center=True)
     .mean()
-    .dropna('date')
+    .dropna("date")
 )
 
 uk_cases["cases_rolling_provisional"] = (
-    uk_cases["cases"]
-    .diff("date")
-    .rolling(date=7, center=True)
-    .mean()
-    .dropna('date')
+    uk_cases["cases"].diff("date").rolling(date=7, center=True).mean().dropna("date")
 )
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
@@ -187,7 +192,7 @@ excess_deaths = pd.read_csv(
 triage_online = online_triage_by_nhs_region()
 triage_pathways = pathways_triage_by_nhs_region()
 
-#phe_deaths = coviddata.uk.deaths_phe()
+# phe_deaths = coviddata.uk.deaths_phe()
 
 age_rate = coviddata.uk.case_rate_by_age()
 
@@ -201,7 +206,7 @@ render_template(
         "triage_online": triage_graph(triage_online, "Online triage"),
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
-        "age_heatmap": age_heatmap(age_rate)
+        "age_heatmap": age_heatmap(age_rate),
     },
     scores=calculate_score(
         nhs_deaths,
@@ -307,3 +312,21 @@ for region in la_region["nhs_name"].unique():
 
 
 render_template("areas.html", graphs=heat_plots)
+
+
+app_data = NHSAppData()
+render_template(
+    "app.html",
+    graphs={
+        "risky_venues": risky_venues(app_data.risky_venues()),
+        "app_keys": app_keys(app_data.exposures()),
+    },
+    sources=[
+        (
+            "Russ Garrett",
+            "NHS COVID-19 App Data",
+            "https://github.com/russss/nhs-covid19-app-data",
+            date.today(),
+        )
+    ],
+)
