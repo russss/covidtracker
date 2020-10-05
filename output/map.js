@@ -1,4 +1,5 @@
 const colour_ramp = [
+  [250, 250, "#4f0000"],
   [100, 100, "#b30000"],
   [75, 75, "#e34a33"],
   [50, 50, "#fc8d59"],
@@ -9,13 +10,13 @@ const colour_ramp = [
 ];
 
 const change_colour_ramp = [
-  ["> 15", 15, "#c51b7d"],
+  ["> 25", 25, "#c51b7d"],
   ["> 10", 10, "#e9a3c9"],
   ["> 2", 2, "#fde0ef"],
   ["0", -2, "#EDEDED"],
   ["< -2", -10, "#e6f5d0"],
-  ["< -10", -15, "#a1d76a"],
-  ["< -15", -20, "#4d9221"]
+  ["< -10", -20, "#a1d76a"],
+  ["< -25", -30, "#4d9221"]
 ];
 
 function makeGraph(width, height, data, provisional_days) {

@@ -168,7 +168,6 @@ def uk_cases_graph(uk_cases):
         "Northern Ireland": "#E0C795",
     }
 
-    lower = 0
     for layer in layers:
         label = layer
         fig.line(
@@ -191,6 +190,7 @@ def uk_cases_graph(uk_cases):
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
     fig.yaxis.axis_label = "Weekly cases per 100,000"
+    fig.legend.location = "top_left"
     return fig
 
 
