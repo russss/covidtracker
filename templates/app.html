@@ -7,10 +7,14 @@
   <div id="body" class="graphs-body">
     {% include "_width_warning.html" %}
     <p>This page provides some statistics on the <a href="https://covid19.nhs.uk/">NHS COVID-19 App</a>, which have been
-        collected from the public API.</p>
-    <p>This graph shows the number of exposure notification keys which have been announced as broadcast by people who
-        were infected. Note that this is not the same as the number of people infected.</p>
+        collected from the API used by the app, which is publicly accessible.</p>
+    <p>This graph shows the number of Temporary Exposure Keys which have been announced as broadcast by people who
+    were infected. Note that this is not the same as the number of people infected, as these keys are rotated
+    daily.</p>
     <div id="app_keys" class="graph"></div>
+    <p>This graph shows the same keys, but by the date they were broadcast by the app. It also breaks these down by the
+        "transmission risk level", which is used as part of the risk scoring algorthm.</p>
+    <div id="app_keys_risk" class="graph"></div>
     <p>The app also fetches a list of "risky venues" to compare with its list of QR code checkins. This graph shows the
         number of risky venues by date of announcement:</p>
     <div id="risky_venues" class="graph"></div>

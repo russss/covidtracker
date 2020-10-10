@@ -1,6 +1,7 @@
 import json
 import socket
 import logging
+import requests
 import pandas as pd
 import xarray as xr
 import dns.resolver
@@ -313,13 +314,14 @@ for region in la_region["nhs_name"].unique():
 
 render_template("areas.html", graphs=heat_plots)
 
-
 app_data = NHSAppData()
+exposures = app_data.exposures()
 render_template(
     "app.html",
     graphs={
         "risky_venues": risky_venues(app_data.risky_venues()),
-        "app_keys": app_keys(app_data.exposures()),
+        "app_keys": app_keys(exposures),
+        "app_keys_risk": app_keys(exposures, by="interval")
     },
     sources=[
         (

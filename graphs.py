@@ -3,7 +3,7 @@ import pandas as pd
 import xarray as xr
 import colorcet
 from itertools import cycle
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from bokeh.plotting import figure as bokeh_figure
 from bokeh.models import (
     NumeralTickFormatter,
@@ -13,9 +13,9 @@ from bokeh.models import (
     Legend,
     DatetimeAxis,
 )
-from bokeh.transform import log_cmap, linear_cmap
+from bokeh.transform import linear_cmap
 from bokeh.models.tools import HoverTool
-from bokeh.palettes import Dark2, Inferno
+from bokeh.palettes import Dark2, YlOrRd
 
 from util import dict_to_xr
 
@@ -120,8 +120,8 @@ def add_interventions(fig):
 
 
 def figure(**kwargs):
-    if 'x_range' not in kwargs:
-        kwargs['x_range'] = (
+    if "x_range" not in kwargs:
+        kwargs["x_range"] = (
             np.datetime64(date(2020, 3, 1)),
             np.datetime64(date.today() + timedelta(days=1)),
         )
@@ -172,7 +172,7 @@ def uk_cases_graph(uk_cases):
         label = layer
         fig.line(
             x=uk_cases_national["date"].values,
-            y=uk_cases_national.sel(location=layer)['cases_rolling'].values,
+            y=uk_cases_national.sel(location=layer)["cases_rolling"].values,
             line_width=2,
             line_color=colours[layer],
             legend_label=label,
@@ -180,7 +180,7 @@ def uk_cases_graph(uk_cases):
         )
         fig.line(
             x=uk_cases_national["date"].values,
-            y=uk_cases_national.sel(location=layer)['cases_rolling_provisional'].values,
+            y=uk_cases_national.sel(location=layer)["cases_rolling_provisional"].values,
             line_width=2,
             line_alpha=0.4,
             line_color=colours[layer],
@@ -494,7 +494,7 @@ def la_rate_plot(data, names, region, rolling_days=7):
 
 def age_heatmap(age_rate):
     age_rate = age_rate.copy()
-#    age_rate.index = [datetime.combine(date.fromisocalendar(2020, week, 7), datetime.min.time()) for week in age_rate.index]
+    #    age_rate.index = [datetime.combine(date.fromisocalendar(2020, week, 7), datetime.min.time()) for week in age_rate.index]
     age_rate.index.name = "Week Ending"
     age_rate.columns.name = "Age"
     fig = bokeh_figure(
@@ -507,15 +507,16 @@ def age_heatmap(age_rate):
         y_range=list(age_rate.columns),
     )
 
-    fig.add_tools(HoverTool(
-        tooltips=[
-            ("Week", "@{Week Ending}"),
-            ("Age range", "@Age"),
-            ("Cases", "@rate{0.00} per 100,000"),
-        ],
-        toggleable=False,
-    ))
-
+    fig.add_tools(
+        HoverTool(
+            tooltips=[
+                ("Week", "@{Week Ending}"),
+                ("Age range", "@Age"),
+                ("Cases", "@rate{0.00} per 100,000"),
+            ],
+            toggleable=False,
+        )
+    )
 
     df = pd.DataFrame(age_rate.stack(), columns=["rate"]).reset_index()
     ds = ColumnDataSource(df)
@@ -528,7 +529,7 @@ def age_heatmap(age_rate):
         height=1.001,
         source=ds,
         line_color=None,
-        fill_color=linear_cmap('rate', palette=colorcet.kbc, low=1, high=180),
+        fill_color=linear_cmap("rate", palette=colorcet.kbc, low=1, high=180),
     )
 
     fig.xaxis.axis_label = "Week number"
@@ -541,14 +542,19 @@ def uk_test_positivity(positivity):
 
     fig.add_tools(
         HoverTool(
-            tooltips=[("Positivity", "$y{0.0%}"), ("Date", "$x{%d %b}"),],
+            tooltips=[
+                ("Positivity", "$y{0.0%}"),
+                ("Date", "$x{%d %b}"),
+            ],
             formatters={"$x": "datetime"},
             toggleable=False,
         )
     )
 
     fig.line(
-        x=positivity["date"].values, y=positivity.values, line_width=2,
+        x=positivity["date"].values,
+        y=positivity.values,
+        line_width=2,
     )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0%")
@@ -615,23 +621,60 @@ def uk_test_capacity(testing):
     return fig
 
 
-def app_keys(data):
-    counts = data.groupby(data.export_date.dt.date).size()
-    fig = figure(title="Exposure notification keys", x_range=(
+def app_keys(data, by="export"):
+    if by == "export":
+        title = "Exposure keys by date of publication"
+        counts = data.groupby(data.export_date.dt.date).size()
+    elif by == "interval":
+        title = "Exposure keys by date of broadcast and risk level"
+        counts = (
+            pd.DataFrame(
+                data.groupby(
+                    [data.interval_start.dt.date, data.transmission_risk_level]
+                ).size()
+            )
+            .reset_index()
+            .set_index("interval_start")
+            .pivot(columns="transmission_risk_level")
+        )
+        counts.columns = [str(i[1]) for i in counts.columns.to_flat_index()]
+    fig = figure(
+        title=title,
+        x_range=(
             np.datetime64(date(2020, 9, 10)),
             np.datetime64(date.today() + timedelta(days=1)),
-    ))
-    fig.vbar(x=counts.index, top=counts, width=60*60*24 * 1000 * 0.9)
-    fig.xaxis.axis_label = 'Day of export'
+        ),
+    )
+    width = 60 * 60 * 24 * 1000 * 0.9
+    if by == "export":
+        fig.vbar(x=counts.index, top=counts, width=width)
+        fig.xaxis.axis_label = "Day of export"
+    elif by == "interval":
+        columns = list(counts.columns)
+        fig.vbar_stack(
+            columns,
+            x="interval_start",
+            width=width,
+            source=counts,
+            fill_color=list(reversed(YlOrRd[7])),
+            line_width=0,
+            legend_label=columns,
+        )
+        fig.xaxis.axis_label = "Day of broadcast"
+        fig.legend.title = "Risk level"
+        fig.legend.location = "top_left"
     return fig
 
 
 def risky_venues(risky_venues):
     counts = risky_venues.groupby(risky_venues.export_date.dt.date).size()
-    fig = figure(title="Risky venues", x_range=(
+    fig = figure(
+        title="Risky venues",
+        x_range=(
             np.datetime64(date(2020, 9, 10)),
             np.datetime64(date.today() + timedelta(days=1)),
-    ))
-    fig.vbar(x=counts.index, top=counts, width=60*60*24 * 1000 * 0.9)
-    fig.xaxis.axis_label = 'Day of export'
+        ),
+    )
+    fig.vbar(x=counts.index, top=counts, width=60 * 60 * 24 * 1000 * 0.9)
+    fig.xaxis.axis_label = "Day of export"
     return fig
