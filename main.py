@@ -38,12 +38,6 @@ logging.getLogger("urllib3").setLevel(logging.INFO)
 log = logging.getLogger(__name__)
 
 log.info("Generating pages...")
-log.info(
-    "api.coronavirus.data.gov.uk resolves to: %s",
-    socket.gethostbyname("api.coronavirus.data.gov.uk"),
-)
-api_ip = "51.104.243.27"
-log.info("via custom resolver: %s", api_ip)
 
 
 def monkeypatch_connection(api_ip):
@@ -62,7 +56,7 @@ def monkeypatch_connection(api_ip):
     connection.create_connection = patched_create_connection
 
 
-monkeypatch_connection(api_ip)
+#monkeypatch_connection(api_ip)
 
 
 la_region = pd.read_csv(
