@@ -52,7 +52,7 @@ england_interventions = [
     (date(2020, 6, 1), "Schools Open", RELEASE_COLOUR),
     (date(2020, 6, 15), "Non-essential shops open", RELEASE_COLOUR),
     (date(2020, 7, 4), "1m plus distancing, pubs open", RELEASE_COLOUR),
-    (date(2020, 9, 9), "Rule of six", LOCKDOWN_COLOUR),
+    (date(2020, 9, 14), "Rule of six", LOCKDOWN_COLOUR),
     (date(2020, 9, 24), "10pm pub closing", LOCKDOWN_COLOUR),
 ]
 
