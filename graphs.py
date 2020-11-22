@@ -560,7 +560,7 @@ def age_heatmap(age_rate):
         line_color=None,
         fill_color=linear_cmap("rate", palette=colorcet.kbc, low=1, high=500),
     )
-
+    fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.grid.grid_line_color = None
     return fig
 
