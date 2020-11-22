@@ -13,7 +13,7 @@ from bokeh.models import (
     Legend,
     DatetimeAxis,
 )
-from bokeh.transform import linear_cmap
+from bokeh.transform import linear_cmap, log_cmap
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2, YlOrRd
 
@@ -494,47 +494,74 @@ def la_rate_plot(data, names, region, rolling_days=7):
 
 
 def age_heatmap(age_rate):
-    age_rate = age_rate.copy()
-    #    age_rate.index = [datetime.combine(date.fromisocalendar(2020, week, 7), datetime.min.time()) for week in age_rate.index]
-    age_rate.index.name = "Week Ending"
+    age_rate = age_rate["rate"].to_dataframe().unstack()
+    age_rate.columns = age_rate.columns.get_level_values(1)
+    # Have to manually reindex columns here as somewhere along the line "5-9"
+    # gets lexicographically sorted out of order...
+    age_rate = age_rate.reindex(
+        columns=[
+            "0-4",
+            "5-9",
+            "10-14",
+            "15-19",
+            "20-24",
+            "25-29",
+            "30-34",
+            "35-39",
+            "40-44",
+            "45-49",
+            "50-54",
+            "55-59",
+            "60-64",
+            "65-69",
+            "70-74",
+            "75-79",
+            "80-84",
+            "85-89",
+            "90+",
+        ]
+    )
+    age_rate.index.name = "Date"
     age_rate.columns.name = "Age"
     fig = bokeh_figure(
         width=1200,
-        height=300,
-        title="Infection rate in England by age",
+        height=400,
+        title="Case rate in England by age",
         tools="",
         toolbar_location=None,
-        x_range=[age_rate.index[0], age_rate.index[-1]],
+        x_range=[
+            age_rate.index.min(),
+            age_rate.index.max(),
+        ],
         y_range=list(age_rate.columns),
     )
 
     fig.add_tools(
         HoverTool(
             tooltips=[
-                ("Week", "@{Week Ending}"),
+                ("Date", "@Date{%d %b}"),
                 ("Age range", "@Age"),
                 ("Cases", "@rate{0.00} per 100,000"),
             ],
+            formatters={"@Date": "datetime"},
             toggleable=False,
         )
     )
 
     df = pd.DataFrame(age_rate.stack(), columns=["rate"]).reset_index()
-    ds = ColumnDataSource(df)
 
     fig.rect(
-        "Week Ending",
+        "Date",
         "Age",
         dilate=True,
-        width=1.001,
-        height=1.001,
-        source=ds,
+        width=60 * 60 * 24 * 1000 * 1.1,
+        height=1.01,
+        source=df,
         line_color=None,
-        fill_color=linear_cmap("rate", palette=colorcet.kbc, low=1, high=180),
+        fill_color=linear_cmap("rate", palette=colorcet.kbc, low=1, high=500),
     )
 
-    fig.xaxis.axis_label = "Week number"
-
+    fig.grid.grid_line_color = None
     return fig
 
 

@@ -1,12 +1,8 @@
 import json
 import socket
 import logging
-import requests
 import pandas as pd
-import xarray as xr
-import dns.resolver
 from datetime import date
-from urllib3.util import connection
 import coviddata.uk
 import coviddata.uk.scotland
 import coviddata.uk.wales
@@ -14,7 +10,7 @@ import coviddata.world
 
 from graphs import (
     uk_cases_graph,
-    england_deaths,
+    #   england_deaths,
     regional_cases,
     regional_deaths,
     triage_graph,
@@ -30,7 +26,6 @@ from template import render_template
 from map import map_data
 from score import calculate_score
 from corrections import correct_scottish_data, cases_by_nhs_region
-from normalise import normalise_population
 from nhs_app import NHSAppData
 
 logging.basicConfig(level=logging.DEBUG)
@@ -56,7 +51,8 @@ def monkeypatch_connection(api_ip):
     connection.create_connection = patched_create_connection
 
 
-#monkeypatch_connection(api_ip)
+api_ip = socket.gethostbyname("Edge-Prod-LON21r3.ctrl.t-0001.t-msedge.net")
+# monkeypatch_connection(api_ip)
 
 
 la_region = pd.read_csv(
@@ -189,7 +185,19 @@ triage_pathways = pathways_triage_by_nhs_region()
 
 # phe_deaths = coviddata.uk.deaths_phe()
 
-age_rate = coviddata.uk.case_rate_by_age()
+age_rate = coviddata.uk.cases_by_age()
+england_by_age = (
+    age_rate.sum("gss_code")
+    .drop_sel(age="unassigned")
+    .rolling(date=7, center=True)
+    .sum()
+)
+age_populations = (
+    pd.read_csv("./data/england_population_by_age.csv").set_index("age").to_xarray()
+)
+england_by_age["rate"] = (
+    england_by_age["cases"] / age_populations["population"] * 100000
+)
 
 render_template(
     "index.html",
@@ -201,7 +209,7 @@ render_template(
         "triage_online": triage_graph(triage_online, "Online triage"),
         "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
-        "age_heatmap": age_heatmap(age_rate),
+        "age_heatmap": age_heatmap(england_by_age),
     },
     scores=calculate_score(
         nhs_deaths,
@@ -216,12 +224,6 @@ render_template(
             "Coronavirus (COVID-19) in the UK",
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
-        ),
-        (
-            "Public Health England",
-            "National COVID-19 surveillance report",
-            "https://www.gov.uk/government/publications/national-covid-19-surveillance-reports",
-            f"Week {age_rate.index.max() + 1}",
         ),
         #        (
         #            "ONS",
@@ -315,7 +317,7 @@ render_template(
     graphs={
         "risky_venues": risky_venues(app_data.risky_venues()),
         "app_keys": app_keys(exposures),
-        "app_keys_risk": app_keys(exposures, by="interval")
+        "app_keys_risk": app_keys(exposures, by="interval"),
     },
     sources=[
         (
