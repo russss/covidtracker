@@ -55,6 +55,7 @@ england_interventions = [
     (date(2020, 9, 14), "Rule of six", LOCKDOWN_COLOUR),
     (date(2020, 9, 24), "10pm pub closing", LOCKDOWN_COLOUR),
     (date(2020, 11, 5), "Lockdown #2", LOCKDOWN_COLOUR),
+    (date(2020, 12, 2), "Tier system", RELEASE_COLOUR),
 ]
 
 
@@ -120,7 +121,7 @@ def add_interventions(fig):
         intervention(fig, when, label, colour)
 
 
-def figure(**kwargs):
+def figure(interventions=True, **kwargs):
     if "x_range" not in kwargs:
         kwargs["x_range"] = (
             np.datetime64(date(2020, 3, 1)),
@@ -135,7 +136,8 @@ def figure(**kwargs):
         **kwargs
     )
     fig.toolbar.logo = None
-    add_interventions(fig)
+    if interventions:
+        add_interventions(fig)
     legend = Legend()
     legend.click_policy = "hide"
     fig.add_layout(legend)
@@ -156,7 +158,7 @@ def stack_datasource(source, series):
 
 
 def uk_cases_graph(uk_cases):
-    fig = figure(title="New cases by nation")
+    fig = figure(title="New cases by nation", interventions=False)
     fig.add_tools(country_hover_tool())
 
     uk_cases_national = uk_cases / nation_populations * 100000 * 7
