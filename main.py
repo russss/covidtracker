@@ -117,7 +117,7 @@ scot_populations = pd.read_csv("./data/scot_populations.csv", thousands=",").set
     "gss code"
 )
 
-provisional_days = 7
+provisional_days = 5
 
 uk_cases = coviddata.uk.cases_phe("countries")
 
