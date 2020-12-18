@@ -1,26 +1,35 @@
 const colour_ramp = [
-  [500, 500, "#0c2c84"],
-  [250, 250, "#225ea8"],
-  [100, 100, "#1d91c0"],
-  [75, 75, "#41b6c4"],
-  [50, 50, "#7fcdbb"],
-  [25, 25, "#c7e9b4"],
-  [10, 10, "#edf8b1"],
-  [0.01, 0.01, "#ffffd9"],
-  [0, 0, "#ececec"]
+  [500, 500, "#0c2c84", true],
+  [250, 250, "#225ea8", true],
+  [100, 100, "#1d91c0", true],
+  [75, 75, "#41b6c4", true],
+  [50, 50, "#7fcdbb", true],
+  [25, 25, "#c7e9b4", false],
+  [10, 10, "#edf8b1", false],
+  [0.01, 0.01, "#ffffd9", false],
+  [0, 0, "#ececec", false]
 ];
 
 const change_colour_ramp = [
-  ["> 50", 50, "#c51b7d"],
-  ["> 25", 25, "#de77ae"],
-  ["> 10", 10, "#f1b6da"],
-  ["> 2", 2, "#fde0ef"],
-  ["0", -2, "#EDEDED"],
-  ["< -2", -10, "#e6f5d0"],
-  ["< -10", -20, "#b8e186"],
-  ["< -25", -50, "#7fbc41"],
-  ["< -50", -60, "#4d9221"]
+  ["> 50", 50, "#c51b7d", true],
+  ["> 25", 25, "#de77ae", false],
+  ["> 10", 10, "#f1b6da", false],
+  ["> 2", 2, "#fde0ef", false],
+  ["0", -2, "#EDEDED", false],
+  ["< -2", -10, "#e6f5d0", false],
+  ["< -10", -20, "#b8e186", false],
+  ["< -25", -50, "#7fbc41", false],
+  ["< -50", -60, "#4d9221", true]
 ];
+
+const positivity_colour_ramp = [
+  ["> 20%", 20, '#810f7c', true],
+  ["> 10%", 10, '#8856a7', true],
+  ["> 7.5%", 7.5, '#8c96c6', true],
+  ["> 5%", 5, '#9ebcda', false],
+  ["> 1%", 1, '#bfd3e6', false],
+  ["< 1%", 0, '#edf8fb', false],
+]
 
 function makeGraph(width, height, data, provisional_days) {
   const gap = 1;
@@ -121,6 +130,27 @@ function diffStyleExpression(data, propname) {
   return expression;
 }
 
+function positivityStyleExpression(data, propname) {
+  var expression = ["match", ["get", propname]];
+
+  for (const gss_id in data) {
+    const positivity = data[gss_id].positivity;
+    if (!positivity) {
+      continue;
+    }
+    var colour = getColour(positivity_colour_ramp, positivity);
+
+    expression.push(gss_id, colour);
+    if (gss_id == "E09000012") {
+      expression.push("E09000001", colour);
+    } else if (gss_id == "E06000052") {
+      expression.push("E06000053", colour);
+    }
+  }
+  expression.push("#ffffff");
+  return expression;
+}
+
 function popupRenderer(map, data, name_field, gss_field) {
   return function(e) {
     var props = e.features[0].properties;
@@ -159,6 +189,12 @@ function popupRenderer(map, data, name_field, gss_field) {
       "<tr><th>Weekly change</th><td>" +
       (item["change"] * 100000).toFixed(2) +
       " per 100,000</td></tr>";
+    if (item["positivity"]) {
+      html +=
+        "<tr><th>Test positivity</th><td>" +
+        (item["positivity"]).toFixed(1) +
+        "%</td></tr>";
+    }
     html += "</table>";
 
     let div = window.document.createElement("div");
@@ -190,7 +226,6 @@ class LegendControl {
     this._container = document.createElement("div");
     this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl colour-key";
     this._ramp_container = null;
-    this.setColours(colour_ramp);
     return this._container;
   }
 
@@ -202,7 +237,7 @@ class LegendControl {
       div.className = "colour-key-cell";
       div.innerHTML = element[0];
       div.style.backgroundColor = element[2];
-      if (element[1] > 50) {
+      if (element[3]) {
         div.style.color = "#f0f0f0";
       }
       container.appendChild(div);
@@ -225,31 +260,61 @@ class SwitchControl {
   onAdd(map) {
     this._map = map;
     this._container = document.createElement("div");
-    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl";
+    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl switcher-container";
 
-    this._button = document.createElement("button");
-    this._state = 'rate';
-    this._button.innerHTML = '↕';
-    this._button.onclick = (e) => {
-      if (this._state == 'rate') {
-        this.setState('change');
-      } else {
+    this._rate_button = document.createElement("button");
+    this._rate_button.innerHTML = 'Rate';
+    this._rate_button.onclick = (e) => {
+        history.pushState("rate", "", "#");
         this.setState('rate');
+    }
+    this._container.appendChild(this._rate_button);
+
+    this._change_button = document.createElement("button");
+    this._change_button.innerHTML = 'Change';
+    this._change_button.onclick = (e) => {
+        history.pushState("change", "", "#change");
+        this.setState('change');
+    }
+    this._container.appendChild(this._change_button);
+
+    this._positivity_button = document.createElement("button");
+    this._positivity_button.innerHTML = 'Positivity';
+    this._positivity_button.onclick = (e) => {
+        history.pushState("positivity", "", "#positivity");
+        this.setState('positivity');
+    }
+    this._container.appendChild(this._positivity_button);
+
+    window.onpopstate = (event) => {
+      if (event.state == null) {
+        this.setState("rate")
+      } else {
+        this.setState(event.state);
       }
     }
-    this._container.appendChild(this._button);
     return this._container;
   }
 
   setState(state) {
+    this._map.setLayoutProperty("cases_rel", "visibility", "none");
+    this._map.setLayoutProperty("cases_abs", "visibility", "none");
+    this._map.setLayoutProperty("positivity", "visibility", "none");
+    this._rate_button.disabled = false;
+    this._change_button.disabled = false;
+    this._positivity_button.disabled = false;
     if (state == 'rate') {
-      this._map.setLayoutProperty("cases_rel", "visibility", "none");
+      this._rate_button.disabled = true;
       this._map.setLayoutProperty("cases_abs", "visibility", "visible");
       this._legend.setColours(colour_ramp);
-    } else {
-      this._map.setLayoutProperty("cases_abs", "visibility", "none");
+    } else if (state == 'change') {
+      this._change_button.disabled = true;
       this._map.setLayoutProperty("cases_rel", "visibility", "visible");
       this._legend.setColours(change_colour_ramp);
+    } else {
+      this._positivity_button.disabled = true;
+      this._map.setLayoutProperty("positivity", "visibility", "visible");
+      this._legend.setColours(positivity_colour_ramp);
     }
     this._state = state;
   }
@@ -279,7 +344,8 @@ function initMap(data) {
   map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
 
   const legend = new LegendControl();
-  map.addControl(new SwitchControl(legend), "top-right");
+  const switchControl = new SwitchControl(legend);
+  map.addControl(switchControl, "top-right");
   map.addControl(legend, "bottom-right");
 
   map.on("load", () => {
@@ -302,7 +368,7 @@ function initMap(data) {
         paint: {
           "fill-color": styleExpression(data, "lad19cd"),
           "fill-opacity": opacity_func
-        }
+        },
       },
       "la_boundary"
     );
@@ -324,7 +390,24 @@ function initMap(data) {
       "la_boundary"
     );
 
-    for (const layer of ['cases_abs', 'cases_rel']) {
+    map.addLayer(
+      {
+        id: "positivity",
+        type: "fill",
+        source: "areas",
+        "source-layer": "local_authorities",
+        paint: {
+          "fill-color": positivityStyleExpression(data, "lad19cd"),
+          "fill-opacity": opacity_func
+        },
+        layout: {
+          visibility: 'none'
+        }
+      },
+      "la_boundary"
+    );
+
+    for (const layer of ['cases_abs', 'cases_rel', 'positivity']) {
       map.on("click", layer, popupRenderer(map, data, "lad19nm", "lad19cd"));
 
       map.on("mouseenter", layer, function() {
@@ -334,6 +417,13 @@ function initMap(data) {
       map.on("mouseleave", layer, function() {
         map.getCanvas().style.cursor = "";
       });
+    }
+
+    let state = window.location.hash.split("#")[1];
+    if (state) {
+      switchControl.setState(state);
+    } else {
+      switchControl.setState("rate");
     }
   });
 }
