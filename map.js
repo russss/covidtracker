@@ -25,8 +25,8 @@ const change_colour_ramp = [
 const positivity_colour_ramp = [
   ["> 20%", 20, '#810f7c', true],
   ["> 10%", 10, '#8856a7', true],
-  ["> 7.5%", 7.5, '#8c96c6', true],
-  ["> 5%", 5, '#9ebcda', false],
+  ["> 6%", 6, '#8c96c6', true],
+  ["> 3%", 3, '#9ebcda', false],
   ["> 1%", 1, '#bfd3e6', false],
   ["< 1%", 0, '#edf8fb', false],
 ]
