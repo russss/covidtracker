@@ -188,12 +188,11 @@ table.sources {
 }
 
 .colour-key {
-  width: 40px;
   overflow: hidden;
 }
 
 .colour-key-cell {
-  padding: 0 3px;
+  padding: 0 5px;
 }
 
 @media only screen and (max-width: 750px) {
@@ -208,7 +207,6 @@ table.sources {
 
   .colour-key {
     font-size: 0.8em;
-    width: 25px;
     line-height: 1.8em;
   }
 
@@ -235,4 +233,20 @@ table.sources {
     font-size: 18px;
     margin: 0 auto;
   }
+}
+
+.switcher-container {
+    width: 60px;
+}
+
+.switcher-container button {
+    text-align: left;
+    width: 100%;
+    padding-left: 3px;
+}
+
+.switcher-container button:disabled {
+    color: #333;
+    cursor: default;
+    background-color: #ddd;
 }

@@ -277,10 +277,11 @@ render_template(
     ],
 )
 
+positivity = coviddata.uk.test_positivity()
 
 render_template(
     "map.html",
-    data=json.dumps(map_data(eng_by_gss, provisional_days)),
+    data=json.dumps(map_data(eng_by_gss, positivity, provisional_days)),
     provisional_days=provisional_days,
     sources=[
         (
