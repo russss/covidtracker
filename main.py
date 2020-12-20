@@ -22,6 +22,7 @@ from graphs import (
     risky_venues,
     app_keys,
 )
+from graphs.genomics import genomes_by_nation, mutation_prevalence, variant_prevalence
 from template import render_template
 from map import map_data
 from score import calculate_score
@@ -325,6 +326,48 @@ render_template(
             "Russ Garrett",
             "NHS COVID-19 App Data",
             "https://github.com/russss/nhs-covid19-app-data",
+            date.today(),
+        )
+    ],
+)
+
+
+def fetch_cog_metadata():
+    data = pd.read_csv(
+        "https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv",
+        parse_dates=["sample_date"],
+    )
+    data["d614g"] = data["d614g"] == "G"
+    data["n439k"] = data["n439k"] == "K"
+    data["p323l"] = data["p323l"] == "L"
+    data["a222v"] = data["a222v"] == "V"
+    data["y453f"] = data["y453f"] == "F"
+    data["n501y"] = data["n501y"] == "Y"
+    data["t1001i"] = data["t1001i"] == "I"
+    data["p681h"] = data["p681h"] == "H"
+    data["q27stop"] = data["q27stop"] == "*"
+    data["del_21765_6"] = data["del_21765_6"] == "del"
+    return data
+
+
+cog_metadata = fetch_cog_metadata()
+
+render_template(
+    "genomics.html",
+    graphs={
+        "genomes_by_nation": genomes_by_nation(cog_metadata),
+        "mutation_prevalence": mutation_prevalence(cog_metadata),
+        "vui20201201": variant_prevalence(
+            cog_metadata,
+            ["n501y", "q27stop", "del_21765_6", "p681h"],
+            "VUI-202012/01 prevalence",
+        ),
+    },
+    sources=[
+        (
+            "COVID-19 Genomics UK (COG-UK) Consortium",
+            "Latest sequence metadata",
+            "https://www.cogconsortium.uk/",
             date.today(),
         )
     ],

@@ -1,0 +1,24 @@
+{% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
+{% block title %}Virus Genomics - UK COVID Tracker{% endblock %}
+
+{% block body %}
+  <div id="body" class="graphs-body">
+    {% include "_width_warning.html" %}
+    <p>This page shows some data on the genomic trends of the COVID-19 virus in the UK. Note that all graphs are plotted
+    based on the date the virus sample was taken, and it takes some time for samples to be sequenced. Consequently, data for the
+    last month or so will be based on fewer samples.
+    </p>
+    <div id="genomes_by_nation" class="graph"></div>
+    <p>This plot shows the prevalence of various mutations which have been suspected to have an effect on the virus's behaviour:</p>
+    <div id="mutation_prevalence" class="graph"></div>
+    <p>This graph shows the prevalence of the named variant "VUI-202012/01", which has an unusually large number of mutations and
+    <a href="https://virological.org/t/preliminary-genomic-characterisation-of-an-emergent-sars-cov-2-lineage-in-the-uk-defined-by-a-novel-set-of-spike-mutations/563">
+      is hypothesised to be more infectious
+    </a>.</p>
+    <div id="vui20201201" class="graph"></div>
+    <p class="footnote">The VUI-202012/01 variant is identified here by the presence of the mutations n501y, q27stop, del_21765_6, and p681h.</p>
+    <h2>Sources</h2>
+    {{sources_table(sources)}}
+  </div>
+{% endblock %}
