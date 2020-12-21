@@ -356,7 +356,6 @@ def fetch_cog_metadata():
 
 
 cog_metadata = fetch_cog_metadata()
-vui20201201_mutations = ["n501y", "q27stop", "del_21765_6", "p681h"]
 render_template(
     "genomics.html",
     graphs={
@@ -364,12 +363,12 @@ render_template(
         "mutation_prevalence": mutation_prevalence(cog_metadata),
         "vui20201201": variant_prevalence(
             cog_metadata,
-            vui20201201_mutations,
+            "B.1.1.7",
             "VUI-202012/01 prevalence",
         ),
         "vui20201201_region": variant_prevalence_by_region(
             cog_metadata,
-            vui20201201_mutations,
+            "B.1.1.7",
             "VUI-202012/01 prevalence by region of sample",
         ),
     },

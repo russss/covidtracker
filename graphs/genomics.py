@@ -193,12 +193,12 @@ def mutation_prevalence(data):
     return fig
 
 
-def variant_prevalence(data, mutations, title):
+def variant_prevalence(data, lineage, title):
     fig = figure(title=title, interventions=True)
     count = data.groupby("sample_date")["sequence_name"].count()
     prevalence = pd.DataFrame(
         {
-            "prevalence": data[np.logical_and.reduce([data[col] for col in mutations])]
+            "prevalence": data[data['lineage'] == lineage]
             .groupby("sample_date")["sequence_name"]
             .count()
             / count
@@ -212,13 +212,13 @@ def variant_prevalence(data, mutations, title):
     return fig
 
 
-def variant_prevalence_by_region(data, mutations, title):
+def variant_prevalence_by_region(data, lineage, title):
     data["location"] = data["sequence_name"].map(extract_sequencing_region)
     count = data.groupby(["sample_date", "location"])["sequence_name"].count()
 
     prevalence = pd.DataFrame(
         {
-            "prevalence": data[np.logical_and.reduce([data[col] for col in mutations])]
+            "prevalence": data[data['lineage'] == lineage]
             .groupby(["sample_date", "location"])["sequence_name"]
             .count()
             / count
