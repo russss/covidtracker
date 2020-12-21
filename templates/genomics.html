@@ -6,8 +6,7 @@
   <div id="body" class="graphs-body">
     {% include "_width_warning.html" %}
     <p>This page shows some data on the genomic trends of the COVID-19 virus in the UK. Note that all graphs are plotted
-    based on the date the virus sample was taken, and it takes some time for samples to be sequenced. Consequently, data for the
-    last month or so will be based on fewer samples.
+    based on the date the virus sample was taken, and it takes some time for samples to be sequenced. Consequently, <strong>data for the last month or so will be based on fewer samples and may not be representative</strong>.
     </p>
     <div id="genomes_by_nation" class="graph"></div>
     <p>This plot shows the prevalence of various mutations which have been suspected to have an effect on the virus's behaviour:</p>
@@ -18,6 +17,9 @@
     </a>.</p>
     <div id="vui20201201" class="graph"></div>
     <p class="footnote">The VUI-202012/01 variant is identified here by the presence of the mutations n501y, q27stop, del_21765_6, and p681h.</p>
+    <div id="vui20201201_region" class="graph"></div>
+    <p class="footnote">This graph identifies the prevalence of the variant by nation or by NHS England region
+        of the sequencing centre. English samples sequenced outside England are ignored.</p>
     <h2>Sources</h2>
     {{sources_table(sources)}}
   </div>

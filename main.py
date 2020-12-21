@@ -22,7 +22,12 @@ from graphs import (
     risky_venues,
     app_keys,
 )
-from graphs.genomics import genomes_by_nation, mutation_prevalence, variant_prevalence
+from graphs.genomics import (
+    genomes_by_nation,
+    mutation_prevalence,
+    variant_prevalence,
+    variant_prevalence_by_region,
+)
 from template import render_template
 from map import map_data
 from score import calculate_score
@@ -351,7 +356,7 @@ def fetch_cog_metadata():
 
 
 cog_metadata = fetch_cog_metadata()
-
+vui20201201_mutations = ["n501y", "q27stop", "del_21765_6", "p681h"]
 render_template(
     "genomics.html",
     graphs={
@@ -359,8 +364,13 @@ render_template(
         "mutation_prevalence": mutation_prevalence(cog_metadata),
         "vui20201201": variant_prevalence(
             cog_metadata,
-            ["n501y", "q27stop", "del_21765_6", "p681h"],
+            vui20201201_mutations,
             "VUI-202012/01 prevalence",
+        ),
+        "vui20201201_region": variant_prevalence_by_region(
+            cog_metadata,
+            vui20201201_mutations,
+            "VUI-202012/01 prevalence by region of sample",
         ),
     },
     sources=[
