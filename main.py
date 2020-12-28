@@ -25,7 +25,7 @@ from graphs import (
 from graphs.genomics import (
     genomes_by_nation,
     mutation_prevalence,
-    variant_prevalence,
+    lineage_prevalence,
     variant_prevalence_by_region,
 )
 from template import render_template
@@ -361,15 +361,11 @@ render_template(
     graphs={
         "genomes_by_nation": genomes_by_nation(cog_metadata),
         "mutation_prevalence": mutation_prevalence(cog_metadata),
-        "vui20201201": variant_prevalence(
-            cog_metadata,
-            "B.1.1.7",
-            "VUI-202012/01 prevalence",
-        ),
+        "lineage_prevalence": lineage_prevalence(cog_metadata),
         "vui20201201_region": variant_prevalence_by_region(
             cog_metadata,
             "B.1.1.7",
-            "VUI-202012/01 prevalence by region of sample",
+            "B.1.1.7 prevalence by region of sample",
         ),
     },
     sources=[

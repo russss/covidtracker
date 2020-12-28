@@ -3,8 +3,10 @@ import numpy as np
 from datetime import date, timedelta
 from itertools import cycle
 from bokeh.models import NumeralTickFormatter, HoverTool
-from bokeh.palettes import Set2, Category10
-from .common import figure
+from bokeh.palettes import Set2, Category10, Category20
+from .common import figure, add_provisional
+
+PROVISIONAL_DAYS = 30
 
 sources_map = {
     "PORT": "Portsmouth",
@@ -87,7 +89,7 @@ def extract_sequencing_source(seq_name):
 
 def extract_sequencing_region(seq_name):
     parts = seq_name.split("/")
-    if parts[0] != 'England':
+    if parts[0] != "England":
         return parts[0].replace("_", " ")
     city = extract_sequencing_source(seq_name)
     region = sources_region_map.get(city, parts[0])
@@ -146,6 +148,7 @@ def genomes_by_nation(data):
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     fig.xaxis.axis_label = "Sample date"
+    add_provisional(fig, PROVISIONAL_DAYS)
     return fig
 
 
@@ -190,25 +193,7 @@ def mutation_prevalence(data):
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0%")
     fig.xaxis.axis_label = "Sample date"
-    return fig
-
-
-def variant_prevalence(data, lineage, title):
-    fig = figure(title=title, interventions=True)
-    count = data.groupby("sample_date")["sequence_name"].count()
-    prevalence = pd.DataFrame(
-        {
-            "prevalence": data[data['lineage'] == lineage]
-            .groupby("sample_date")["sequence_name"]
-            .count()
-            / count
-        }
-    )
-    prevalence = prevalence.fillna(0).rolling(7, center=True).mean()
-
-    fig.line(source=prevalence, x="sample_date", y="prevalence")
-    fig.yaxis.formatter = NumeralTickFormatter(format="0%")
-    fig.xaxis.axis_label = "Sample date"
+    add_provisional(fig, PROVISIONAL_DAYS)
     return fig
 
 
@@ -218,7 +203,7 @@ def variant_prevalence_by_region(data, lineage, title):
 
     prevalence = pd.DataFrame(
         {
-            "prevalence": data[data['lineage'] == lineage]
+            "prevalence": data[data["lineage"] == lineage]
             .groupby(["sample_date", "location"])["sequence_name"]
             .count()
             / count
@@ -227,7 +212,7 @@ def variant_prevalence_by_region(data, lineage, title):
 
     prevalence = prevalence.fillna(0).unstack().rolling(7, center=True).mean()
     prevalence.columns = prevalence.columns.get_level_values(1)
-    prevalence.drop(columns=['England'], inplace=True)
+    prevalence.drop(columns=["England"], inplace=True)
 
     colours = cycle(Category10[10])
 
@@ -236,13 +221,131 @@ def variant_prevalence_by_region(data, lineage, title):
         x_range=(
             np.datetime64(date(2020, 9, 15)),
             np.datetime64(date.today() + timedelta(days=1)),
-        )
+        ),
     )
+
     fig.add_tools(prevalence_hover_tool())
     for y in prevalence.columns:
         fig.line(
-            source=prevalence, x="sample_date", y=y, color=next(colours), legend_label=y, name=y
+            source=prevalence,
+            x="sample_date",
+            y=y,
+            color=next(colours),
+            legend_label=y,
+            name=y,
         )
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0%")
+    add_provisional(fig, PROVISIONAL_DAYS)
+    return fig
+
+
+parent_lineages = {
+    "B": "A",
+    "C": "B.1.1.1",
+    "D": "B.1.1.25",
+    "E": "B.1.5.12",
+    "F": "B.1.36.17",
+    "G": "B.1.258.2",
+    "H": "B.1.1.67",
+    "I": "B.1.1.217",
+    "J": "B.1.1.250",
+    "K": "B.1.1.277",
+    "L": "B.1.1.10",
+    "M": "B.1.1.294",
+    "N": "B.1.1.33",
+}
+
+
+def summarise_lineages(data, threshold=0.15, always_interesting=[]):
+    """Summarise a COG-UK metadata dataframe, merging each lineage with its
+    parent lineage unless it has an average prevalence of more than `threshold` during
+    any 7-day window.
+    """
+    data = data[
+        ~data["lineage"].isnull()
+    ].copy()  # Filter out missing lineages to start
+    count = data.groupby("sample_date").count()["sequence_name"].rolling(7).mean()
+
+    # Don't use days with fewer than 100 samples to calculate prevalence
+    count = count[count > 100]
+
+    while True:
+        lineage_prevalence = (
+            pd.DataFrame(
+                {
+                    "sample_date": data["sample_date"],
+                    "lineage": data["lineage"],
+                    "count": 1,
+                }
+            )
+            .set_index(["lineage", "sample_date"])
+            .sort_index()
+            .groupby(level=[0, 1])
+            .agg("sum")
+            .rolling(7)
+            .mean()
+        )
+
+        lineage_prevalence["prevalence"] = lineage_prevalence["count"] / count
+        max_lineages = lineage_prevalence.groupby("lineage").max()
+
+        interesting_lineages = set(
+            max_lineages[max_lineages["prevalence"] > threshold].index
+        ) | set(always_interesting)
+        try:
+            interesting_lineages.remove("")
+        except KeyError:
+            pass
+
+        filtered_lineage = []
+        summarised_count = 0
+        for lin in data["lineage"]:
+            if lin in interesting_lineages:
+                filtered_lineage.append(lin)
+            elif lin in parent_lineages:
+                summarised_count += 1
+                filtered_lineage.append(parent_lineages[lin])
+            else:
+                lineage_parts = lin.split(".")
+                if len(lineage_parts) == 1:
+                    summarised_lineage = lineage_parts[0]
+                else:
+                    summarised_count += 1
+                    summarised_lineage = ".".join(lineage_parts[:-1])
+                filtered_lineage.append(summarised_lineage)
+
+        data["lineage"] = filtered_lineage
+
+        if summarised_count == 0:
+            break
+
+    return data
+
+
+def lineage_prevalence(data):
+    summarised = summarise_lineages(data)
+    count = summarised.groupby(["sample_date"]).count()["sequence_name"]
+    grouped = (
+        summarised.groupby(["sample_date", "lineage"]).count()["sequence_name"] / count
+    )
+    stackers = list(sorted(grouped.index.get_level_values(1).unique()))
+    grouped = grouped.unstack().fillna(0).rolling(7, center=True).mean().reset_index()
+
+    colour_iter = cycle(Category20[20])
+    colours = [next(colour_iter) for i in stackers]
+
+    fig = figure(interventions=False, title="Lineage prevalence")
+    fig.varea_stack(
+        source=grouped,
+        x="sample_date",
+        stackers=stackers,
+        color=colours,
+        legend_label=stackers,
+        fill_alpha=0.7,
+    )
+    fig.legend.location = "bottom_left"
+    fig.yaxis.formatter = NumeralTickFormatter(format="0%")
+    fig.y_range.end = 1
+    add_provisional(fig, PROVISIONAL_DAYS)
     return fig

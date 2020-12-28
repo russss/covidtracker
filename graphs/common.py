@@ -17,7 +17,7 @@ england_interventions = [
     (date(2020, 9, 24), "10pm pub closing", LOCKDOWN_COLOUR),
     (date(2020, 11, 5), "Lockdown #2", LOCKDOWN_COLOUR),
     (date(2020, 12, 2), "Tier system", RELEASE_COLOUR),
-    (date(2020, 12, 20), "Tier 4", LOCKDOWN_COLOUR)
+    (date(2020, 12, 20), "Tier 4", LOCKDOWN_COLOUR),
 ]
 
 
@@ -97,9 +97,11 @@ def figure(interventions=True, **kwargs):
         tools="reset,box_zoom",
         **kwargs
     )
+
     fig.toolbar.logo = None
     if interventions:
         add_interventions(fig)
+
     legend = Legend()
     legend.click_policy = "hide"
     fig.add_layout(legend)
@@ -107,3 +109,20 @@ def figure(interventions=True, **kwargs):
     fig.xgrid.visible = False
     fig.y_range.start = 0
     return fig
+
+
+def add_provisional(fig, provisional_days=7):
+    provisional_renderer = fig.varea(
+        x=[
+            np.datetime64(date.today() - timedelta(days=provisional_days)),
+            np.datetime64(date.today() + timedelta(days=1)),
+        ],
+        y1=-10e6,
+        y2=10e6,
+        fill_color="#030002",
+        fill_alpha=0.05,
+        level="underlay"
+    )
+    fig.y_range.renderers = [
+        r for r in fig.renderers if r.id != provisional_renderer.id
+    ]
