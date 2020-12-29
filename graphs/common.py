@@ -137,12 +137,11 @@ def add_provisional(fig, provisional_days=7, start_date=None):
 
     label = Label(
         x=date.today(),
-        x_offset=-49,
-        y=40,
+        x_offset=3,
+        y=4,
         y_units="screen",
         text="INCOMPLETE",
-        background_fill_color="#F2F2F2",
-        render_mode="css",
+        background_fill_color="#FDFDFD",
         text_font="Noto Sans",
         text_font_size="14px",
         text_color="#cccccc",
