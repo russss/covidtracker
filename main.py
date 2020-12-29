@@ -1,5 +1,4 @@
 import json
-import socket
 import logging
 import pandas as pd
 from datetime import date
@@ -39,27 +38,6 @@ logging.getLogger("urllib3").setLevel(logging.INFO)
 log = logging.getLogger(__name__)
 
 log.info("Generating pages...")
-
-
-def monkeypatch_connection(api_ip):
-    from urllib3.util import connection
-
-    _orig_create_connection = connection.create_connection
-
-    def patched_create_connection(address, *args, **kwargs):
-        host, port = address
-        if host == "api.coronavirus.data.gov.uk":
-            hostname = api_ip
-        else:
-            hostname = socket.gethostbyname(host)
-        return _orig_create_connection((hostname, port), *args, **kwargs)
-
-    connection.create_connection = patched_create_connection
-
-
-api_ip = socket.gethostbyname("Edge-Prod-LON21r3.ctrl.t-0001.t-msedge.net")
-# monkeypatch_connection(api_ip)
-
 
 la_region = pd.read_csv(
     "https://raw.githubusercontent.com/russss/local_authority_nhs_region"
@@ -128,15 +106,11 @@ provisional_days = 5
 uk_cases = coviddata.uk.cases_phe("countries")
 
 uk_cases["cases_rolling"] = (
-    uk_cases["cases"][:-provisional_days]
+    uk_cases["cases"]
     .diff("date")
     .rolling(date=7, center=True)
     .mean()
     .dropna("date")
-)
-
-uk_cases["cases_rolling_provisional"] = (
-    uk_cases["cases"].diff("date").rolling(date=7, center=True).mean().dropna("date")
 )
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
@@ -147,26 +121,15 @@ scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
 nhs_deaths = coviddata.uk.deaths_nhs()
 nhs_deaths["deaths_rolling"] = (
-    nhs_deaths["deaths"][:-provisional_days]
+    nhs_deaths["deaths"]
     .rolling(date=7, center=True)
     .mean()
     .dropna("date")
-)
-nhs_deaths["deaths_rolling_provisional"] = (
-    nhs_deaths["deaths"].fillna(0).rolling(date=7, center=True).mean().dropna("date")
 )
 
 nhs_region_cases = cases_by_nhs_region(eng_by_gss, la_region)
 
 nhs_region_cases["cases_rolling"] = (
-    nhs_region_cases["cases"][:, :-provisional_days]
-    .diff("date")
-    .rolling(date=7, center=True)
-    .mean()
-    .dropna("date")
-)
-
-nhs_region_cases["cases_rolling_provisional"] = (
     nhs_region_cases["cases"]
     .diff("date")
     .rolling(date=7, center=True)

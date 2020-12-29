@@ -16,11 +16,12 @@ from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2, YlOrRd
 
 from util import dict_to_xr
-from .common import figure, country_hover_tool, region_hover_tool, xr_to_cds
+from .common import figure, country_hover_tool, region_hover_tool, xr_to_cds, add_provisional, max_date
 
 BAR_COLOUR = "#D5DFED"
 LINE_COLOUR = ["#3D6CB3", "#B33D43"]
 
+PROVISIONAL_DAYS = 5
 
 nhs_region_pops = {
     "North West": 7012947,
@@ -77,19 +78,11 @@ def uk_cases_graph(uk_cases):
             legend_label=label,
             name=layer,
         )
-        fig.line(
-            x=uk_cases_national["date"].values,
-            y=uk_cases_national.sel(location=layer)["cases_rolling_provisional"].values,
-            line_width=2,
-            line_alpha=0.4,
-            line_color=colours[layer],
-            legend_label=label,
-            name=layer,
-        )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
     fig.yaxis.axis_label = "Weekly cases per 100,000"
     fig.legend.location = "top_left"
+    add_provisional(fig, start_date=max_date(uk_cases) - timedelta(days=PROVISIONAL_DAYS))
     return fig
 
 
@@ -219,18 +212,10 @@ def regional_cases(regions):
             color=color,
             line_width=1,
         )
-        fig.line(
-            x=s["date"].values,
-            y=s["cases_rolling_provisional"].values / nhs_region_pops[loc] * 100000 * 7,
-            legend_label=loc,
-            name=loc,
-            color=color,
-            line_width=1,
-            line_alpha=0.4,
-        )
 
-    fig.legend.location = "top_center"
+    fig.legend.location = "top_left"
     fig.yaxis.axis_label = "Weekly cases per 100,000"
+    add_provisional(fig, start_date=max_date(regions) - timedelta(days=PROVISIONAL_DAYS))
     return fig
 
 
@@ -252,22 +237,11 @@ def regional_deaths(nhs_deaths):
             color=color,
             line_width=1,
         )
-        fig.line(
-            x=s["date"].values,
-            y=s["deaths_rolling_provisional"].values
-            / nhs_region_pops[loc]
-            * 100000
-            * 7,
-            legend_label=loc,
-            name=loc,
-            color=color,
-            line_width=1,
-            line_alpha=0.4,
-        )
 
-    fig.legend.location = "top_right"
+    fig.legend.location = "top_center"
     fig.xaxis.axis_label = "Date of death"
     fig.yaxis.axis_label = "Weekly deaths per 100,000"
+    add_provisional(fig, start_date=max_date(nhs_deaths) - timedelta(days=PROVISIONAL_DAYS))
     return fig
 
 
@@ -311,7 +285,7 @@ def hospital_admissions_graph(hosp):
             line_width=1,
         )
 
-    fig.legend.location = "top_right"
+    fig.legend.location = "top_center"
     fig.yaxis.axis_label = "Weekly admissions per 100,000"
     return fig
 

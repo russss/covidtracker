@@ -1,5 +1,7 @@
 import numpy as np
-from bokeh.models import Legend, DatetimeTickFormatter, Span, ColumnDataSource
+import pandas as pd
+from math import pi
+from bokeh.models import Legend, DatetimeTickFormatter, Span, ColumnDataSource, Label
 from bokeh.models.tools import HoverTool
 from bokeh.plotting import figure as bokeh_figure
 from datetime import date, timedelta
@@ -111,18 +113,43 @@ def figure(interventions=True, **kwargs):
     return fig
 
 
-def add_provisional(fig, provisional_days=7):
+def add_provisional(fig, provisional_days=7, start_date=None):
+    if not start_date:
+        start_date = date.today() - timedelta(days=provisional_days)
+
+    end_date = date.today() + timedelta(days=1)
+
+    fill_color = "#030002"
     provisional_renderer = fig.varea(
         x=[
-            np.datetime64(date.today() - timedelta(days=provisional_days)),
-            np.datetime64(date.today() + timedelta(days=1)),
+            np.datetime64(start_date),
+            np.datetime64(end_date),
         ],
         y1=-10e6,
         y2=10e6,
-        fill_color="#030002",
+        fill_color=fill_color,
         fill_alpha=0.05,
-        level="underlay"
+        level="underlay",
     )
     fig.y_range.renderers = [
         r for r in fig.renderers if r.id != provisional_renderer.id
     ]
+
+    label = Label(
+        x=date.today(),
+        x_offset=-49,
+        y=40,
+        y_units="screen",
+        text="INCOMPLETE",
+        background_fill_color="#F2F2F2",
+        render_mode="css",
+        text_font="Noto Sans",
+        text_font_size="14px",
+        text_color="#cccccc",
+        angle=pi / 2,
+    )
+    fig.add_layout(label)
+
+
+def max_date(data):
+    return pd.Timestamp(data.dropna("date").date.max().values).to_pydatetime()
