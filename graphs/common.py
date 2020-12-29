@@ -147,6 +147,7 @@ def add_provisional(fig, provisional_days=7, start_date=None):
         text_font_size="14px",
         text_color="#cccccc",
         angle=pi / 2,
+        level="underlay"
     )
     fig.add_layout(label)
 
