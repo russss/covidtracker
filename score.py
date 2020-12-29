@@ -1,12 +1,16 @@
 import pandas as pd
 
+PROVISIONAL_DAYS = 5
+
 
 def calculate_score(deaths, cases, triage_online, triage_pathways, admissions):
     cases_change = (
-        cases["cases_rolling"] / cases["cases_rolling"].shift(date=7)
+        cases["cases_rolling"][:,:-PROVISIONAL_DAYS]
+        / cases["cases_rolling"][:,:-PROVISIONAL_DAYS].shift(date=7)
     ).dropna("date") - 1
     deaths_change = (
-        deaths["deaths_rolling"] / deaths["deaths_rolling"].shift(date=7)
+        deaths["deaths_rolling"][:-PROVISIONAL_DAYS]
+        / deaths["deaths_rolling"][:-PROVISIONAL_DAYS].shift(date=7)
     ).dropna("date") - 1
     online_change = (
         triage_online["count_rolling_7"]
@@ -28,7 +32,7 @@ def calculate_score(deaths, cases, triage_online, triage_pathways, admissions):
             "deaths": deaths_change[-1].sel(location=loc).item() * 100,
             "triage_online": online_change[:, -1].sel(region=loc).item() * 100,
             "triage_pathways": pathways_change[:, -1].sel(region=loc).item() * 100,
-            "admissions": admissions_change[:, -1].sel(location=loc).item() * 100
+            "admissions": admissions_change[:, -1].sel(location=loc).item() * 100,
         }
 
     data["dates"] = {
