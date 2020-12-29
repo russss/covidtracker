@@ -153,7 +153,7 @@ def genomes_by_nation(data):
 
 
 def mutation_prevalence(data):
-    fig = figure(title="Mutation prevalence", interventions=True)
+    fig = figure(title="UK mutation prevalence", interventions=True)
     fig.add_tools(prevalence_hover_tool())
 
     mutations = {
@@ -335,7 +335,7 @@ def lineage_prevalence(data):
     colour_iter = cycle(Category20[20])
     colours = [next(colour_iter) for i in stackers]
 
-    fig = figure(interventions=False, title="Lineage prevalence")
+    fig = figure(interventions=False, title="UK lineage prevalence")
     fig.varea_stack(
         source=grouped,
         x="sample_date",
