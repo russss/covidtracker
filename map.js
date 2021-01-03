@@ -23,51 +23,78 @@ const change_colour_ramp = [
 ];
 
 const positivity_colour_ramp = [
-  ["> 20%", 20, '#810f7c', true],
-  ["> 10%", 10, '#8856a7', true],
-  ["> 6%", 6, '#8c96c6', true],
-  ["> 3%", 3, '#9ebcda', false],
-  ["> 1%", 1, '#bfd3e6', false],
-  ["< 1%", 0, '#edf8fb', false],
-]
+  ["> 20%", 20, "#810f7c", true],
+  ["> 10%", 10, "#8856a7", true],
+  ["> 6%", 6, "#8c96c6", true],
+  ["> 3%", 3, "#9ebcda", false],
+  ["> 1%", 1, "#bfd3e6", false],
+  ["< 1%", 0, "#edf8fb", false]
+];
 
-function makeGraph(width, height, data, provisional_days) {
+function makeGraph(width, height, data, provisional_days, type, num_suffix="") {
   const gap = 1;
   var draw = SVG().size(width, height);
 
-  const left_margin = 18;
-  const top_margin = 5;
-  const bottom_margin = 5;
+  const left_margin = 23,
+    top_margin = 5,
+    bottom_margin = 5,
+    right_margin = 2;
   const graph_height = height - top_margin - bottom_margin;
-  const graph_width = width - left_margin;
-  const max_value = Math.max(...data, 5);
+  const graph_width = width - left_margin - right_margin;
+  const max_value = Math.ceil(Math.max(...data, 5));
   const bar_width = graph_width / data.length - gap;
-  for (let i = 0; i < data.length; i++) {
-    const bar_height = (data[i] / max_value) * graph_height;
 
-    bar = draw
-      .rect(bar_width, bar_height)
-      .move(
-        i * (bar_width + gap) + left_margin,
-        graph_height - bar_height + top_margin - 1
-      );
+  if (type == "bar") {
+    for (let i = 0; i < data.length; i++) {
+      const bar_height = (data[i] / max_value) * graph_height;
 
-    if (i >= data.length - provisional_days) {
-      bar.fill("#E6C8C8");
-    } else {
-      bar.fill("#d44");
+      bar = draw
+        .rect(bar_width, bar_height)
+        .move(
+          i * (bar_width + gap) + left_margin,
+          graph_height - bar_height + top_margin - 1
+        );
+
+      if (i >= data.length - provisional_days) {
+        bar.fill("#E6C8C8");
+      } else {
+        bar.fill("#d44");
+      }
     }
+  } else if (type == "line") {
+    let path = "M";
+    for (let i = 0; i < data.length; i++) {
+      let x = i * (bar_width + gap) + bar_width / 2 + left_margin;
+      let y =
+        graph_height - (data[i] / max_value) * graph_height + top_margin - 1;
+      path += `${x} ${y} `;
+      if (i == 0) {
+        path += "L";
+      }
+      if (i == data.length - 1) {
+        const marker_diameter = 3;
+        draw
+          .circle(marker_diameter)
+          .move(x, y - marker_diameter / 2)
+          .fill("#384EF5")
+          .stroke("none");
+      }
+    }
+    draw
+      .path(path)
+      .stroke("#384EF5")
+      .fill("none");
   }
 
   draw
-    .text(max_value.toString())
-    .attr({ x: left_margin - 4, y: top_margin + 3 })
-    .font({ fill: "#333", family: "Noto Sans", size: 9, anchor: "end" });
+    .text(max_value.toString() + num_suffix)
+    .attr({ x: left_margin - 4, y: top_margin + 2 })
+    .font({ fill: "#666", family: "Noto Sans", size: 9, anchor: "end" });
 
   draw
-    .text("0")
-    .attr({ x: left_margin - 4, y: graph_height + top_margin + 3 })
-    .font({ fill: "#333", family: "Noto Sans", size: 9, anchor: "end" });
+    .text("0" + num_suffix)
+    .attr({ x: left_margin - 4, y: graph_height + top_margin + 2 })
+    .font({ fill: "#666", family: "Noto Sans", size: 9, anchor: "end" });
 
   draw
     .line(left_margin - 2, top_margin, left_margin + 1, top_margin)
@@ -77,7 +104,7 @@ function makeGraph(width, height, data, provisional_days) {
     .line(
       left_margin - 2,
       height - bottom_margin - 1,
-      width,
+      width - right_margin,
       height - bottom_margin - 1
     )
     .stroke({ width: 0.5, color: "#aaa" });
@@ -185,14 +212,19 @@ function popupRenderer(map, data, name_field, gss_field) {
       "<tr><th>Prevalence</th><td>" +
       (item["prevalence"] * 100000).toFixed(2) +
       " per 100,000</td></tr>";
+
+    let change_prefix = '';
+    if (item.change > 0) {
+      change_prefix = '+';
+    }
     html +=
       "<tr><th>Weekly change</th><td>" +
-      (item["change"] * 100000).toFixed(2) +
+      change_prefix + (item["change"] * 100000).toFixed(2) +
       " per 100,000</td></tr>";
     if (item["positivity"]) {
       html +=
         "<tr><th>Test positivity</th><td>" +
-        (item["positivity"]).toFixed(1) +
+        item["positivity"].toFixed(1) +
         "%</td></tr>";
     }
     html += "</table>";
@@ -201,7 +233,24 @@ function popupRenderer(map, data, name_field, gss_field) {
     div.innerHTML = html;
 
     if (item["history"]) {
-      let graph = makeGraph(210, 45, item["history"], item["provisional_days"]);
+      let header = document.createElement("h4");
+      header.innerText = "Cases";
+      div.appendChild(header);
+      let graph = makeGraph(
+        210,
+        45,
+        item["history"],
+        item["provisional_days"],
+        "bar"
+      );
+      div.appendChild(graph.node);
+    }
+
+    if (item["positivity_history"]) {
+      let header = document.createElement("h4");
+      header.innerText = "Test Positivity";
+      div.appendChild(header);
+      let graph = makeGraph(210, 45, item.positivity_history, 0, "line", "%");
       div.appendChild(graph.node);
     }
 
@@ -244,7 +293,7 @@ class LegendControl {
     }
 
     if (this._ramp_container) {
-      this._container.replaceChild(container, this._ramp_container);      
+      this._container.replaceChild(container, this._ramp_container);
     } else {
       this._container.appendChild(container);
     }
@@ -260,39 +309,40 @@ class SwitchControl {
   onAdd(map) {
     this._map = map;
     this._container = document.createElement("div");
-    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl switcher-container";
+    this._container.className =
+      "mapboxgl-ctrl-group mapboxgl-ctrl switcher-container";
 
     this._rate_button = document.createElement("button");
-    this._rate_button.innerHTML = 'Rate';
-    this._rate_button.onclick = (e) => {
-        history.pushState("rate", "", "#");
-        this.setState('rate');
-    }
+    this._rate_button.innerHTML = "Rate";
+    this._rate_button.onclick = e => {
+      history.pushState("rate", "", "#");
+      this.setState("rate");
+    };
     this._container.appendChild(this._rate_button);
 
     this._change_button = document.createElement("button");
-    this._change_button.innerHTML = 'Change';
-    this._change_button.onclick = (e) => {
-        history.pushState("change", "", "#change");
-        this.setState('change');
-    }
+    this._change_button.innerHTML = "Change";
+    this._change_button.onclick = e => {
+      history.pushState("change", "", "#change");
+      this.setState("change");
+    };
     this._container.appendChild(this._change_button);
 
     this._positivity_button = document.createElement("button");
-    this._positivity_button.innerHTML = 'Positivity';
-    this._positivity_button.onclick = (e) => {
-        history.pushState("positivity", "", "#positivity");
-        this.setState('positivity');
-    }
+    this._positivity_button.innerHTML = "Positivity";
+    this._positivity_button.onclick = e => {
+      history.pushState("positivity", "", "#positivity");
+      this.setState("positivity");
+    };
     this._container.appendChild(this._positivity_button);
 
-    window.onpopstate = (event) => {
+    window.onpopstate = event => {
       if (event.state == null) {
-        this.setState("rate")
+        this.setState("rate");
       } else {
         this.setState(event.state);
       }
-    }
+    };
     return this._container;
   }
 
@@ -303,11 +353,11 @@ class SwitchControl {
     this._rate_button.disabled = false;
     this._change_button.disabled = false;
     this._positivity_button.disabled = false;
-    if (state == 'rate') {
+    if (state == "rate") {
       this._rate_button.disabled = true;
       this._map.setLayoutProperty("cases_abs", "visibility", "visible");
       this._legend.setColours(colour_ramp);
-    } else if (state == 'change') {
+    } else if (state == "change") {
       this._change_button.disabled = true;
       this._map.setLayoutProperty("cases_rel", "visibility", "visible");
       this._legend.setColours(change_colour_ramp);
@@ -368,7 +418,7 @@ function initMap(data) {
         paint: {
           "fill-color": styleExpression(data, "lad19cd"),
           "fill-opacity": opacity_func
-        },
+        }
       },
       "la_boundary"
     );
@@ -384,7 +434,7 @@ function initMap(data) {
           "fill-opacity": opacity_func
         },
         layout: {
-          visibility: 'none'
+          visibility: "none"
         }
       },
       "la_boundary"
@@ -401,13 +451,13 @@ function initMap(data) {
           "fill-opacity": opacity_func
         },
         layout: {
-          visibility: 'none'
+          visibility: "none"
         }
       },
       "la_boundary"
     );
 
-    for (const layer of ['cases_abs', 'cases_rel', 'positivity']) {
+    for (const layer of ["cases_abs", "cases_rel", "positivity"]) {
       map.on("click", layer, popupRenderer(map, data, "lad19nm", "lad19cd"));
 
       map.on("mouseenter", layer, function() {
