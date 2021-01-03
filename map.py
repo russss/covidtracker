@@ -35,13 +35,16 @@ def map_data(data, positivity, provisional_days):
 
         if gss_code in positivity.gss_code:
             pos = positivity.sel(gss_code=gss_code)["positivity"][-1].item()
+            positivity_history = list(positivity.sel(gss_code=gss_code)["positivity"].values[-history_days:])
         else:
             pos = None
+            positivity_history = None
 
         result[gss_code] = {
             "prevalence": cases_norm,
             "change": change,
             "positivity": pos,
+            "positivity_history": positivity_history,
             "cases": int(cases),
             "history": list(map(int, history)),
             "provisional_days": provisional_days,
