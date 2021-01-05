@@ -705,12 +705,12 @@
       "type": "line",
       "source": "areas",
       "source-layer": "local_authorities",
-      "minzoom": 6,
+      "minzoom": 6.5,
       "paint": {
         "line-color": "rgba(100, 100, 100, 1)",
         "line-blur": 1.5,
         "line-opacity": {"base": 1.4, "stops": [[5, 0], [11, 1]]},
-        "line-width": {"base": 1.4, "stops": [[6, 1], [14, 2]]}
+        "line-width": {"base": 1.4, "stops": [[6, 1], [14, 3]]}
       }
     },
     {
@@ -718,13 +718,13 @@
       "type": "line",
       "source": "areas",
       "source-layer": "nhs_england_regions",
-      "minzoom": 4.5,
+      "minzoom": 6,
       "maxzoom": 8.5,
       "paint": {
-        "line-color": "rgba(140, 140, 170, 1)",
+        "line-color": "rgb(170, 170, 170)",
         "line-blur": 2,
-        "line-opacity": {"base": 1.4, "stops": [[5, 0.6], [9, 1]]},
-        "line-width": {"base": 1.4, "stops": [[5, 1], [9, 2]]}
+        "line-opacity": {"base": 1.4, "stops": [[5, 0.8], [9, 1]]},
+        "line-width": {"base": 1.4, "stops": [[5, 2], [9, 3]]}
       }
     },
     {
@@ -733,6 +733,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
+      "minzoom": 9.5,
       "maxzoom": 15,
       "filter": ["all", ["==", "$type", "Point"], ["==", "class", "suburb"]],
       "layout": {
@@ -748,7 +749,7 @@
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 2
+        "text-halo-width": 2.5
       }
     },
     {
@@ -757,6 +758,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
+      "minzoom": 10,
       "maxzoom": 14,
       "filter": ["all", ["==", "$type", "Point"], ["==", "class", "village"]],
       "layout": {
@@ -774,7 +776,7 @@
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 2
+        "text-halo-width": 2.5
       }
     },
     {
@@ -783,7 +785,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
-      "minzoom": 8,
+      "minzoom": 8.5,
       "maxzoom": 15,
       "filter": ["all", ["==", "$type", "Point"], ["==", "class", "town"]],
       "layout": {
@@ -801,7 +803,7 @@
         "icon-opacity": 0.7,
         "text-color": "rgb(117, 129, 145)",
         "text-halo-blur": 1,
-        "text-halo-color": "rgb(242,243,240)",
+        "text-halo-color": "rgba(242,243,240, 0.9)",
         "text-halo-width": 2
       }
     },
@@ -811,7 +813,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
-      "minzoom": 5,
+      "minzoom": 7.5,
       "maxzoom": 14,
       "filter": [
         "all",
@@ -874,7 +876,7 @@
       "metadata": {"mapbox:group": "101da9f13b64a08fa4b6ac1168e89e5f"},
       "source": "openmaptiles",
       "source-layer": "place",
-      "minzoom": 5,
+      "minzoom": 7,
       "maxzoom": 12,
       "filter": [
         "all",
@@ -920,7 +922,7 @@
         "text-color": "rgb(113, 129, 144)",
         "text-halo-blur": 1,
         "text-halo-color": "rgb(242,243,240)",
-        "text-halo-width": 1
+        "text-halo-width": 2
       }
     }
   ],

@@ -22,6 +22,7 @@ from graphs import (
     app_keys,
 )
 from graphs.genomics import (
+    fetch_cog_metadata,
     genomes_by_nation,
     mutation_prevalence,
     lineage_prevalence,
@@ -300,22 +301,6 @@ render_template(
 )
 
 
-def fetch_cog_metadata():
-    data = pd.read_csv(
-        "https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv",
-        parse_dates=["sample_date"],
-    )
-    data["d614g"] = data["d614g"] == "G"
-    data["n439k"] = data["n439k"] == "K"
-    data["p323l"] = data["p323l"] == "L"
-    data["a222v"] = data["a222v"] == "V"
-    data["y453f"] = data["y453f"] == "F"
-    data["n501y"] = data["n501y"] == "Y"
-    data["t1001i"] = data["t1001i"] == "I"
-    data["p681h"] = data["p681h"] == "H"
-    data["q27stop"] = data["q27stop"] == "*"
-    data["del_21765_6"] = data["del_21765_6"] == "del"
-    return data
 
 
 cog_metadata = fetch_cog_metadata()

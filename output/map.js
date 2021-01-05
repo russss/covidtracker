@@ -11,15 +11,17 @@ const colour_ramp = [
 ];
 
 const change_colour_ramp = [
+  ["> 100", 100, "#8e0152", true],
   ["> 50", 50, "#c51b7d", true],
   ["> 25", 25, "#de77ae", false],
   ["> 10", 10, "#f1b6da", false],
   ["> 2", 2, "#fde0ef", false],
   ["0", -2, "#EDEDED", false],
   ["< -2", -10, "#e6f5d0", false],
-  ["< -10", -20, "#b8e186", false],
+  ["< -10", -25, "#b8e186", false],
   ["< -25", -50, "#7fbc41", false],
-  ["< -50", -60, "#4d9221", true]
+  ["< -50", -100, "#4d9221", true],
+  ["< -100", -110, "#276419", true]
 ];
 
 const positivity_colour_ramp = [
