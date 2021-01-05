@@ -17,7 +17,7 @@ const change_colour_ramp = [
   ["> 2", 2, "#fde0ef", false],
   ["0", -2, "#EDEDED", false],
   ["< -2", -10, "#e6f5d0", false],
-  ["< -10", -20, "#b8e186", false],
+  ["< -10", -25, "#b8e186", false],
   ["< -25", -50, "#7fbc41", false],
   ["< -50", -60, "#4d9221", true]
 ];
