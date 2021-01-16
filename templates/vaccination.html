@@ -1,0 +1,15 @@
+{% extends "_base.html" %}
+{% from '_util.html' import sources_table %}
+{% block title %}Vaccination - UK COVID Tracker{% endblock %}
+
+{% block body %}
+  <div id="body" class="graphs-body">
+    {% include "_width_warning.html" %}
+    <div id="vax_rate" class="graph"></div>
+    <div id="vax_cumulative" class="graph"></div>
+    <p>Data from before January 10 is based on interpolated weekly numbers by vaccination date.
+      After that, numbers are daily by report date.</p>
+    <h2>Sources</h2>
+    {{sources_table(sources)}}
+  </div>
+{% endblock %}

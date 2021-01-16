@@ -28,6 +28,7 @@ from graphs.genomics import (
     lineage_prevalence,
     variant_prevalence_by_region,
 )
+from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
 from template import render_template
 from map import map_data
 from score import calculate_score
@@ -107,11 +108,7 @@ provisional_days = 5
 uk_cases = coviddata.uk.cases_phe("countries")
 
 uk_cases["cases_rolling"] = (
-    uk_cases["cases"]
-    .diff("date")
-    .rolling(date=7, center=True)
-    .mean()
-    .dropna("date")
+    uk_cases["cases"].diff("date").rolling(date=7, center=True).mean().dropna("date")
 )
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
@@ -122,10 +119,7 @@ scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
 nhs_deaths = coviddata.uk.deaths_nhs()
 nhs_deaths["deaths_rolling"] = (
-    nhs_deaths["deaths"]
-    .rolling(date=7, center=True)
-    .mean()
-    .dropna("date")
+    nhs_deaths["deaths"].rolling(date=7, center=True).mean().dropna("date")
 )
 
 nhs_region_cases = cases_by_nhs_region(eng_by_gss, la_region)
@@ -301,8 +295,6 @@ render_template(
 )
 
 
-
-
 cog_metadata = fetch_cog_metadata()
 render_template(
     "genomics.html",
@@ -323,5 +315,22 @@ render_template(
             "https://www.cogconsortium.uk/",
             date.today(),
         )
+    ],
+)
+
+vax_data = coviddata.uk.vaccinations()
+render_template(
+    "vaccination.html",
+    graphs={
+        "vax_rate": vax_rate_graph(vax_data),
+        "vax_cumulative": vax_cumulative_graph(vax_data)
+    },
+    sources=[
+        (
+            "Public Health England",
+            "Coronavirus (COVID-19) in the UK",
+            "https://coronavirus.data.gov.uk",
+            vax_data.attrs["date"],
+        ),
     ],
 )
