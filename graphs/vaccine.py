@@ -61,7 +61,7 @@ def vax_cumulative_graph(vax_data):
     vax_data["first_dose_only"] = vax_data.first_dose - vax_data.second_dose
 
     fig = figure(
-        title="Total vaccinations",
+        title="Total people vaccinated",
         x_range=(vax_data.date.values.min(), datetime.datetime.now()),
         interventions=False,
     )
