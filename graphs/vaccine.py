@@ -30,6 +30,7 @@ def vax_rate_graph(vax_data):
             ],
             formatters={"@date": "datetime"},
             toggleable=False,
+            names=["first_dose", "second_dose"]
         )
     )
 
@@ -38,6 +39,7 @@ def vax_rate_graph(vax_data):
         x="date",
         y="first_dose",
         legend_label="First dose",
+        name="first_dose",
         line_color="#3D6CB3",
     )
     fig.line(
@@ -45,7 +47,20 @@ def vax_rate_graph(vax_data):
         x="date",
         y="second_dose",
         legend_label="Second dose",
+        name="second_dose",
         line_color="#B33D43",
+    )
+
+    feb_target_rate = (15e6 - vax_data.sel(date="2021-1-11")["first_dose"].data) / (
+        datetime.date(2021, 2, 15) - datetime.date(2021, 1, 11)
+    ).days
+
+    fig.line(
+        x=[pd.to_datetime("2021-1-11"), pd.to_datetime("2021-2-15")],
+        y=[feb_target_rate, feb_target_rate],
+        color="#444444",
+        line_dash="dashed",
+        legend_label="Mid-February target",
     )
 
     fig.legend.location = "top_left"
@@ -64,6 +79,7 @@ def vax_cumulative_graph(vax_data):
         title="Total people vaccinated",
         x_range=(vax_data.date.values.min(), datetime.datetime.now()),
         interventions=False,
+        y_range=(0, vax_data.first_dose.values.max() * 1.3),
     )
 
     ds = xr_to_cds(vax_data)
@@ -78,6 +94,7 @@ def vax_cumulative_graph(vax_data):
             ],
             formatters={"@date": "datetime"},
             toggleable=False,
+            names=["total"]
         )
     )
 
@@ -88,7 +105,14 @@ def vax_cumulative_graph(vax_data):
         color=["#1f77b4", "#aec7e8"],
         legend_label=["Two doses", "One dose"],
     )
-    fig.line(source=ds, x="date", y="first_dose", color="#888888")
+    fig.line(source=ds, x="date", y="first_dose", color="#888888", name="total")
+    fig.line(
+        x=[pd.to_datetime("2021-01-11"), pd.to_datetime("2021-2-15")],
+        y=[vax_data.sel(date="2021-1-11")["first_dose"].data, 15e6],
+        color="#444444",
+        line_dash="dashed",
+        legend_label="Mid-February target",
+    )
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig

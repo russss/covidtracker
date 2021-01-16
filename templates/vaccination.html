@@ -5,10 +5,13 @@
 {% block body %}
   <div id="body" class="graphs-body">
     {% include "_width_warning.html" %}
+    <p>This plot shows the current vaccination rate. The dashed line represents the average rate required,
+    from January 11, to achieve the target set out in <a href="https://www.gov.uk/government/publications/uk-covid-19-vaccines-delivery-plan/uk-covid-19-vaccines-delivery-plan">the government's plan</a> of vaccinating the 15 million people in priority groups 1-4 by mid-February.</p>
     <div id="vax_rate" class="graph"></div>
+    <p>This plot shows the cumulative number of people vaccinated. The dashed line shows the trajectory needed to complete the vaccination target.</p>
     <div id="vax_cumulative" class="graph"></div>
-    <p>Data from before January 10 is based on interpolated weekly numbers by vaccination date.
-      After that, numbers are daily by report date.</p>
+    <p class="footnote">Data in both plots from before January 10 is based on interpolated weekly numbers by
+    vaccination date. After that, numbers are daily by report date.</p>
     <h2>Sources</h2>
     {{sources_table(sources)}}
   </div>
