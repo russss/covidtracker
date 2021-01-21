@@ -15,7 +15,7 @@ def render_template(name, graphs={}, **kwargs):
     print(f"Rendering {name}...")
 
     graphs_data = json.dumps(
-        [json_item(graph, name, theme=theme) for name, graph in graphs.items()]
+        [json_item(graph, name, theme=theme) for name, graph in graphs.items() if graph is not None]
     )
 
     generated = datetime.now()

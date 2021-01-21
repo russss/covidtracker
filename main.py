@@ -145,7 +145,12 @@ excess_deaths = pd.read_csv(
     "./data/excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
 )
 triage_online = online_triage_by_nhs_region()
-triage_pathways = pathways_triage_by_nhs_region()
+
+try:
+    triage_pathways = pathways_triage_by_nhs_region()
+except Exception:
+    log.exception("Pathways fetching error")
+    triage_pathways = None
 
 # phe_deaths = coviddata.uk.deaths_phe()
 
@@ -171,7 +176,7 @@ render_template(
         "regional_cases": regional_cases(nhs_region_cases),
         "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage"),
-        "triage_pathways": triage_graph(triage_pathways, "Phone triage"),
+        "triage_pathways": triage_graph(triage_pathways, "Phone triage") if triage_pathways else None,
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
         "age_heatmap": age_heatmap(england_by_age),
     },
