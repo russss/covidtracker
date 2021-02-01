@@ -53,7 +53,7 @@ def online_triage_by_nhs_region():
     triage = (
         triage_online.sum(["age_band", "sex"])
         .assign_coords(
-            {"ccg": [ccg_lookup["NHSER20NM"][i.item()] for i in triage_online["ccg"]]}
+            {"ccg": [ccg_lookup["NHSER20NM"].get(i.item()) for i in triage_online["ccg"]]}
         )
         .rename(ccg="region")
         .groupby("region")
@@ -74,7 +74,7 @@ def pathways_triage_by_nhs_region():
     triage = (
         triage_pathways.sum(["age_band", "sex", "site_type"])
         .assign_coords(
-            {"ccg": [ccg_lookup["NHSER20NM"][i.item()] for i in triage_pathways["ccg"]]}
+            {"ccg": [ccg_lookup["NHSER20NM"].get(i.item()) for i in triage_pathways["ccg"]]}
         )
         .groupby("ccg")
         .sum()
