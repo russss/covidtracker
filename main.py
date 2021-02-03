@@ -211,7 +211,7 @@ render_template(
             "Potential COVID-19 symptoms reported through NHS Pathways and 111 online",
             "https://digital.nhs.uk/data-and-information/publications/statistical"
             "/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online",
-            pd.Timestamp(triage_online["date"].max().item(0)).date(),
+            pd.Timestamp(triage_online["date"].max().item(0)).date() if triage_online else None,
         ),
         (
             scot_data.attrs["source"],
