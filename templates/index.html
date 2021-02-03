@@ -22,7 +22,9 @@
       <thead>
         <tr>
           <th>English Region</th>
-          <th title="{{scores['dates']['triage_online'].date()}}">Triage (online)</th>
+          {% if scores['dates']['triage_online'] %}
+            <th title="{{scores['dates']['triage_online'].date()}}">Triage (online)</th>
+          {% endif %}
           {% if scores['dates']['triage_pathways'] %}
             <th title="{{scores['dates']['triage_pathways'].date()}}">Triage (phone)</th>
           {% endif %}
@@ -35,7 +37,9 @@
       {% for region, s in scores['scores'].items() %}
         <tr>
           <td>{{region}}</td>
-          {{score_cell(s['triage_online'])}}
+          {% if scores['dates']['triage_online'] %}
+            {{score_cell(s['triage_online'])}}
+          {% endif %}
           {% if scores['dates']['triage_pathways'] %}
             {{score_cell(s['triage_pathways'])}}
           {% endif %}
