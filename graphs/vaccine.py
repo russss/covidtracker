@@ -12,6 +12,8 @@ def vax_rate_graph(vax_data):
         .astype(int)
         .diff("date")
     )
+    vax_rate['first_dose_rolling'] = vax_rate['first_dose'].rolling(date=7).mean()
+    vax_rate['second_dose_rolling'] = vax_rate['second_dose'].rolling(date=7).mean()
 
     fig = figure(
         x_range=(vax_rate.date.values.min(), datetime.datetime.now()),
@@ -24,7 +26,7 @@ def vax_rate_graph(vax_data):
     fig.add_tools(
         HoverTool(
             tooltips=[
-                ("Date", "@date{%d %b}"),
+                ("Date", "@date{%a %d %b}"),
                 ("First dose", "@first_dose{0,0}"),
                 ("Second dose", "@second_dose{0,0}"),
             ],
@@ -40,7 +42,16 @@ def vax_rate_graph(vax_data):
         y="first_dose",
         legend_label="First dose",
         name="first_dose",
+        line_color="#8AB1EB",
+    )
+    fig.line(
+        source=ds,
+        x="date",
+        y="first_dose_rolling",
+        legend_label="First dose (weekly average)",
+        name="first_dose_rolling",
         line_color="#3D6CB3",
+        line_width=2
     )
     fig.line(
         source=ds,
@@ -48,7 +59,16 @@ def vax_rate_graph(vax_data):
         y="second_dose",
         legend_label="Second dose",
         name="second_dose",
+        line_color="#EB8A8F",
+    )
+    fig.line(
+        source=ds,
+        x="date",
+        y="second_dose_rolling",
+        legend_label="Second dose (weekly average)",
+        name="second_dose_rolling",
         line_color="#B33D43",
+        line_width=2
     )
 
     feb_target_rate = (15e6 - vax_data.sel(date="2021-1-11")["first_dose"].data) / (
