@@ -12,8 +12,8 @@ def vax_rate_graph(vax_data):
         .astype(int)
         .diff("date")
     )
-    vax_rate['first_dose_rolling'] = vax_rate['first_dose'].rolling(date=7).mean()
-    vax_rate['second_dose_rolling'] = vax_rate['second_dose'].rolling(date=7).mean()
+    vax_rate["first_dose_rolling"] = vax_rate["first_dose"].rolling(date=7).mean()
+    vax_rate["second_dose_rolling"] = vax_rate["second_dose"].rolling(date=7).mean()
 
     fig = figure(
         x_range=(vax_rate.date.values.min(), datetime.datetime.now()),
@@ -32,7 +32,7 @@ def vax_rate_graph(vax_data):
             ],
             formatters={"@date": "datetime"},
             toggleable=False,
-            names=["first_dose", "second_dose"]
+            names=["first_dose", "second_dose"],
         )
     )
 
@@ -51,7 +51,7 @@ def vax_rate_graph(vax_data):
         legend_label="First dose (weekly average)",
         name="first_dose_rolling",
         line_color="#3D6CB3",
-        line_width=2
+        line_width=2,
     )
     fig.line(
         source=ds,
@@ -68,20 +68,20 @@ def vax_rate_graph(vax_data):
         legend_label="Second dose (weekly average)",
         name="second_dose_rolling",
         line_color="#B33D43",
-        line_width=2
+        line_width=2,
     )
 
-    feb_target_rate = (15e6 - vax_data.sel(date="2021-1-11")["first_dose"].data) / (
-        datetime.date(2021, 2, 15) - datetime.date(2021, 1, 11)
-    ).days
+    # feb_target_rate = (15e6 - vax_data.sel(date="2021-1-11")["first_dose"].data) / (
+    #    datetime.date(2021, 2, 15) - datetime.date(2021, 1, 11)
+    # ).days
 
-    fig.line(
-        x=[pd.to_datetime("2021-1-11"), pd.to_datetime("2021-2-15")],
-        y=[feb_target_rate, feb_target_rate],
-        color="#444444",
-        line_dash="dashed",
-        legend_label="Mid-February target",
-    )
+    # fig.line(
+    #    x=[pd.to_datetime("2021-1-11"), pd.to_datetime("2021-2-15")],
+    #    y=[feb_target_rate, feb_target_rate],
+    #    color="#444444",
+    #    line_dash="dashed",
+    #    legend_label="Mid-February target",
+    # )
 
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
@@ -114,7 +114,7 @@ def vax_cumulative_graph(vax_data):
             ],
             formatters={"@date": "datetime"},
             toggleable=False,
-            names=["total"]
+            names=["total"],
         )
     )
 
@@ -126,13 +126,13 @@ def vax_cumulative_graph(vax_data):
         legend_label=["Two doses", "One dose"],
     )
     fig.line(source=ds, x="date", y="first_dose", color="#888888", name="total")
-    fig.line(
-        x=[pd.to_datetime("2021-01-11"), pd.to_datetime("2021-2-15")],
-        y=[vax_data.sel(date="2021-1-11")["first_dose"].data, 15e6],
-        color="#444444",
-        line_dash="dashed",
-        legend_label="Mid-February target",
-    )
+    # fig.line(
+    #    x=[pd.to_datetime("2021-01-11"), pd.to_datetime("2021-2-15")],
+    #    y=[vax_data.sel(date="2021-1-11")["first_dose"].data, 15e6],
+    #    color="#444444",
+    #    line_dash="dashed",
+    #    legend_label="Mid-February target",
+    # )
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
     return fig
