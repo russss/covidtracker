@@ -292,7 +292,7 @@ render_template(
     graphs={
         "risky_venues": risky_venues(app_data.risky_venues()),
         "app_keys": app_keys(exposures),
-        "app_keys_risk": app_keys(exposures, by="interval"),
+        "app_keys_risk": app_keys(exposures, by="interval")
     },
     sources=[
         (
@@ -302,6 +302,8 @@ render_template(
             date.today(),
         )
     ],
+    risky_venues_count=app_data.risky_venues().count()['id'],
+    risky_venues_unique=len(pd.unique(app_data.risky_venues()['id']))
 )
 
 

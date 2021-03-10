@@ -18,6 +18,12 @@
     <p>The app also fetches a list of "risky venues" to compare with its list of QR code checkins. This graph shows the
         number of risky venues by date of announcement:</p>
     <div id="risky_venues" class="graph"></div>
+    <dl>
+      <dt>Total risky venue alerts</dt>
+      <dd>{{risky_venues_count}}</dd>
+      <dt>Unique risky venues</dt>
+      <dd>{{risky_venues_unique}}</dd>
+    </dl>
     <h2>Sources</h2>
     {{sources_table(sources)}}
   </div>
