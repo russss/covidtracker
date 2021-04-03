@@ -274,10 +274,14 @@ parent_lineages = {
     "L": "B.1.1.10",
     "M": "B.1.1.294",
     "N": "B.1.1.33",
+    "P.1": "B.1.1.28",
+    "P.2": "B.1.1.28",
+    "R.1": "B.1.1.316",
+    "R.2": "B.1.1.316"
 }
 
 
-def summarise_lineages(data, threshold=0.15, always_interesting=[]):
+def summarise_lineages(data, threshold=0.10, always_interesting=[]):
     """Summarise a COG-UK metadata dataframe, merging each lineage with its
     parent lineage unless it has an average prevalence of more than `threshold` during
     any 7-day window.
@@ -287,8 +291,8 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
     ].copy()  # Filter out missing lineages to start
     count = data.groupby("sample_date").count()["sequence_name"].rolling(7).mean()
 
-    # Don't use days with fewer than 100 samples to calculate prevalence
-    count = count[count > 100]
+    # Don't use days with fewer than 300 samples to calculate prevalence
+    count = count[count > 300]
 
     while True:
         lineage_prevalence = (
@@ -344,7 +348,7 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
 
 
 def lineage_prevalence(data):
-    summarised = summarise_lineages(data)
+    summarised = summarise_lineages(data, always_interesting=['B.1.351'])
     count = summarised.groupby(["sample_date"]).count()["sequence_name"]
     grouped = (
         summarised.groupby(["sample_date", "lineage"]).count()["sequence_name"] / count
