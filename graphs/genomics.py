@@ -260,28 +260,16 @@ def variant_prevalence_by_region(data, lineage, title):
     return fig
 
 
+# Fetch the parent lineages map. We only care about cases where a new letter gets assigned.
 parent_lineages = {
-    "B": "A",
-    "C": "B.1.1.1",
-    "D": "B.1.1.25",
-    "E": "B.1.5.12",
-    "F": "B.1.36.17",
-    "G": "B.1.258.2",
-    "H": "B.1.1.67",
-    "I": "B.1.1.217",
-    "J": "B.1.1.250",
-    "K": "B.1.1.277",
-    "L": "B.1.1.10",
-    "M": "B.1.1.294",
-    "N": "B.1.1.33",
-    "P.1": "B.1.1.28",
-    "P.2": "B.1.1.28",
-    "R.1": "B.1.1.316",
-    "R.2": "B.1.1.316"
+    row["alias"]: ".".join(row["lineage"].split(".")[:-1])
+    for _, row in pd.read_csv(
+        "https://raw.githubusercontent.com/cov-lineages/pango-designation/master/full_alias_key.txt"
+    ).iterrows() if row['alias'].count('.') == 1
 }
 
 
-def summarise_lineages(data, threshold=0.10, always_interesting=[]):
+def summarise_lineages(data, threshold=0.15, always_interesting=[]):
     """Summarise a COG-UK metadata dataframe, merging each lineage with its
     parent lineage unless it has an average prevalence of more than `threshold` during
     any 7-day window.
@@ -348,7 +336,7 @@ def summarise_lineages(data, threshold=0.10, always_interesting=[]):
 
 
 def lineage_prevalence(data):
-    summarised = summarise_lineages(data, always_interesting=['B.1.351'])
+    summarised = summarise_lineages(data, always_interesting=["B.1.351"])
     count = summarised.groupby(["sample_date"]).count()["sequence_name"]
     grouped = (
         summarised.groupby(["sample_date", "lineage"]).count()["sequence_name"] / count
