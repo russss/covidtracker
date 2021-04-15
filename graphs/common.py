@@ -22,8 +22,9 @@ england_interventions = [
     (date(2020, 12, 20), "Tier 4", LOCKDOWN_COLOUR),
     (date(2020, 12, 26), "More areas in tier 4", LOCKDOWN_COLOUR),
     (date(2021, 1, 6), "Lockdown #3", LOCKDOWN_COLOUR),
-    (date(2021, 3, 8), "Schools reopen", RELEASE_COLOUR),
-    (date(2021, 3, 29), "Rule of six", RELEASE_COLOUR)
+    (date(2021, 3, 8), "Stage 1a: Schools reopen", RELEASE_COLOUR),
+    (date(2021, 3, 29), "Stage 1b: Rule of six", RELEASE_COLOUR),
+    (date(2021, 4, 12), "Stage 2: pubs/nonessential shops", RELEASE_COLOUR),
 ]
 
 
