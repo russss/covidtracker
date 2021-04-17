@@ -92,7 +92,7 @@ def fetch_cog_metadata():
     data["t1001i"] = data["t1001i"] == "I"
     data["p681h"] = data["p681h"] == "H"
     data["q27stop"] = data["q27stop"] == "*"
-    data["e484k"] = data["e484k"] == "K"
+    data["e484k"] = data["e484k"] in ("K", "Q")
     data["del_21765_6"] = data["del_21765_6"] == "del"
     return data
 
@@ -172,7 +172,9 @@ def genomes_by_nation(data):
 
 
 def mutation_prevalence(data):
-    fig = figure(title="UK mutation prevalence", interventions=True)
+    fig = figure(title="UK mutation prevalence", interventions=True, y_axis_type="log")
+    fig.y_range.start = 0.005
+    fig.y_range.end = 1
     fig.add_tools(prevalence_hover_tool())
 
     mutations = {
@@ -180,7 +182,7 @@ def mutation_prevalence(data):
         "S A222V": "a222v",
         "S N501Y": "n501y",
         "S P681H": "p681h",
-        "S E484K": "e484k",
+        "S E484[K|Q]": "e484k",
         "S Δ69-70": "del_21765_6",
         "ORF8 Q27stop": "q27stop",
         "ORF1ab T1001I": "t1001i",
