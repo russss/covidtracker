@@ -26,7 +26,6 @@ from graphs.genomics import (
     genomes_by_nation,
     mutation_prevalence,
     lineage_prevalence,
-    variant_prevalence_by_region,
 )
 from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
 from template import render_template
@@ -313,12 +312,7 @@ render_template(
     graphs={
         "genomes_by_nation": genomes_by_nation(cog_metadata),
         "mutation_prevalence": mutation_prevalence(cog_metadata),
-        "lineage_prevalence": lineage_prevalence(cog_metadata),
-        "vui20201201_region": variant_prevalence_by_region(
-            cog_metadata,
-            "B.1.1.7",
-            "B.1.1.7 prevalence by region of sample",
-        ),
+        "lineage_prevalence": lineage_prevalence(cog_metadata)
     },
     sources=[
         (
