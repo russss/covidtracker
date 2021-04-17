@@ -92,7 +92,7 @@ def fetch_cog_metadata():
     data["t1001i"] = data["t1001i"] == "I"
     data["p681h"] = data["p681h"] == "H"
     data["q27stop"] = data["q27stop"] == "*"
-    data["e484k"] = (data["e484k"] == "K") or (data["e484k"] == "Q")
+    data["e484k"] = data["e484k"].isin(["K", "Q"])
     data["del_21765_6"] = data["del_21765_6"] == "del"
     return data
 
