@@ -1,3 +1,4 @@
+import requests
 import pandas as pd
 import numpy as np
 from datetime import date, timedelta
@@ -262,13 +263,7 @@ def variant_prevalence_by_region(data, lineage, title):
     return fig
 
 
-# Fetch the parent lineages map. We only care about cases where a new letter gets assigned.
-parent_lineages = {
-    row["alias"]: ".".join(row["lineage"].split(".")[:-1])
-    for _, row in pd.read_csv(
-        "https://raw.githubusercontent.com/cov-lineages/pango-designation/master/full_alias_key.txt"
-    ).iterrows() if row['alias'].count('.') == 1
-}
+parent_lineages = requests.get('https://raw.githubusercontent.com/cov-lineages/pango-designation/master/alias_key.json').json()
 
 
 def summarise_lineages(data, threshold=0.15, always_interesting=[]):
@@ -317,7 +312,7 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
         for lin in data["lineage"]:
             if lin in interesting_lineages:
                 filtered_lineage.append(lin)
-            elif lin in parent_lineages:
+            elif lin in parent_lineages and parent_lineages[lin] != '':
                 summarised_count += 1
                 filtered_lineage.append(parent_lineages[lin])
             else:
