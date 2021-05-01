@@ -125,13 +125,16 @@ def add_provisional(fig, provisional_days=7, start_date=None):
     end_date = date.today() + timedelta(days=1)
 
     fill_color = "#030002"
+    y1 = fig.y_range.start / 2 if fig.y_range.start else -10e8
+    y2 = fig.y_range.end * 2 if fig.y_range.end else 10e8
+
     provisional_renderer = fig.varea(
         x=[
             np.datetime64(start_date),
             np.datetime64(end_date),
         ],
-        y1=(fig.y_range.start / 2 if fig.y_range.start else -10e8),
-        y2=(fig.y_range.end * 2 if fig.y_range.end else -10e8),
+        y1=y1,
+        y2=y2,
         fill_color=fill_color,
         fill_alpha=0.05,
         level="underlay",
@@ -151,7 +154,7 @@ def add_provisional(fig, provisional_days=7, start_date=None):
         text_font_size="14px",
         text_color="#cccccc",
         angle=pi / 2,
-        level="underlay"
+        level="underlay",
     )
     fig.add_layout(label)
 
