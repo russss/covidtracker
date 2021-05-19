@@ -1,4 +1,4 @@
-def map_data(data, positivity, provisional_days):
+def map_data(data, positivity, provisional_days, vaccine_uptake):
     history_days = 44
 
     data = data.ffill("date").fillna(0).diff("date")
@@ -49,5 +49,9 @@ def map_data(data, positivity, provisional_days):
             "history": list(map(int, history)),
             "provisional_days": provisional_days,
         }
+
+        if gss_code in vaccine_uptake['gss_code']:
+            result[gss_code]["first_doses"] = float(vaccine_uptake.sel(gss_code=gss_code)['first'].data)
+            result[gss_code]["second_doses"] = float(vaccine_uptake.sel(gss_code=gss_code)['second'].data)
 
     return result

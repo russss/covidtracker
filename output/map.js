@@ -33,6 +33,16 @@ const positivity_colour_ramp = [
   ["< 1%", 0, "#edf8fb", false]
 ];
 
+const vaccine_colour_ramp = [
+  ["> 90%", 90, "#005a32", true],
+  ["> 80%", 80, "#238443", true],
+  ["> 70%", 70, "#41ab5d", true],
+  ["> 60%", 60, "#78c679", true],
+  ["> 50%", 50, "#addd8e", false],
+  ["> 40%", 40, "#d9f0a3", false],
+  ["< 40%", 0, "#ffffcc", false]
+];
+
 function makeGraph(width, height, data, provisional_days, type, num_suffix="") {
   const gap = 1;
   var draw = SVG().size(width, height);
@@ -180,6 +190,27 @@ function positivityStyleExpression(data, propname) {
   return expression;
 }
 
+function vaccineStyleExpression(data, propname) {
+  var expression = ["match", ["get", propname]];
+
+  for (const gss_id in data) {
+    const pct = data[gss_id].first_doses;
+    if (!pct) {
+      continue;
+    }
+    var colour = getColour(vaccine_colour_ramp, pct);
+
+    expression.push(gss_id, colour);
+    if (gss_id == "E09000012") {
+      expression.push("E09000001", colour);
+    } else if (gss_id == "E06000052") {
+      expression.push("E06000053", colour);
+    }
+  }
+  expression.push("#ffffff");
+  return expression;
+}
+
 function popupRenderer(map, data, name_field, gss_field) {
   return function(e) {
     var props = e.features[0].properties;
@@ -228,6 +259,14 @@ function popupRenderer(map, data, name_field, gss_field) {
         "<tr><th>Test positivity</th><td>" +
         item["positivity"].toFixed(1) +
         "%</td></tr>";
+    }
+    html += "</table>";
+    html += "<h4>Vaccination</h4><table>";
+    if (item['first_doses']) {
+      html += "<tr><th>First doses</th><td class=\"expand\">" + item['first_doses'].toFixed(1) + "%</td></tr>";
+    }
+    if (item['second_doses']) {
+      html += "<tr><th>Second doses</th><td class=\"expand\">" + item['second_doses'].toFixed(1) + "%</td></tr>";
     }
     html += "</table>";
 
@@ -306,6 +345,20 @@ class LegendControl {
 class SwitchControl {
   constructor(legend) {
     this._legend = legend;
+    this._buttons = {};
+    this._ramps = {}
+  }
+
+  addButton(id, name, anchor, ramp) {
+    var btn = document.createElement("button");
+    btn.innerHTML = name;
+    btn.onclick = e => {
+      history.pushState(id, "", anchor);
+      this.setState(id);
+    };
+    this._container.appendChild(btn);
+    this._buttons[id] = btn;
+    this._ramps[id] = ramp;
   }
 
   onAdd(map) {
@@ -314,33 +367,14 @@ class SwitchControl {
     this._container.className =
       "mapboxgl-ctrl-group mapboxgl-ctrl switcher-container";
 
-    this._rate_button = document.createElement("button");
-    this._rate_button.innerHTML = "Rate";
-    this._rate_button.onclick = e => {
-      history.pushState("rate", "", "#");
-      this.setState("rate");
-    };
-    this._container.appendChild(this._rate_button);
-
-    this._change_button = document.createElement("button");
-    this._change_button.innerHTML = "Change";
-    this._change_button.onclick = e => {
-      history.pushState("change", "", "#change");
-      this.setState("change");
-    };
-    this._container.appendChild(this._change_button);
-
-    this._positivity_button = document.createElement("button");
-    this._positivity_button.innerHTML = "Positivity";
-    this._positivity_button.onclick = e => {
-      history.pushState("positivity", "", "#positivity");
-      this.setState("positivity");
-    };
-    this._container.appendChild(this._positivity_button);
+    this.addButton("cases_abs", "Rate", "#", colour_ramp);
+    this.addButton("cases_rel", "Change", "#cases_rel", change_colour_ramp);
+    this.addButton("positivity", "Positivity", "#positivity", positivity_colour_ramp);
+    this.addButton("vaccine", "Vaccination", "#vaccine", vaccine_colour_ramp);
 
     window.onpopstate = event => {
       if (event.state == null) {
-        this.setState("rate");
+        this.setState("cases_abs");
       } else {
         this.setState(event.state);
       }
@@ -349,25 +383,21 @@ class SwitchControl {
   }
 
   setState(state) {
-    this._map.setLayoutProperty("cases_rel", "visibility", "none");
-    this._map.setLayoutProperty("cases_abs", "visibility", "none");
-    this._map.setLayoutProperty("positivity", "visibility", "none");
-    this._rate_button.disabled = false;
-    this._change_button.disabled = false;
-    this._positivity_button.disabled = false;
-    if (state == "rate") {
-      this._rate_button.disabled = true;
-      this._map.setLayoutProperty("cases_abs", "visibility", "visible");
-      this._legend.setColours(colour_ramp);
-    } else if (state == "change") {
-      this._change_button.disabled = true;
-      this._map.setLayoutProperty("cases_rel", "visibility", "visible");
-      this._legend.setColours(change_colour_ramp);
-    } else {
-      this._positivity_button.disabled = true;
-      this._map.setLayoutProperty("positivity", "visibility", "visible");
-      this._legend.setColours(positivity_colour_ramp);
+    if (!this._buttons[state]) {
+      state = "cases_abs";
     }
+
+    for (var btn_id in this._buttons) {
+      if (btn_id == state) {
+        this._map.setLayoutProperty(btn_id, "visibility", "visible");
+        this._buttons[btn_id].disabled = true;
+        this._legend.setColours(this._ramps[btn_id]);
+      } else {
+        this._map.setLayoutProperty(btn_id, "visibility", "none");
+        this._buttons[btn_id].disabled = false;
+      }
+    }
+
     this._state = state;
   }
 }
@@ -459,7 +489,24 @@ function initMap(data) {
       "la_boundary"
     );
 
-    for (const layer of ["cases_abs", "cases_rel", "positivity"]) {
+    map.addLayer(
+      {
+        id: "vaccine",
+        type: "fill",
+        source: "areas",
+        "source-layer": "local_authorities",
+        paint: {
+          "fill-color": vaccineStyleExpression(data, "lad19cd"),
+          "fill-opacity": opacity_func
+        },
+        layout: {
+          visibility: "none"
+        }
+      },
+      "la_boundary"
+    );
+
+    for (const layer of ["cases_abs", "cases_rel", "positivity", "vaccine"]) {
       map.on("click", layer, popupRenderer(map, data, "lad19nm", "lad19cd"));
 
       map.on("mouseenter", layer, function() {
@@ -475,7 +522,7 @@ function initMap(data) {
     if (state) {
       switchControl.setState(state);
     } else {
-      switchControl.setState("rate");
+      switchControl.setState("cases_abs");
     }
   });
 }

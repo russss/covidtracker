@@ -251,10 +251,11 @@ render_template(
 )
 
 positivity = coviddata.uk.test_positivity()
+vaccine_uptake = coviddata.uk.vaccination_uptake_by_area()
 
 render_template(
     "map.html",
-    data=json.dumps(map_data(eng_by_gss, positivity, provisional_days)),
+    data=json.dumps(map_data(eng_by_gss, positivity, provisional_days, vaccine_uptake)),
     provisional_days=provisional_days,
     sources=[
         (

@@ -165,10 +165,20 @@ table.sources {
 
 #map h3 {
   margin: 0;
+  margin-bottom: 4px;
 }
 
 #map table {
-  padding: 5px 0;
+  width: 100%;
+  padding: 0;
+}
+
+#map table th {
+  white-space: nowrap;
+}
+
+td.expand {
+  width: 99%;
 }
 
 #map th {
@@ -188,8 +198,8 @@ table.sources {
 }
 
 .mapboxgl-popup-content h4 {
-  margin-top: 0.5em;
-  margin-bottom: 0.3em;
+  margin-top: 0.4em;
+  margin-bottom: 0.1em;
 }
 
 .mapboxgl-popup-content td, th {
@@ -220,6 +230,11 @@ table.sources {
     line-height: 1.8em;
   }
 
+  .switcher-container button {
+    font-size: 0.8em;
+    height: 25px;
+  }
+
   #map-intro {
     position: absolute;
     top: 100px;
@@ -245,14 +260,11 @@ table.sources {
   }
 }
 
-.switcher-container {
-    width: 60px;
-}
-
 .switcher-container button {
     text-align: left;
     width: 100%;
     padding-left: 3px;
+    padding-right: 3px;
 }
 
 .switcher-container button:disabled {
