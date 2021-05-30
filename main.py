@@ -28,6 +28,7 @@ from graphs.genomics import (
     lineage_prevalence,
 )
 from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
+from graphs.tadpole import la_tadpole
 from template import render_template
 from map import map_data
 from score import calculate_score
@@ -111,6 +112,13 @@ uk_cases["cases_rolling"] = (
 )
 
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
+
+eng_by_gss["cases_rolling_14"] = (
+    eng_by_gss["cases"]
+    .diff('date')
+    .rolling(date=14, center=True)
+    .mean()
+)
 eng_by_gss["cases_norm"] = eng_by_gss["cases"] / populations
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
@@ -326,11 +334,14 @@ render_template(
 )
 
 vax_data = coviddata.uk.vaccinations()
+vax_uptake = coviddata.uk.vaccination_uptake_by_area_date()
+
 render_template(
     "vaccination.html",
     graphs={
         "vax_rate": vax_rate_graph(vax_data),
-        "vax_cumulative": vax_cumulative_graph(vax_data)
+        "vax_cumulative": vax_cumulative_graph(vax_data),
+        "vax_tadpole": la_tadpole(eng_by_gss, vax_uptake),
     },
     sources=[
         (

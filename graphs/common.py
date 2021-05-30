@@ -76,9 +76,12 @@ def intervention(fig, date, label, colour="red"):
     # fig.add_layout(span_label)
 
 
-def xr_to_cds(xr, x_series="date"):
+def xr_to_cds(xr, x_series="date", include_coords=[]):
     data = {}
     for series in xr:
+        data[series] = xr[series].values
+
+    for series in include_coords:
         data[series] = xr[series].values
 
     data[x_series] = xr[x_series].values

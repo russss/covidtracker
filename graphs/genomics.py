@@ -333,7 +333,7 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
 
 
 def lineage_prevalence(data):
-    summarised = summarise_lineages(data, always_interesting=["B.1.351"])
+    summarised = summarise_lineages(data, always_interesting=["B.1.351", "B.1.617.2"])
     count = summarised.groupby(["sample_date"]).count()["sequence_name"]
     grouped = (
         summarised.groupby(["sample_date", "lineage"]).count()["sequence_name"] / count

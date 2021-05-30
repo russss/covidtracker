@@ -272,3 +272,11 @@ td.expand {
     cursor: default;
     background-color: #ddd;
 }
+
+/* Hack to prevent multiple Bokeh HoverTool tooltips */
+div.bk-tooltip.bk-right>div.bk>div:not(:first-child) {
+    display:none !important;
+}
+div.bk-tooltip.bk-left>div.bk>div:not(:first-child) {
+    display:none !important;
+}

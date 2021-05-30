@@ -10,18 +10,33 @@ from bokeh.models import (
     DatetimeTickFormatter,
     ColumnDataSource,
     DatetimeAxis,
+    Span,
 )
 from bokeh.transform import linear_cmap
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import Dark2, YlOrRd
 
 from util import dict_to_xr
-from .common import figure, country_hover_tool, region_hover_tool, xr_to_cds, add_provisional, max_date
+from .common import (
+    figure,
+    country_hover_tool,
+    region_hover_tool,
+    xr_to_cds,
+    add_provisional,
+    max_date,
+)
 
 BAR_COLOUR = "#D5DFED"
 LINE_COLOUR = ["#3D6CB3", "#B33D43"]
 
 PROVISIONAL_DAYS = 5
+
+NATION_COLOURS = {
+    "England": "#E6A6A1",
+    "Scotland": "#A1A3E6",
+    "Wales": "#A6C78B",
+    "Northern Ireland": "#E0C795",
+}
 
 nhs_region_pops = {
     "North West": 7012947,
@@ -61,12 +76,6 @@ def uk_cases_graph(uk_cases):
     uk_cases_national = uk_cases / nation_populations * 100000 * 7
 
     layers = ["England", "Scotland", "Wales", "Northern Ireland"]
-    colours = {
-        "England": "#E6A6A1",
-        "Scotland": "#A1A3E6",
-        "Wales": "#A6C78B",
-        "Northern Ireland": "#E0C795",
-    }
 
     for layer in layers:
         label = layer
@@ -74,7 +83,7 @@ def uk_cases_graph(uk_cases):
             x=uk_cases_national["date"].values,
             y=uk_cases_national.sel(location=layer)["cases_rolling"].values,
             line_width=2,
-            line_color=colours[layer],
+            line_color=NATION_COLOURS[layer],
             legend_label=label,
             name=layer,
         )
@@ -82,7 +91,9 @@ def uk_cases_graph(uk_cases):
     fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
     fig.yaxis.axis_label = "Weekly cases per 100,000"
     fig.legend.location = "top_left"
-    add_provisional(fig, start_date=max_date(uk_cases) - timedelta(days=PROVISIONAL_DAYS))
+    add_provisional(
+        fig, start_date=max_date(uk_cases) - timedelta(days=PROVISIONAL_DAYS)
+    )
     return fig
 
 
@@ -215,7 +226,9 @@ def regional_cases(regions):
 
     fig.legend.location = "top_left"
     fig.yaxis.axis_label = "Weekly cases per 100,000"
-    add_provisional(fig, start_date=max_date(regions) - timedelta(days=PROVISIONAL_DAYS))
+    add_provisional(
+        fig, start_date=max_date(regions) - timedelta(days=PROVISIONAL_DAYS)
+    )
     return fig
 
 
@@ -241,7 +254,9 @@ def regional_deaths(nhs_deaths):
     fig.legend.location = "top_center"
     fig.xaxis.axis_label = "Date of death"
     fig.yaxis.axis_label = "Weekly deaths per 100,000"
-    add_provisional(fig, start_date=max_date(nhs_deaths) - timedelta(days=PROVISIONAL_DAYS))
+    add_provisional(
+        fig, start_date=max_date(nhs_deaths) - timedelta(days=PROVISIONAL_DAYS)
+    )
     return fig
 
 
@@ -430,7 +445,9 @@ def age_heatmap(age_rate):
         height=1.01,
         source=df,
         line_color=None,
-        fill_color=linear_cmap("rate", palette=colorcet.bmw, low=1, high=age_rate.max().max()),
+        fill_color=linear_cmap(
+            "rate", palette=colorcet.bmw, low=1, high=age_rate.max().max()
+        ),
     )
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.grid.grid_line_color = None
@@ -577,4 +594,42 @@ def risky_venues(risky_venues):
     )
     fig.vbar(x=counts.index, top=counts, width=60 * 60 * 24 * 1000 * 0.9)
     fig.xaxis.axis_label = "Day of export"
+    return fig
+
+
+def rising_cases(eng_by_gss):
+    cases_rolling_change = (
+        (eng_by_gss["cases"].diff("date").rolling(date=7).mean())
+        .dropna("date")
+        .diff("date")
+    )
+
+    rising = (
+        cases_rolling_change.where(cases_rolling_change > 0)
+        .count("gss_code")
+        .rolling(date=5)
+        .mean()
+        .to_dataframe("rising")
+    ) / 380
+
+    fig = figure(
+        title="Fraction of local authorities with rising case rates",
+        y_range=(0, 1),
+        x_range=(rising.index.min(), rising.index.max()),
+    )
+
+    fig.add_layout(
+        Span(
+            location=0.5,
+            dimension="width",
+            line_color="#333333",
+            line_dash="dashed",
+            line_width=1,
+        )
+    )
+
+    fig.line(x=rising.index, y=rising["rising"])
+
+    fig.yaxis.formatter = NumeralTickFormatter(format="0%")
+
     return fig
