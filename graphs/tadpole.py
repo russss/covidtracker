@@ -8,11 +8,14 @@ from .common import xr_to_cds
 from . import NATION_COLOURS
 
 
-def la_tadpole(eng_by_gss, vax_uptake, vaccine_dose="first", vaccine_shift=14, tail_days=7):
+def la_tadpole(eng_by_gss, vax_uptake, vaccine_shift=14, tail_days=7):
+    vax = vax_uptake.shift(date=vaccine_shift) / 100
+    vax['combined'] = vax['first'] * 0.4 + vax['second'] * 0.6
+
     # Forward fill is necessary due to timing differences between cases and vax
     vax_vs_cases = xr.merge(
         [
-            vax_uptake.shift(date=vaccine_shift) / 100,
+            vax,
             (eng_by_gss.diff('date') * 100000 * 7)
             .rolling(date=7)
             .mean()["cases_norm"],
@@ -61,7 +64,7 @@ def la_tadpole(eng_by_gss, vax_uptake, vaccine_dose="first", vaccine_shift=14, t
     for gss in history.gss_code.values:
         data = history.sel(gss_code=gss, drop=True)
         xs.append(data["cases_norm"].values)
-        ys.append(data[vaccine_dose].values)
+        ys.append(data["combined"].values)
 
     fig.multi_line(xs=xs, ys=ys, color="#777777", width=1.2, alpha=0.3)
 
@@ -74,7 +77,7 @@ def la_tadpole(eng_by_gss, vax_uptake, vaccine_dose="first", vaccine_shift=14, t
     fig.circle(
         source=latest_ds,
         x="cases_norm",
-        y=vaccine_dose,
+        y="combined",
         size=7,
         alpha=1,
         line_width=0.5,
@@ -88,16 +91,17 @@ def la_tadpole(eng_by_gss, vax_uptake, vaccine_dose="first", vaccine_shift=14, t
     )
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0%")
-    fig.yaxis.axis_label = f"Adults with {vaccine_dose} dose {vaccine_shift} days ago"
+    fig.yaxis.axis_label = "Combined adult vaccination coverage"
     fig.xaxis.axis_label = "Weekly cases per 100,000 (7-day average)"
     fig.add_tools(
         HoverTool(
             names=["point"],
             tooltips=[
-                ("Local authority", "@name, @nation"),
+                ("", "@name, @nation"),
                 ("Cases", "@cases_norm{0.0} per 100,000"),
                 ("First doses", "@first{0.0%}"),
                 ("Second doses", "@second{0.0%}"),
+                ("Combined vaccination coverage", "@combined{0.0%}"),
             ],
             toggleable=False,
         )
