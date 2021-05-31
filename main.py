@@ -341,7 +341,7 @@ render_template(
     graphs={
         "vax_rate": vax_rate_graph(vax_data),
         "vax_cumulative": vax_cumulative_graph(vax_data),
-        "vax_tadpole": la_tadpole(eng_by_gss, vax_uptake),
+        "vax_tadpole": la_tadpole(eng_by_gss, vax_uptake, populations),
     },
     sources=[
         (
