@@ -123,12 +123,6 @@ eng_by_gss["cases_norm"] = eng_by_gss["cases"] / populations
 
 scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
-
-nhs_deaths = coviddata.uk.deaths_nhs()
-nhs_deaths["deaths_rolling"] = (
-    nhs_deaths["deaths"].rolling(date=7, center=True).mean().dropna("date")
-)
-
 nhs_region_cases = cases_by_nhs_region(eng_by_gss, la_region)
 
 nhs_region_cases["cases_rolling"] = (
@@ -186,14 +180,12 @@ render_template(
         "confirmed_cases": uk_cases_graph(uk_cases),
         #        "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
-        "regional_deaths": regional_deaths(nhs_deaths),
         "triage_online": triage_graph(triage_online, "Online triage") if triage_online else None,
         "triage_pathways": triage_graph(triage_pathways, "Phone triage") if triage_pathways else None,
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
         "age_heatmap": age_heatmap(england_by_age),
     },
     scores=calculate_score(
-        nhs_deaths,
         nhs_region_cases,
         triage_online,
         triage_pathways,
