@@ -9,9 +9,7 @@ import coviddata.world
 
 from graphs import (
     uk_cases_graph,
-    #   england_deaths,
     regional_cases,
-    regional_deaths,
     triage_graph,
     la_rate_plot,
     hospital_admissions_graph,
@@ -308,12 +306,19 @@ render_template(
 
 
 cog_metadata = fetch_cog_metadata()
+
+try:
+    lin_prev = lineage_prevalence(cog_metadata)
+except Exception:
+    print("Error generating lineage prevalence")
+    lin_prev = None
+
 render_template(
     "genomics.html",
     graphs={
         "genomes_by_nation": genomes_by_nation(cog_metadata),
         "mutation_prevalence": mutation_prevalence(cog_metadata),
-        "lineage_prevalence": lineage_prevalence(cog_metadata)
+        "lineage_prevalence": lin_prev
     },
     sources=[
         (
