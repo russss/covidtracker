@@ -584,16 +584,33 @@ def app_keys(data, by="export"):
 
 
 def risky_venues(risky_venues):
-    counts = risky_venues.groupby(risky_venues.export_date.dt.date).size()
+    counts = (
+        risky_venues.groupby(
+            [risky_venues.export_date.dt.date, risky_venues.message_type]
+        )
+        .size()
+        .unstack()
+    )
+    colors = ["#718dbf", "#e84d60"]
+    labels = ["Inform", "Book test"]
     fig = figure(
-        title="Risky venues",
+        title="Risky venue notifications",
         x_range=(
             np.datetime64(date(2020, 9, 10)),
             np.datetime64(date.today() + timedelta(days=1)),
         ),
     )
-    fig.vbar(x=counts.index, top=counts, width=60 * 60 * 24 * 1000 * 0.9)
+    fig.vbar_stack(
+        ["M1", "M2"],
+        source=counts,
+        color=colors,
+        x="export_date",
+        width=60 * 60 * 24 * 1000 * 0.6,
+        legend_label=labels
+    )
     fig.xaxis.axis_label = "Day of export"
+    fig.legend.location = "top_left"
+    fig.legend.title = "Notification type"
     return fig
 
 
