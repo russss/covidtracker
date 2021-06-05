@@ -53,5 +53,9 @@ def map_data(data, positivity, provisional_days, vaccine_uptake):
         if gss_code in vaccine_uptake['gss_code']:
             result[gss_code]["first_doses"] = float(vaccine_uptake.sel(gss_code=gss_code)['first'].data)
             result[gss_code]["second_doses"] = float(vaccine_uptake.sel(gss_code=gss_code)['second'].data)
+            result[gss_code]["combined_doses"] = float(
+                vaccine_uptake.sel(gss_code=gss_code)['first'].data * 0.4
+                + vaccine_uptake.sel(gss_code=gss_code)['second'].data * 0.6
+            )
 
     return result

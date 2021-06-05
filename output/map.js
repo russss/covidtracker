@@ -194,7 +194,7 @@ function vaccineStyleExpression(data, propname) {
   var expression = ["match", ["get", propname]];
 
   for (const gss_id in data) {
-    const pct = data[gss_id].first_doses;
+    const pct = data[gss_id].combined_doses;
     if (!pct) {
       continue;
     }
@@ -267,6 +267,9 @@ function popupRenderer(map, data, name_field, gss_field) {
     }
     if (item['second_doses']) {
       html += "<tr><th>Second doses</th><td class=\"expand\">" + item['second_doses'].toFixed(1) + "%</td></tr>";
+    }
+    if (item['combined_doses']) {
+      html += "<tr><th>Combined</th><td class=\"expand\">" + item['combined_doses'].toFixed(1) + "%</td></tr>";
     }
     html += "</table>";
 
