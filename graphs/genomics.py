@@ -314,7 +314,14 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
                 filtered_lineage.append(lin)
             elif lin in parent_lineages and parent_lineages[lin] != '':
                 summarised_count += 1
-                filtered_lineage.append(parent_lineages[lin])
+                if isinstance(parent_lineages[lin], list):
+                    # This happens if the lineage is a recombination of two parents
+                    # Pick the one with the longest lineage chain to be the parent,
+                    # ie. the most dots in the lineage name. Does not handle ties as is.
+                    main_lineage = max(parent_lineages[lin], key=lambda x: len(x.split(".")))
+                    filtered_lineage.append(main_lineage)
+                else:
+                    filtered_lineage.append(parent_lineages[lin])
             else:
                 lineage_parts = lin.split(".")
                 if len(lineage_parts) == 1:
