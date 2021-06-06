@@ -265,6 +265,9 @@ def variant_prevalence_by_region(data, lineage, title):
 
 parent_lineages = requests.get('https://raw.githubusercontent.com/cov-lineages/pango-designation/master/alias_key.json').json()
 
+# Further info on the lineage naming rules here:
+# https://virological.org/t/pango-lineage-nomenclature-provisional-rules-for-naming-recombinant-lineages/657
+
 
 def summarise_lineages(data, threshold=0.15, always_interesting=[]):
     """Summarise a COG-UK metadata dataframe, merging each lineage with its
