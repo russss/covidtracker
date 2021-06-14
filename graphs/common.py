@@ -153,7 +153,6 @@ def add_provisional(fig, provisional_days=7, start_date=None):
         y=4,
         y_units="screen",
         text="INCOMPLETE",
-        background_fill_color="#FDFDFD",
         text_font="Noto Sans",
         text_font_size="14px",
         text_color="#cccccc",
