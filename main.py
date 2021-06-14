@@ -16,8 +16,6 @@ from graphs import (
     uk_test_positivity,
     uk_test_capacity,
     age_heatmap,
-    risky_venues,
-    app_keys,
 )
 from graphs.genomics import (
     fetch_cog_metadata,
@@ -26,6 +24,7 @@ from graphs.genomics import (
     lineage_prevalence,
 )
 from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
+from graphs.app import risky_venues, app_keys
 from graphs.tadpole import la_tadpole
 from template import render_template
 from map import map_data
