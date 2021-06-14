@@ -263,7 +263,9 @@ def variant_prevalence_by_region(data, lineage, title):
     return fig
 
 
-parent_lineages = requests.get('https://raw.githubusercontent.com/cov-lineages/pango-designation/master/alias_key.json').json()
+parent_lineages = requests.get(
+    'https://raw.githubusercontent.com/cov-lineages/pango-designation/master/pango_designation/alias_key.json'
+).json()
 
 # Further info on the lineage naming rules here:
 # https://virological.org/t/pango-lineage-nomenclature-provisional-rules-for-naming-recombinant-lineages/657
