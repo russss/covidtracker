@@ -156,20 +156,6 @@ except Exception:
 
 # phe_deaths = coviddata.uk.deaths_phe()
 
-age_rate = coviddata.uk.cases_by_age()
-england_by_age = (
-    age_rate.sum("gss_code")
-    .drop_sel(age="unassigned")
-    .rolling(date=7, center=True)
-    .sum()
-)
-age_populations = (
-    pd.read_csv("./data/england_population_by_age.csv").set_index("age").to_xarray()
-)
-england_by_age["rate"] = (
-    england_by_age["cases"] / age_populations["population"] * 100000
-)
-
 render_template(
     "index.html",
     graphs={
