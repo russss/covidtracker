@@ -15,7 +15,6 @@ from graphs import (
     hospital_admissions_graph,
     uk_test_positivity,
     uk_test_capacity,
-    age_heatmap,
 )
 from graphs.genomics import (
     fetch_cog_metadata,
@@ -180,7 +179,6 @@ render_template(
         "triage_online": triage_graph(triage_online, "Online triage") if triage_online else None,
         "triage_pathways": triage_graph(triage_pathways, "Phone triage") if triage_pathways else None,
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
-        "age_heatmap": age_heatmap(england_by_age),
     },
     scores=calculate_score(
         nhs_region_cases,
