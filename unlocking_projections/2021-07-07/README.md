@@ -18,7 +18,10 @@ Figure 4, plot B2 (Central VE), mid-blue line.
 
 [Source](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1001174/S1304_LSHTM_Updated_roadmap_assessment_prior_to_delayed_step_4.2__7_July_2021__1_.pdf)
 
-Figure 7, no waning, red ("central") line. (I think the same line is duplicated on other plots but Fig 7 was clearest.)
+
+Figure 7, red ("central") line. (I think the same line is duplicated on other plots but Fig 7 was clearest.)
+
+Files are provided for "waning" and "no waning" scenarios.
 
 ## SPI-M-O
 
