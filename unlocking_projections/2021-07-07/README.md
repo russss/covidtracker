@@ -8,6 +8,8 @@ These files contain hospital admissions data, digitised from the plots in the PD
 
 Figure 2 - solid black line
 
+The `warwick` folder contains some of the various behavioural assumptions for step 4, from Figure 4.
+
 ## Imperial
 
 [Source](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1001177/S1303_Imperial_College_London_Evaluating_the_Roadmap_out_of_Lockdown_for_England_modelling_the_delayed_step_4.2_of_the_roadmap_in_the_context_of_the_Delta_variant__7_July_2021__1_.pdf)
