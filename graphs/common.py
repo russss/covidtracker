@@ -26,6 +26,7 @@ england_interventions = [
     (date(2021, 3, 29), "Stage 1b: Rule of six", RELEASE_COLOUR),
     (date(2021, 4, 12), "Stage 2: pubs/nonessential shops", RELEASE_COLOUR),
     (date(2021, 5, 17), "Stage 3: indoor hospitality and household mixing", RELEASE_COLOUR),
+    (date(2021, 7, 19), "Stage 4: all remaining premises open", RELEASE_COLOUR),
 ]
 
 
