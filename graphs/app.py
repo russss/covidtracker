@@ -57,7 +57,7 @@ def risky_venues(risky_venues):
         )
         .size()
         .unstack()
-    )
+    ).fillna(0)
     colors = ["#718dbf", "#e84d60"]
     labels = ["Inform", "Book test"]
     fig = figure(
