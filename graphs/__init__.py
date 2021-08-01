@@ -389,6 +389,7 @@ def case_ratio_heatmap(by_age):
     by_age["cases_change"] = (
         by_age["cases_rolling"] / by_age.shift(date=7)["cases_rolling"]
     )
+    print(by_age)
     df = by_age.drop_sel(age="unassigned").to_dataframe()
     df = df.dropna()["cases_change"].unstack(0)
     df = df.reindex(
@@ -414,6 +415,9 @@ def case_ratio_heatmap(by_age):
             "90+",
         ]
     )
+    print(df)
+    print(df.index)
+    print(df.index.max())
     months = 4
     fig = bokeh_figure(
         width=1200,
