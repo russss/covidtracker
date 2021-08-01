@@ -391,7 +391,7 @@ def case_ratio_heatmap(by_age):
     )
     print(by_age)
     df = by_age.drop_sel(age="unassigned").to_dataframe()
-    df = df.dropna()["cases_change"].unstack(0)
+    df = df.dropna()["cases_change"].unstack('age')
     df = df.reindex(
         columns=[
             "0-4",
