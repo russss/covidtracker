@@ -10,7 +10,7 @@ import coviddata.world
 from graphs import (
     uk_cases_graph,
     regional_cases,
-    triage_graph,
+    case_ratio_heatmap,
     la_rate_plot,
     hospital_admissions_graph,
     uk_test_positivity,
@@ -25,6 +25,7 @@ from graphs.genomics import (
 from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
 from graphs.app import risky_venues, app_keys
 from graphs.tadpole import la_tadpole
+from graphs.unlocking import unlocking_graph
 from template import render_template
 from map import map_data
 from score import calculate_score
@@ -49,7 +50,11 @@ def online_triage_by_nhs_region():
     triage = (
         triage_online.sum(["age_band", "sex"])
         .assign_coords(
-            {"ccg": [ccg_lookup["NHSER20NM"].get(i.item()) for i in triage_online["ccg"]]}
+            {
+                "ccg": [
+                    ccg_lookup["NHSER20NM"].get(i.item()) for i in triage_online["ccg"]
+                ]
+            }
         )
         .rename(ccg="region")
         .groupby("region")
@@ -70,7 +75,12 @@ def pathways_triage_by_nhs_region():
     triage = (
         triage_pathways.sum(["age_band", "sex", "site_type"])
         .assign_coords(
-            {"ccg": [ccg_lookup["NHSER20NM"].get(i.item()) for i in triage_pathways["ccg"]]}
+            {
+                "ccg": [
+                    ccg_lookup["NHSER20NM"].get(i.item())
+                    for i in triage_pathways["ccg"]
+                ]
+            }
         )
         .groupby("ccg")
         .sum()
@@ -110,14 +120,9 @@ uk_cases["cases_rolling"] = (
 eng_by_gss = coviddata.uk.cases_phe("ltlas", key="gss_code")
 
 eng_by_gss["cases_rolling_14"] = (
-    eng_by_gss["cases"]
-    .diff('date')
-    .rolling(date=14, center=True)
-    .mean()
+    eng_by_gss["cases"].diff("date").rolling(date=14, center=True).mean()
 )
 eng_by_gss["cases_norm"] = eng_by_gss["cases"] / populations
-
-scot_data = correct_scottish_data(coviddata.uk.scotland.cases("gss_code"))
 
 nhs_region_cases = cases_by_nhs_region(eng_by_gss, la_region)
 
@@ -142,29 +147,19 @@ excess_deaths = pd.read_csv(
     "./data/excess_deaths.csv", index_col="date", parse_dates=["date"], dayfirst=True
 )
 
-try:
-    triage_online = online_triage_by_nhs_region()
-except Exception:
-    log.exception("Online triage fetching error")
-    triage_online = None
+triage_online = None
+triage_pathways = None
 
-try:
-    triage_pathways = pathways_triage_by_nhs_region()
-except Exception:
-    log.exception("Pathways fetching error")
-    triage_pathways = None
-
-# phe_deaths = coviddata.uk.deaths_phe()
+by_age = coviddata.uk.cases_by_age()
 
 render_template(
     "index.html",
     graphs={
         "confirmed_cases": uk_cases_graph(uk_cases),
-        #        "deaths": england_deaths(phe_deaths, excess_deaths, uk_cases),
         "regional_cases": regional_cases(nhs_region_cases),
-        "triage_online": triage_graph(triage_online, "Online triage") if triage_online else None,
-        "triage_pathways": triage_graph(triage_pathways, "Phone triage") if triage_pathways else None,
+        "case_ratio_heatmap": case_ratio_heatmap(by_age),
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
+        "unlocking_scenarios": unlocking_graph(),
     },
     scores=calculate_score(
         nhs_region_cases,
@@ -179,25 +174,11 @@ render_template(
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
         ),
-        #        (
-        #            "ONS",
-        #            "Deaths registered weekly in England and Wales, provisional",
-        #            "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages"
-        #            "/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales",
-        #            date(2020, 7, 28),
-        #        ),
         (
-            "NHS",
-            "Potential COVID-19 symptoms reported through NHS Pathways and 111 online",
-            "https://digital.nhs.uk/data-and-information/publications/statistical"
-            "/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online",
-            pd.Timestamp(triage_online["date"].max().item(0)).date() if triage_online else None,
-        ),
-        (
-            scot_data.attrs["source"],
-            "Coronavirus - COVID-19 - Management Information",
-            scot_data.attrs["source_url"],
-            scot_data.attrs["date"],
+            "SPI-M-O members (graphs digitised by Russ Garrett)",
+            "Unlocking projections from SAGE 93 (7 July 2021)",
+            "https://github.com/russss/covidtracker/tree/master/unlocking_projections/2021-07-07",
+            date(2020, 7, 7),
         ),
     ],
 )
@@ -273,7 +254,7 @@ render_template(
     graphs={
         "risky_venues": risky_venues(app_data.risky_venues()),
         "app_keys": app_keys(exposures),
-        "app_keys_risk": app_keys(exposures, by="interval")
+        "app_keys_risk": app_keys(exposures, by="interval"),
     },
     sources=[
         (
@@ -283,8 +264,8 @@ render_template(
             date.today(),
         )
     ],
-    risky_venues_count=app_data.risky_venues().count()['id'],
-    risky_venues_unique=len(pd.unique(app_data.risky_venues()['id']))
+    risky_venues_count=app_data.risky_venues().count()["id"],
+    risky_venues_unique=len(pd.unique(app_data.risky_venues()["id"])),
 )
 
 
@@ -301,7 +282,7 @@ render_template(
     graphs={
         "genomes_by_nation": genomes_by_nation(cog_metadata),
         "mutation_prevalence": mutation_prevalence(cog_metadata),
-        "lineage_prevalence": lin_prev
+        "lineage_prevalence": lin_prev,
     },
     sources=[
         (
@@ -329,6 +310,6 @@ render_template(
             "Coronavirus (COVID-19) in the UK",
             "https://coronavirus.data.gov.uk",
             vax_data.attrs["date"],
-        ),
+        )
     ],
 )

@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import xarray as xr
-import colorcet
 from itertools import cycle
 from datetime import timedelta
 from bokeh.plotting import figure as bokeh_figure
@@ -14,7 +13,7 @@ from bokeh.models import (
 )
 from bokeh.transform import linear_cmap
 from bokeh.models.tools import HoverTool
-from bokeh.palettes import Dark2
+from bokeh.palettes import Dark2, RdYlBu
 
 from util import dict_to_xr
 from .common import (
@@ -380,12 +379,19 @@ def la_rate_plot(data, names, region, rolling_days=7):
     return fig
 
 
-def age_heatmap(age_rate):
-    age_rate = age_rate["rate"].to_dataframe().unstack()
-    age_rate.columns = age_rate.columns.get_level_values(1)
-    # Have to manually reindex columns here as somewhere along the line "5-9"
-    # gets lexicographically sorted out of order...
-    age_rate = age_rate.reindex(
+def case_ratio_heatmap(by_age):
+    by_age = by_age.sel(
+        date=slice(
+            by_age["date"].min(), by_age["date"].max() - pd.to_timedelta(3, unit="days")
+        )
+    )
+    by_age["cases_rolling"] = by_age["cases"].rolling(date=7, center=True).mean()
+    by_age["cases_change"] = (
+        by_age["cases_rolling"] / by_age.shift(date=7)["cases_rolling"]
+    )
+    df = by_age.drop_sel(age="unassigned").to_dataframe()
+    df = df.dropna()["cases_change"].unstack(0)
+    df = df.reindex(
         columns=[
             "0-4",
             "5-9",
@@ -408,46 +414,42 @@ def age_heatmap(age_rate):
             "90+",
         ]
     )
-    age_rate.index.name = "Date"
-    age_rate.columns.name = "Age"
+    months = 4
     fig = bokeh_figure(
         width=1200,
         height=400,
-        title="Case rate in England by age",
+        title=f"Change in cases in England by age (last {months} months)",
         tools="",
         toolbar_location=None,
         x_range=[
-            age_rate.index.min(),
-            age_rate.index.max(),
+            df.index.max() - pd.to_timedelta(months * 30, unit="days"),
+            df.index.max(),
         ],
-        y_range=list(age_rate.columns),
+        y_range=list(df.columns),
     )
 
     fig.add_tools(
         HoverTool(
             tooltips=[
-                ("Date", "@Date{%d %b}"),
-                ("Age range", "@Age"),
-                ("Cases", "@rate{0.00} per 100,000"),
+                ("Date", "@date{%d %b}"),
+                ("Age range", "@age"),
+                ("Change in cases", "@cases_change{0%}"),
             ],
-            formatters={"@Date": "datetime"},
+            formatters={"@date": "datetime"},
             toggleable=False,
         )
     )
 
-    df = pd.DataFrame(age_rate.stack(), columns=["rate"]).reset_index()
-
+    df2 = pd.DataFrame(df.stack(), columns=["cases_change"]).reset_index()
     fig.rect(
-        "Date",
-        "Age",
+        "date",
+        "age",
         dilate=True,
         width=60 * 60 * 24 * 1000 * 1.1,
         height=1.01,
-        source=df,
+        source=df2,
         line_color=None,
-        fill_color=linear_cmap(
-            "rate", palette=colorcet.bmw, low=1, high=age_rate.max().max()
-        ),
+        fill_color=linear_cmap("cases_change", palette=RdYlBu[11], low=0.4, high=1.6),
     )
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.grid.grid_line_color = None

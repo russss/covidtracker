@@ -1,94 +1,120 @@
-{% extends "_base.html" %}
-{% from '_util.html' import sources_table %}
-{% block title %}UK COVID-19 Tracker{% endblock %}
-{% block description %}Stats and graphs on COVID-19 spread in the UK.{% endblock %}
-
-{% macro score_cell(value) %}
-  <td class="score score_
-      {%- if value < -50 %}fall_large
-      {%- elif value < -10 %}fall_small
-      {%- elif value > 50 %}rise_large
-      {%- elif value > 10 %}rise_small
-      {%- else %}neutral{% endif %}">
-    {{value|round|int}}%</td>
-{%- endmacro %}
-{% block body %}
-  <div id="body" class="graphs-body">
-    {% include "_width_warning.html" %}
-    <p>This is a collection of what I consider to be the most useful COVID-19 data for the UK. It is updated
-        from the latest source data every 30 minutes.</p>
-    <h2>Regional Trends</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>English Region</th>
-          {% if scores['dates']['triage_online'] %}
-            <th title="{{scores['dates']['triage_online'].date()}}">Triage (online)</th>
-          {% endif %}
-          {% if scores['dates']['triage_pathways'] %}
-            <th title="{{scores['dates']['triage_pathways'].date()}}">Triage (phone)</th>
-          {% endif %}
-          <th title="{{scores['dates']['cases'].date()}}">Cases</th>
-          <th title="{{scores['dates']['admissions'].date()}}">Hospital admissions</th>
-          {# <th title="{{scores['dates']['deaths'].date()}}">Deaths</th> #}
-        </tr>
-      </thead>
-      <tbody>
+{% extends "_base.html" %} {% from '_util.html' import sources_table %} {% block
+title %}UK COVID-19 Tracker{% endblock %} {% block description %}Stats and
+graphs on COVID-19 spread in the UK.{% endblock %} {% macro score_cell(value) %}
+<td
+  class="
+    score score_
+    {%-
+    if
+    value
+    <
+    -50
+    %}fall_large
+    {%-
+    elif
+    value
+    <
+    -10
+    %}fall_small
+    {%-
+    elif
+    value
+    >
+    50
+    %}rise_large
+    {%-
+    elif
+    value
+    >
+    10
+    %}rise_small
+    {%-
+    else
+    %}neutral{%
+    endif
+    %}
+  "
+>
+  {{value|round|int}}%
+</td>
+{%- endmacro %} {% block body %}
+<div id="body" class="graphs-body">
+  {% include "_width_warning.html" %}
+  <p>
+    This is a collection of what I consider to be the most useful COVID-19 data
+    for the UK. It is updated from the latest source data every 30 minutes.
+  </p>
+  <h2>Regional Trends</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>English Region</th>
+        {% if scores['dates']['triage_online'] %}
+        <th title="{{scores['dates']['triage_online'].date()}}">
+          Triage (online)
+        </th>
+        {% endif %} {% if scores['dates']['triage_pathways'] %}
+        <th title="{{scores['dates']['triage_pathways'].date()}}">
+          Triage (phone)
+        </th>
+        {% endif %}
+        <th title="{{scores['dates']['cases'].date()}}">Cases</th>
+        <th title="{{scores['dates']['admissions'].date()}}">
+          Hospital admissions
+        </th>
+        {#
+        <th title="{{scores['dates']['deaths'].date()}}">Deaths</th>
+        #}
+      </tr>
+    </thead>
+    <tbody>
       {% for region, s in scores['scores'].items() %}
-        <tr>
-          <td>{{region}}</td>
-          {% if scores['dates']['triage_online'] %}
-            {{score_cell(s['triage_online'])}}
-          {% endif %}
-          {% if scores['dates']['triage_pathways'] %}
-            {{score_cell(s['triage_pathways'])}}
-          {% endif %}
-          {{score_cell(s['cases'])}}
-          {{score_cell(s['admissions'])}}
-          {# {{score_cell(s['deaths'])}} #}
-        </tr>
+      <tr>
+        <td>{{region}}</td>
+        {% if scores['dates']['triage_online'] %}
+        {{score_cell(s['triage_online'])}} {% endif %} {% if
+        scores['dates']['triage_pathways'] %}
+        {{score_cell(s['triage_pathways'])}} {% endif %}
+        {{score_cell(s['cases'])}} {{score_cell(s['admissions'])}} {#
+        {{score_cell(s['deaths'])}} #}
+      </tr>
       {% endfor %}
-      </tbody>
-    </table>
-    <p class="footnote">
-        Scores are calculated from 7-day changes in a 7-day average.
-    </p>
-    <h2>General Situation</h2>
-    <p>Where data is likely to be incomplete due to reporting delays, a grey area is shown.
-        Red vertical markers show the date when restrictions were imposed,
-        green lines show restrictions being relaxed. Unless otherwise stated, trend lines are a 7-day
-        rolling average.</p>
-    <div id="confirmed_cases" class="graph"></div>
-    {#
-    <p>There are several measures of how many people have died of COVID-19:</p>
-    <ul>
-      <li>Excess deaths (red line): the total number of registered deaths compared to the 5-year average. This can be negative
-          (in which case it is not shown on this graph) when deaths are lower than the average.</li>
-      <li>Recorded deaths (orange line): the total number of deaths registered with COVID-19 mentioned on the death certificate.</li>
-      <li>Deaths by date of report (dashed line): The number of people reported to have died of COVID-19 each day. This
-          number is frequently reported by the press. It often includes deaths which occurred several weeks ago, so
-          as deaths are falling, it is likely to be higher than the true number of deaths on that date. This number has a lot of
-          daily variation so it is shown as a 7-day average.</li>
-      <li>Deaths by date of death (blue line/bars): The total number of people recorded to have died of COVID-19 by day. As of
-          July 2020, this includes the deaths of everyone who has ever tested positive for COVID-19, and so may be a slight
-          over-estimate.</li>
-    </ul>
-    <div id="deaths" class="graph"></div>
-    #}
-    <div id="regional_cases" class="graph"></div>
-    <div id="hospital_admissions" class="graph"></div>
-    <h2>NHS 111 Triage Data</h2>
-    <p>This data shows the number of instances of people contacting NHS 111 with suspected COVID-19
-        symptoms, both online and over the phone. It should act as a leading indicator of any COVID-19 outbreaks.</p>
-    <p>Caveats: the criteria used to triage users have changed several times. The phone triage data does not cover
-        999 calls in some areas of the country. <a href="https://digital.nhs.uk/data-and-information/publications/statistical/mi-potential-covid-19-symptoms-reported-through-nhs-pathways-and-111-online/latest">More info</a>.</p>
-    <div id="triage_online" class="graph"></div>
-    <div id="triage_pathways" class="graph"></div>
-    <h2>Sources</h2>
-    {{sources_table(sources)}}
-    <p class="footnote">Public Health England data at LTLA level is mapped to NHS England regions using
-        <a href="https://github.com/russss/local_authority_nhs_region">this mapping</a>, which is not exact.
-        Pillar 2 data was added to the Scottish numbers on 15 June, and a crude correction has been applied to smooth this discontinuity.
-    </p>
-  </div>
+    </tbody>
+  </table>
+  <p class="footnote">
+    Scores are calculated from 7-day changes in a 7-day average.
+  </p>
+  <h2>General Situation</h2>
+  <p>
+    Where data is likely to be incomplete due to reporting delays, a grey area
+    is shown. Red vertical markers show the date when restrictions were imposed,
+    green lines show restrictions being relaxed. Unless otherwise stated, trend
+    lines are a 7-day rolling average.
+  </p>
+  <div id="confirmed_cases" class="graph"></div>
+  <div id="regional_cases" class="graph"></div>
+  <div id="hospital_admissions" class="graph"></div>
+  <div id="case_ratio_heatmap" class="graph"></div>
+  <h2>Unlocking Projections</h2>
+  <p>The following graph shows the state of hospital admissions compared with
+      the projections presented at the SAGE 93 meeting on 7 July 2021.
+      It should be noted that <em>only the central estimate of each of the models
+      is presented here</em>, and all of the models generated wide confidence intervals,
+      which are not shown.
+  </p>
+  <p>These models are inherently sensitive to small changes in variables such as
+      vaccine efficacy, cross-immunity, and immunity waning, as well as the public's behaviour.</p>
+  <p>This data is presented on a logarithmic scale which allows better comparison of the trajectory of different models.</p>
+  <div id="unlocking_scenarios" class="graph"></div>
+
+  <h2>Sources</h2>
+  {{sources_table(sources)}}
+  <p class="footnote">
+    Public Health England data at LTLA level is mapped to NHS England regions
+    using
+    <a href="https://github.com/russss/local_authority_nhs_region"
+      >this mapping</a
+    >, which is not exact.
+  </p>
+</div>
 {% endblock %}
