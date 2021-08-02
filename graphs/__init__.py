@@ -57,6 +57,28 @@ nation_populations = dict_to_xr(
     "location",
 )
 
+AGE_RANGES = [
+    "0-4",
+    "5-9",
+    "10-14",
+    "15-19",
+    "20-24",
+    "25-29",
+    "30-34",
+    "35-39",
+    "40-44",
+    "45-49",
+    "50-54",
+    "55-59",
+    "60-64",
+    "65-69",
+    "70-74",
+    "75-79",
+    "80-84",
+    "85-89",
+    "90+",
+]
+
 
 def stack_datasource(source, series):
     data = {}
@@ -380,42 +402,14 @@ def la_rate_plot(data, names, region, rolling_days=7):
 
 
 def case_ratio_heatmap(by_age):
-    by_age = by_age.sel(
-        date=slice(
-            by_age["date"].min(), by_age["date"].max() - pd.to_timedelta(3, unit="days")
-        )
-    )
+    # Note: by-age data is already subject to the dashboard's cutoff.
     by_age["cases_rolling"] = by_age["cases"].rolling(date=7, center=True).mean()
     by_age["cases_change"] = (
         by_age["cases_rolling"] / by_age.shift(date=7)["cases_rolling"]
     )
+    by_age["cases_log_change"] = np.log(by_age["cases_change"].dropna("date"))
 
-    df = by_age.drop_sel(age="unassigned").to_dataframe()
-    df = df.dropna()["cases_change"].unstack("age")
-    df = df.reindex(
-        columns=[
-            "0-4",
-            "5-9",
-            "10-14",
-            "15-19",
-            "20-24",
-            "25-29",
-            "30-34",
-            "35-39",
-            "40-44",
-            "45-49",
-            "50-54",
-            "55-59",
-            "60-64",
-            "65-69",
-            "70-74",
-            "75-79",
-            "80-84",
-            "85-89",
-            "90+",
-        ]
-    )
-
+    df = by_age.drop_sel(age="unassigned").to_dataframe().dropna().reset_index()
     months = 4
     fig = bokeh_figure(
         width=1200,
@@ -424,10 +418,10 @@ def case_ratio_heatmap(by_age):
         tools="",
         toolbar_location=None,
         x_range=[
-            df.index.max() - pd.to_timedelta(months * 30, unit="days"),
-            df.index.max(),
+            by_age["date"].max().values - pd.to_timedelta(months * 30, unit="days"),
+            by_age["date"].max().values,
         ],
-        y_range=list(df.columns),
+        y_range=AGE_RANGES,
     )
 
     fig.add_tools(
@@ -436,22 +430,24 @@ def case_ratio_heatmap(by_age):
                 ("Date", "@date{%d %b}"),
                 ("Age range", "@age"),
                 ("Change in cases", "@cases_change{0%}"),
+                ("Cases", "@cases_rolling{0,0}"),
             ],
             formatters={"@date": "datetime"},
             toggleable=False,
         )
     )
 
-    df2 = pd.DataFrame(df.stack(), columns=["cases_change"]).reset_index()
     fig.rect(
         "date",
         "age",
         dilate=True,
         width=60 * 60 * 24 * 1000 * 1.1,
         height=1.01,
-        source=df2,
+        source=df,
         line_color=None,
-        fill_color=linear_cmap("cases_change", palette=RdYlBu[11], low=0.4, high=1.6),
+        fill_color=linear_cmap(
+            "cases_log_change", palette=RdYlBu[11], low=-0.8, high=0.8
+        ),
     )
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.grid.grid_line_color = None
