@@ -4,7 +4,7 @@ import sqlite3
 import tempfile
 from datetime import datetime, timezone
 
-URL = "https://github.com/russss/nhs-covid19-app-data/raw/main/nhs_covid19_app_data.db"
+URL = "https://files.russss.dev/nhs_covid19_app_data.db"
 
 
 class NHSAppData:
