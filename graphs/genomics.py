@@ -4,7 +4,7 @@ import numpy as np
 from datetime import date, timedelta
 from itertools import cycle
 from bokeh.models import NumeralTickFormatter, HoverTool
-from bokeh.palettes import Set2, Category10, Category20
+from bokeh.palettes import Set2, Category10, Greys
 from .common import figure, add_provisional
 
 PROVISIONAL_DAYS = 30
@@ -356,17 +356,82 @@ def summarise_lineage(lin):
     return ".".join(lineage_parts[:-1])
 
 
+named_lineages = {
+    "B.1.1.7": "Alpha",
+    "B.1.617.2": "Delta",
+    "AY": "Delta",
+    "B.1.1.529": "Omicron",
+    "BA": "Omicron",
+}
+
+lineage_colours = {
+    "Alpha": cycle(
+        [
+            "#3182bd",
+            "#6baed6",
+            "#9ecae1",
+            "#c6dbef",
+        ]
+    ),
+    "Delta": cycle(
+        [
+            "#e6550d",
+            "#fd8d3c",
+            "#fdae6b",
+            "#fdd0a2",
+        ]
+    ),
+    "Omicron": cycle(
+        [
+            "#31a354",
+            "#74c476",
+            "#a1d99b",
+            "#c7e9c0",
+        ]
+    ),
+    "": cycle(Greys[7]),
+}
+
+
 def lineage_prevalence(data):
-    summarised = summarise_lineages(data)
+    summarised = summarise_lineages(data, always_interesting=["B.1.1.529"])
     count = summarised.groupby(["sample_date"]).count()["sequence_name"]
     grouped = (
         summarised.groupby(["sample_date", "lineage"]).count()["sequence_name"] / count
     )
-    stackers = list(sorted(grouped.index.get_level_values(1).unique()))
-    grouped = grouped.unstack().fillna(0).rolling(7, center=True).mean().reset_index()
 
-    colour_iter = cycle(Category20[20])
-    colours = [next(colour_iter) for i in stackers]
+    grouped = grouped.unstack().fillna(0).rolling(7, center=True).mean().reset_index()
+    grouped.drop(columns=["None"], inplace=True)
+
+    lineage_data = []
+    for lin in set(grouped.columns) - {"sample_date"}:
+        d = {
+            "lineage": lin,
+            "variant": "",
+            "first_date": grouped[grouped[lin] > 5]["sample_date"].min(),
+        }
+        for named_lin, name in named_lineages.items():
+            if lin.startswith(named_lin):
+                d["variant"] = name
+                break
+        lineage_data.append(d)
+
+    lineage_data = list(
+        sorted(lineage_data, key=lambda x: (x["variant"], x["first_date"]))
+    )
+
+    stackers = []
+    labels = []
+    colours = []
+
+    for lin in lineage_data:
+        stackers.append(lin["lineage"])
+        if lin["variant"]:
+            labels.append(f"{lin['lineage']} ({lin['variant']})")
+        else:
+            labels.append(lin["lineage"])
+
+        colours.append(next(lineage_colours[lin["variant"]]))
 
     fig = figure(interventions=False, title="UK lineage prevalence")
     fig.varea_stack(
@@ -374,7 +439,7 @@ def lineage_prevalence(data):
         x="sample_date",
         stackers=stackers,
         color=colours,
-        legend_label=stackers,
+        legend_label=labels,
         fill_alpha=0.7,
     )
     fig.legend.location = "bottom_left"
