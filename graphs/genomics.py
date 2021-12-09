@@ -408,7 +408,7 @@ def lineage_prevalence(data):
         d = {
             "lineage": lin,
             "variant": "",
-            "first_date": grouped[grouped[lin] > 5]["sample_date"].min(),
+            "first_date": grouped[grouped[lin] > 0.05]["sample_date"].min(),
         }
         for named_lin, name in named_lineages.items():
             if lin.startswith(named_lin):
