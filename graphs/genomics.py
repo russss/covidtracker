@@ -264,7 +264,7 @@ def variant_prevalence_by_region(data, lineage, title):
 
 
 parent_lineages = requests.get(
-    'https://raw.githubusercontent.com/cov-lineages/pango-designation/master/pango_designation/alias_key.json'
+    "https://raw.githubusercontent.com/cov-lineages/pango-designation/master/pango_designation/alias_key.json"
 ).json()
 
 # Further info on the lineage naming rules here:
@@ -314,27 +314,16 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
 
         filtered_lineage = []
         summarised_count = 0
-        for lin in data["lineage"]:
-            if lin in interesting_lineages:
-                filtered_lineage.append(lin)
-            elif lin in parent_lineages and parent_lineages[lin] != '':
+        for lineage in data["lineage"]:
+            if lineage in interesting_lineages:
+                filtered_lineage.append(lineage)
+                continue
+
+            summarised_lineage = summarise_lineage(lineage)
+
+            if summarised_lineage != lineage:
                 summarised_count += 1
-                if isinstance(parent_lineages[lin], list):
-                    # This happens if the lineage is a recombination of two parents
-                    # Pick the one with the longest lineage chain to be the parent,
-                    # ie. the most dots in the lineage name. Does not handle ties as is.
-                    main_lineage = max(parent_lineages[lin], key=lambda x: len(x.split(".")))
-                    filtered_lineage.append(main_lineage)
-                else:
-                    filtered_lineage.append(parent_lineages[lin])
-            else:
-                lineage_parts = lin.split(".")
-                if len(lineage_parts) == 1:
-                    summarised_lineage = lineage_parts[0]
-                else:
-                    summarised_count += 1
-                    summarised_lineage = ".".join(lineage_parts[:-1])
-                filtered_lineage.append(summarised_lineage)
+            filtered_lineage.append(summarised_lineage)
 
         data["lineage"] = filtered_lineage
 
@@ -344,8 +333,31 @@ def summarise_lineages(data, threshold=0.15, always_interesting=[]):
     return data
 
 
+def summarise_lineage(lin):
+    lineage_parts = lin.split(".")
+
+    if len(lineage_parts) < 3:
+        # We're either one step up from the root of a lineage, or we are at the root of the lineage.
+        root = lineage_parts[0]
+        parent = parent_lineages.get(root)
+
+        if not parent:
+            # Parent lineage either doesn't exist in the data file, or is one of the root lineages (A or B)
+            return lineage_parts[0]
+
+        if isinstance(parent, list):
+            # This happens if the lineage is a recombination of two parents
+            # Pick the one with the longest lineage chain to be the parent,
+            # ie. the most dots in the lineage name. Does not handle ties as is.
+            return max(parent, key=lambda x: len(x.split(".")))
+
+        return parent_lineages[root]
+
+    return ".".join(lineage_parts[:-1])
+
+
 def lineage_prevalence(data):
-    summarised = summarise_lineages(data, always_interesting=["B.1.351", "B.1.617.2"])
+    summarised = summarise_lineages(data)
     count = summarised.groupby(["sample_date"]).count()["sequence_name"]
     grouped = (
         summarised.groupby(["sample_date", "lineage"]).count()["sequence_name"] / count
