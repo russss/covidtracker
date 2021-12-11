@@ -1,0 +1,282 @@
+body {
+  color: #333;
+  margin: 0px;
+  margin-top: 40px;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+header {
+  background-color: #eeeeee;
+  padding: 5px 15px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: 40px;
+  margin-top: -40px;
+  overflow: hidden;
+}
+
+a, a:visited, a:hover {
+  color: #323;
+}
+
+header h1, header ul, header ul li {
+  display: inline;
+}
+
+header h1 {
+  margin: auto 0;
+  font-size: 26px;
+}
+
+header ul {
+  margin: auto 0;
+  display: flex;
+  flex-direction: row;
+}
+
+header ul li {
+  margin-right: 20px;
+}
+
+#body {
+  width: 80%;
+  margin: auto;
+  max-width: 1200px;
+}
+
+#mobile-warning {
+  display: none;
+}
+
+.warning {
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #ffeeee;
+  font-weight: bold;
+}
+
+@media only screen and (max-width: 750px) {
+  #body {
+    width: 100%;
+    margin: 0;
+  }
+
+  .graphs-body {
+    min-width: 750px;
+  }
+
+  #mobile-warning {
+    display: block;
+    width: 80vw;
+  }
+
+  #body > p, #body > h2 {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  header {
+    font-size: 12px;
+    padding: 1px 5px;
+  }
+
+  header h1 {
+    font-size: 14px;
+  }
+}
+
+.graph {
+  margin-bottom: 2em;
+  min-height: 250px;
+}
+
+table {
+  border-spacing: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 8px;
+}
+
+td, th {
+  padding: 3px;
+}
+
+td.score {
+  text-align: center;
+  width: 100px;
+}
+
+tfoot {
+  font-size: 0.7em;
+  color: #666;
+  text-align: center;
+}
+
+.footnote {
+  font-size: 0.7em;
+}
+
+table.sources {
+  font-size: 0.8em;
+}
+
+.score_rise_small {
+  background-color: #DEB4AF;
+}
+
+.score_rise_large {
+  background-color: #DE5243;
+  color: #eee;
+}
+
+.score_fall_small {
+  background-color: #AFB9DE;
+}
+
+.score_fall_large {
+  background-color: #4362DE;
+  color: #eee;
+}
+
+.score_neutral {
+  background-color: #DEDEDE;
+}
+
+#footer {
+  color: #666;
+  margin-top: 10em;
+  width: 100%;
+  text-align: center;
+  font-size: 0.7em;
+}
+
+#map {
+  user-select: none;
+  width: 100%;
+  height: 900px;
+  border: 1px solid #aaa;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.mapboxgl-ctrl-attrib {
+  font-size: 10px;
+}
+
+#map h3 {
+  margin: 0;
+  margin-bottom: 4px;
+}
+
+#map table {
+  width: 100%;
+  padding: 0;
+}
+
+#map table th {
+  white-space: nowrap;
+}
+
+td.expand {
+  width: 99%;
+}
+
+#map th {
+  text-align: left;
+}
+
+#map-intro-close {
+  display: none;
+}
+
+.mapboxgl-popup-content p {
+  margin: 0;
+}
+
+.mapboxgl-popup-content svg {
+  margin-left: -6px;
+}
+
+.mapboxgl-popup-content h4 {
+  margin-top: 0.4em;
+  margin-bottom: 0.1em;
+}
+
+.mapboxgl-popup-content td, th {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.colour-key {
+  overflow: hidden;
+}
+
+.colour-key-cell {
+  padding: 0 5px;
+}
+
+@media only screen and (max-width: 750px) {
+  #map {
+    position: absolute;
+    top: 40px;
+    bottom: 0;
+    height: auto;
+    border: 0;
+    z-index: 10;
+  }
+
+  .colour-key {
+    font-size: 0.8em;
+    line-height: 1.8em;
+  }
+
+  .switcher-container button {
+    font-size: 0.8em;
+    height: 25px;
+  }
+
+  #map-intro {
+    position: absolute;
+    top: 100px;
+    right: 10px;
+    left: 10px;
+    padding: 10px;
+    height: auto;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #aaa;
+    z-index: 20;
+    box-shadow: 5px 5px 5px #aaa;
+  }
+
+  #map-intro h2 {
+    margin-top: 0;
+  }
+
+  #map-intro-close {
+    display: block;
+    font-size: 18px;
+    margin: 0 auto;
+  }
+}
+
+.switcher-container button {
+    text-align: left;
+    width: 100%;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.switcher-container button:disabled {
+    color: #333;
+    cursor: default;
+    background-color: #ddd;
+}
+
+/* Hack to prevent multiple Bokeh HoverTool tooltips */
+div.bk-tooltip.bk-right>div.bk>div:not(:first-child) {
+    display:none !important;
+}
+div.bk-tooltip.bk-left>div.bk>div:not(:first-child) {
+    display:none !important;
+}
