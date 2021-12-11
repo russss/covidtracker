@@ -606,7 +606,6 @@ def case_ratio(cases_data, location="England"):
         y_axis_type="log",
         interventions=interventions,
     )
-    fig.ygrid.visible = False
 
     ds = xr_to_cds(graph_data)
 
@@ -620,40 +619,6 @@ def case_ratio(cases_data, location="England"):
         )
     )
 
-    lines = [
-        (2, "One week doubling"),
-        (2 ** (1 / 2), "Two week doubling"),
-        (2 ** (1 / 4), "Four week doubling"),
-        (0.5, "One week halving"),
-        (0.5 ** (1 / 2), "Two week halving"),
-        (0.5 ** (1 / 4), "Four week halving"),
-    ]
-
-    for loc, text in lines:
-        fig.add_layout(
-            Span(
-                location=loc,
-                dimension="width",
-                line_color="#dddddd",
-                line_width=1,
-                level="underlay",
-                line_dash="dashed",
-            )
-        )
-
-        fig.add_layout(
-            Label(
-                y=loc,
-                x=3,
-                x_units="screen",
-                text=text,
-                text_font="Noto Sans",
-                text_font_size="10px",
-                text_color="#aaaaaa",
-                level="underlay",
-            )
-        )
-
     fig.circle(
         source=ds,
         x="date",
@@ -666,20 +631,28 @@ def case_ratio(cases_data, location="England"):
     fig.line(source=ds, x="date", y="ratio_rolling", line_width=2)
 
     fig.yaxis.ticker = [
+        2 ** (7 / 3),
+        2 ** (7 / 5),
+        2,
+        2 ** (1 / 2),
+        2 ** (1 / 4),
+        1,
+        0.5 ** (1 / 4),
+        0.5 ** (1 / 2),
         0.5,
-        0.6,
-        0.7,
-        0.8,
-        1.0,
-        1.2,
-        1.4,
-        1.6,
-        1.8,
-        2.0,
-        2.4,
-        2.8,
-        3,
+        0.5 ** (7 / 5),
     ]
-    fig.yaxis.axis_label = "Log(case ratio)"
+    fig.yaxis.major_label_overrides = {
+        2 ** (7 / 3): "3 days",
+        2 ** (7 / 5): "5 days",
+        2: "1 week",
+        2 ** (1 / 2): "2 weeks",
+        2 ** (1 / 4): "4 weeks",
+        1: "",
+        0.5 ** (1 / 2): "2 weeks",
+        0.5 ** (1 / 4): "4 weeks",
+        0.5: "1 week",
+    }
+    fig.yaxis.axis_label = "⭠  Halving    Doubling  ⭢"
 
     return fig
