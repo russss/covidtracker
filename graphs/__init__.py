@@ -609,30 +609,25 @@ def case_ratio(cases_data, location="England"):
 
     ds = xr_to_cds(graph_data)
 
-    fig.add_layout(
-        Span(
-            location=1,
-            dimension="width",
-            line_color="#dddddd",
-            line_width=1,
-            level="underlay",
-        )
-    )
-
     fig.circle(
         source=ds,
         x="date",
         y="ratio",
-        alpha=0.4,
+        alpha=0.6,
+        color="#00B88A",
         line_color="#333333",
         line_width=1,
-        line_alpha=0.4,
+        line_alpha=0.3,
     )
-    fig.line(source=ds, x="date", y="ratio_rolling", line_width=2)
+    fig.line(source=ds, x="date", y="ratio_rolling", line_width=2, line_color="#7868A6")
 
     fig.yaxis.ticker = [
+        2 ** (7 / 1),
+        2 ** (7 / 2),
         2 ** (7 / 3),
+        2 ** (7 / 4),
         2 ** (7 / 5),
+        2 ** (7 / 6),
         2,
         2 ** (1 / 2),
         2 ** (1 / 4),
@@ -643,12 +638,16 @@ def case_ratio(cases_data, location="England"):
         0.5 ** (7 / 5),
     ]
     fig.yaxis.major_label_overrides = {
+        2 ** (7 / 1): "1 day",
+        2 ** (7 / 2): "2 days",
         2 ** (7 / 3): "3 days",
+        2 ** (7 / 4): "4 days",
         2 ** (7 / 5): "5 days",
+        2 ** (7 / 6): "6 days",
         2: "1 week",
         2 ** (1 / 2): "2 weeks",
         2 ** (1 / 4): "4 weeks",
-        1: "",
+        1: "Stable",
         0.5 ** (1 / 2): "2 weeks",
         0.5 ** (1 / 4): "4 weeks",
         0.5: "1 week",
