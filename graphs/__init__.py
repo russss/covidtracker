@@ -596,11 +596,15 @@ def case_ratio(cases_data, location="England"):
         )
     )
 
+    interventions = False
+    if location == "England":
+        interventions = True
     fig = figure(
         title=f"7-day case ratio by reporting date: {location}",
         x_range=None,
         y_range=None,
         y_axis_type="log",
+        interventions=interventions,
     )
     fig.ygrid.visible = False
 
@@ -661,7 +665,21 @@ def case_ratio(cases_data, location="England"):
     )
     fig.line(source=ds, x="date", y="ratio_rolling", line_width=2)
 
-    fig.yaxis.ticker = [0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+    fig.yaxis.ticker = [
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0,
+        2.4,
+        2.8,
+        3,
+    ]
     fig.yaxis.axis_label = "Log(case ratio)"
 
     return fig
