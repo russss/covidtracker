@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from itertools import cycle
-from datetime import timedelta
+from datetime import timedelta, date
 from bokeh.plotting import figure as bokeh_figure
 from bokeh.models import (
     NumeralTickFormatter,
@@ -10,6 +10,7 @@ from bokeh.models import (
     ColumnDataSource,
     DatetimeAxis,
     Span,
+    Label,
 )
 from bokeh.transform import linear_cmap
 from bokeh.models.tools import HoverTool
@@ -572,5 +573,95 @@ def rising_cases(eng_by_gss):
     fig.line(x=rising.index, y=rising["rising"])
 
     fig.yaxis.formatter = NumeralTickFormatter(format="0%")
+
+    return fig
+
+
+def case_ratio(cases_data, location="England"):
+    series = (
+        cases_data.diff("date")
+        .sel(location=location)
+        .sel(date=slice(np.datetime64(date(2020, 3, 15)), None))
+    )
+    series = series.where(series["cases"] != 0).dropna("date")
+
+    graph_data = (series / series.shift(date=7)).rename(cases="ratio")
+    graph_data["ratio_rolling"] = (
+        graph_data["ratio"].rolling(date=7, center=True).mean()
+    )
+    graph_data = graph_data.sel(
+        date=slice(
+            np.datetime64(date.today() - timedelta(days=120)),
+            graph_data["date"].max().values,
+        )
+    )
+
+    fig = figure(
+        title=f"7-day case ratio by reporting date: {location}",
+        x_range=None,
+        y_range=None,
+        y_axis_type="log",
+    )
+    fig.ygrid.visible = False
+
+    ds = xr_to_cds(graph_data)
+
+    fig.add_layout(
+        Span(
+            location=1,
+            dimension="width",
+            line_color="#dddddd",
+            line_width=1,
+            level="underlay",
+        )
+    )
+
+    lines = [
+        (2, "One week doubling"),
+        (2 ** (1 / 2), "Two week doubling"),
+        (2 ** (1 / 4), "Four week doubling"),
+        (0.5, "One week halving"),
+        (0.5 ** (1 / 2), "Two week halving"),
+        (0.5 ** (1 / 4), "Four week halving"),
+    ]
+
+    for loc, text in lines:
+        fig.add_layout(
+            Span(
+                location=loc,
+                dimension="width",
+                line_color="#dddddd",
+                line_width=1,
+                level="underlay",
+                line_dash="dashed",
+            )
+        )
+
+        fig.add_layout(
+            Label(
+                y=loc,
+                x=3,
+                x_units="screen",
+                text=text,
+                text_font="Noto Sans",
+                text_font_size="10px",
+                text_color="#aaaaaa",
+                level="underlay",
+            )
+        )
+
+    fig.circle(
+        source=ds,
+        x="date",
+        y="ratio",
+        alpha=0.4,
+        line_color="#333333",
+        line_width=1,
+        line_alpha=0.4,
+    )
+    fig.line(source=ds, x="date", y="ratio_rolling", line_width=2)
+
+    fig.yaxis.ticker = [0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+    fig.yaxis.axis_label = "Log(case ratio)"
 
     return fig

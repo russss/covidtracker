@@ -6,12 +6,15 @@ import coviddata.uk
 import coviddata.uk.scotland
 import coviddata.uk.wales
 import coviddata.world
+import sys
+import os
+
 
 from graphs import (
     uk_cases_graph,
     regional_cases,
     case_ratio_heatmap,
-    la_rate_plot,
+    case_ratio,
     hospital_admissions_graph,
     uk_test_positivity,
     uk_test_capacity,
@@ -151,6 +154,7 @@ triage_online = None
 triage_pathways = None
 
 by_age = coviddata.uk.cases_by_age()
+by_report_date = coviddata.uk.cases_phe(basis="report")
 
 render_template(
     "index.html",
@@ -159,7 +163,8 @@ render_template(
         "regional_cases": regional_cases(nhs_region_cases),
         "case_ratio_heatmap": case_ratio_heatmap(by_age),
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
-        "unlocking_scenarios": unlocking_graph(),
+        "case_ratio_england": case_ratio(by_report_date),
+        "case_ratio_scotland": case_ratio(by_report_date, "Scotland"),
     },
     scores=calculate_score(
         nhs_region_cases,
@@ -169,16 +174,10 @@ render_template(
     ),
     sources=[
         (
-            "Public Health England",
+            "UKHSA",
             "Coronavirus (COVID-19) in the UK",
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
-        ),
-        (
-            "SPI-M-O members (graphs digitised by Russ Garrett)",
-            "Unlocking projections from SAGE 93 (7 July 2021)",
-            "https://github.com/russss/covidtracker/tree/master/unlocking_projections/2021-07-07",
-            date(2020, 7, 7),
         ),
     ],
 )
@@ -221,7 +220,7 @@ render_template(
     provisional_days=provisional_days,
     sources=[
         (
-            "Public Health England",
+            "UKHSA",
             "Coronavirus (COVID-19) in the UK",
             "https://coronavirus.data.gov.uk",
             uk_cases.attrs["date"],
@@ -229,23 +228,30 @@ render_template(
     ],
 )
 
+vax_data = coviddata.uk.vaccinations()
+vax_uptake = coviddata.uk.vaccination_uptake_by_area_date()
 
-def slugify(string):
-    return string.lower().replace(" ", "-")
+render_template(
+    "vaccination.html",
+    graphs={
+        "vax_rate": vax_rate_graph(vax_data),
+        "vax_cumulative": vax_cumulative_graph(vax_data),
+        "vax_tadpole": la_tadpole(eng_by_gss, vax_uptake, populations),
+    },
+    sources=[
+        (
+            "UKHSA",
+            "Coronavirus (COVID-19) in the UK",
+            "https://coronavirus.data.gov.uk",
+            vax_data.attrs["date"],
+        )
+    ],
+)
 
+if os.environ.get("SKIP_SLOW"):
+    print("SKIPPING SLOW STUFF")
+    sys.exit(1)
 
-heat_plots = {}
-
-for region in la_region["nhs_name"].unique():
-    las = la_region[la_region["nhs_name"] == region]
-    region_data = eng_by_gss.where(
-        eng_by_gss["gss_code"].isin(list(las.index)), drop=True
-    )
-    names = la_region["la_name"].sort_values(ascending=False)
-    heat_plots[slugify(region)] = la_rate_plot(region_data, names, region)
-
-
-render_template("areas.html", graphs=heat_plots)
 
 app_data = NHSAppData()
 exposures = app_data.exposures()
@@ -290,26 +296,6 @@ render_template(
             "Latest sequence metadata",
             "https://www.cogconsortium.uk/",
             date.today(),
-        )
-    ],
-)
-
-vax_data = coviddata.uk.vaccinations()
-vax_uptake = coviddata.uk.vaccination_uptake_by_area_date()
-
-render_template(
-    "vaccination.html",
-    graphs={
-        "vax_rate": vax_rate_graph(vax_data),
-        "vax_cumulative": vax_cumulative_graph(vax_data),
-        "vax_tadpole": la_tadpole(eng_by_gss, vax_uptake, populations),
-    },
-    sources=[
-        (
-            "Public Health England",
-            "Coronavirus (COVID-19) in the UK",
-            "https://coronavirus.data.gov.uk",
-            vax_data.attrs["date"],
         )
     ],
 )

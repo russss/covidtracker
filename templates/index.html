@@ -44,6 +44,7 @@ graphs on COVID-19 spread in the UK.{% endblock %} {% macro score_cell(value) %}
     This is a collection of what I consider to be the most useful COVID-19 data
     for the UK. It is updated from the latest source data every 30 minutes.
   </p>
+  <p>It's intended to supplement the graphs on the <a href="https://coronavirus.data.gov.uk">official dashboard</a>, not replace them.</p>
   <h2>Regional Trends</h2>
   <table>
     <thead>
@@ -95,18 +96,14 @@ graphs on COVID-19 spread in the UK.{% endblock %} {% macro score_cell(value) %}
   <div id="regional_cases" class="graph"></div>
   <div id="hospital_admissions" class="graph"></div>
   <div id="case_ratio_heatmap" class="graph"></div>
-  <h2>Unlocking Projections</h2>
-  <p>The following graph shows the state of hospital admissions compared with
-      the projections presented at the SAGE 93 meeting on 7 July 2021.
-      It should be noted that <em>only the central estimate of each of the models
-      is presented here</em>, and all of the models generated wide confidence intervals,
-      which are not shown.
-  </p>
-  <p>These models are inherently sensitive to small changes in variables such as
-      vaccine efficacy, cross-immunity, and immunity waning, as well as the public's behaviour.</p>
-  <p>This data is presented on a logarithmic scale which allows better comparison of the trajectory of different models.</p>
-  <div id="unlocking_scenarios" class="graph"></div>
 
+  <h2>Case Ratio</h2>
+  <p>This plot shows the rate at which cases are rising or falling based on the weekly change in case rates by report date.
+      The use of report date as the basis means that changes are likely to show up earlier here, however it may also be
+      affected by reporting issues.</p>
+  <p>This plot is <a href="https://twitter.com/bristoliver">@BristOliver</a>'s speciality and I hope he doesn't mind that I'm replicating it here.</p>
+  <div id="case_ratio_england" class="graph"></div>
+  <div id="case_ratio_scotland" class="graph"></div>
   <h2>Sources</h2>
   {{sources_table(sources)}}
   <p class="footnote">

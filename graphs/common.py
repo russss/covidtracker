@@ -1,7 +1,14 @@
 import numpy as np
 import pandas as pd
 from math import pi
-from bokeh.models import Legend, DatetimeTickFormatter, Span, ColumnDataSource, Label
+from bokeh.models import (
+    Legend,
+    DatetimeTickFormatter,
+    Span,
+    ColumnDataSource,
+    Label,
+    Range1d,
+)
 from bokeh.models.tools import HoverTool
 from bokeh.plotting import figure as bokeh_figure
 from datetime import date, timedelta
@@ -25,8 +32,17 @@ england_interventions = [
     (date(2021, 3, 8), "Stage 1a: Schools reopen", RELEASE_COLOUR),
     (date(2021, 3, 29), "Stage 1b: Rule of six", RELEASE_COLOUR),
     (date(2021, 4, 12), "Stage 2: pubs/nonessential shops", RELEASE_COLOUR),
-    (date(2021, 5, 17), "Stage 3: indoor hospitality and household mixing", RELEASE_COLOUR),
+    (
+        date(2021, 5, 17),
+        "Stage 3: indoor hospitality and household mixing",
+        RELEASE_COLOUR,
+    ),
     (date(2021, 7, 19), "Stage 4: most restrictions released", RELEASE_COLOUR),
+    (
+        date(2021, 12, 10),
+        "Plan B: masks compulsory, working from home, vaccine passports",
+        LOCKDOWN_COLOUR,
+    ),  # Note: these restrictions imposed over a few days, picking one date here.
 ]
 
 
@@ -62,6 +78,7 @@ def intervention(fig, date, label, colour="red"):
         line_width=1,
         line_alpha=0.5,
         line_dash="dashed",
+        level="underlay",
     )
     fig.add_layout(span)
 
@@ -96,10 +113,21 @@ def add_interventions(fig):
 
 
 def figure(interventions=True, **kwargs):
+    data_start = np.datetime64(date(2020, 3, 1))
+    data_end = np.datetime64(date.today() + timedelta(days=1))
     if "x_range" not in kwargs:
-        kwargs["x_range"] = (
-            np.datetime64(date(2020, 3, 1)),
-            np.datetime64(date.today() + timedelta(days=1)),
+        if "x_range_days" in kwargs:
+            range_days = kwargs["x_range_days"]
+            del kwargs["x_range_days"]
+        else:
+            range_days = 365
+
+        kwargs["x_range"] = Range1d(
+            start=np.datetime64(date.today() - timedelta(days=range_days)),
+            end=data_end,
+            bounds=(data_start, data_end),
+            reset_start=data_start,
+            reset_end=data_end,
         )
     fig = bokeh_figure(
         width=1200,
@@ -119,7 +147,8 @@ def figure(interventions=True, **kwargs):
     fig.add_layout(legend)
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.xgrid.visible = False
-    fig.y_range.start = 0
+    if "y_range" not in kwargs:
+        fig.y_range.start = 0
     return fig
 
 
