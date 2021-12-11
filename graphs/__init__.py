@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import xarray as xr
+from math import pi
 from itertools import cycle
 from datetime import timedelta, date
 from bokeh.plotting import figure as bokeh_figure
@@ -607,6 +608,21 @@ def case_ratio(cases_data, location="England"):
         interventions=interventions,
     )
 
+    fig.add_layout(
+        Label(
+            x=20,
+            y=1,
+            y_offset=-78,
+            x_units="screen",
+            text="⭠  Halving    Doubling  ⭢",
+            text_font="Noto Sans",
+            text_font_size="14px",
+            text_color="#aaaaaa",
+            angle=pi / 2,
+            level="overlay",
+        )
+    )
+
     ds = xr_to_cds(graph_data)
 
     fig.circle(
@@ -647,11 +663,11 @@ def case_ratio(cases_data, location="England"):
         2: "1 week",
         2 ** (1 / 2): "2 weeks",
         2 ** (1 / 4): "4 weeks",
-        1: "Stable",
+        1: "",
         0.5 ** (1 / 2): "2 weeks",
         0.5 ** (1 / 4): "4 weeks",
         0.5: "1 week",
     }
-    fig.yaxis.axis_label = "⭠  Halving    Doubling  ⭢"
+    # fig.yaxis.axis_label = "⭠  Halving    Doubling  ⭢"
 
     return fig
