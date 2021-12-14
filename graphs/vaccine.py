@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime
 from bokeh.models import NumeralTickFormatter, HoverTool
+from bokeh.palettes import Greens
 from .common import figure, xr_to_cds
 
 
@@ -14,8 +15,9 @@ def vax_rate_graph(vax_data):
     )
     vax_rate["first_dose_rolling"] = vax_rate["first_dose"].rolling(date=7).mean()
     vax_rate["second_dose_rolling"] = vax_rate["second_dose"].rolling(date=7).mean()
+    vax_rate["third_dose_rolling"] = vax_rate["third_dose"].rolling(date=7).mean()
     vax_rate["total_rolling"] = (
-        vax_rate["first_dose_rolling"] + vax_rate["second_dose_rolling"]
+        vax_rate["first_dose_rolling"] + vax_rate["second_dose_rolling"] + vax_rate["third_dose_rolling"]
     )
 
     fig = figure(
@@ -32,69 +34,29 @@ def vax_rate_graph(vax_data):
                 ("Date", "@date{%a %d %b}"),
                 ("First dose", "@first_dose{0,0}"),
                 ("Second dose", "@second_dose{0,0}"),
+                ("Third dose", "@third_dose{0,0}"),
             ],
             formatters={"@date": "datetime"},
             toggleable=False,
-            names=["first_dose", "second_dose"],
+            names=["total"],
         )
     )
 
-    fig.line(
+    fig.varea_stack(
         source=ds,
         x="date",
-        y="first_dose",
-        legend_label="First dose",
-        name="first_dose",
-        line_color="#8AB1EB",
-    )
-    fig.line(
-        source=ds,
-        x="date",
-        y="first_dose_rolling",
-        legend_label="First dose (weekly average)",
-        name="first_dose_rolling",
-        line_color="#3D6CB3",
-        line_width=2,
-    )
-    fig.line(
-        source=ds,
-        x="date",
-        y="second_dose",
-        legend_label="Second dose",
-        name="second_dose",
-        line_color="#EB8A8F",
-    )
-    fig.line(
-        source=ds,
-        x="date",
-        y="second_dose_rolling",
-        legend_label="Second dose (weekly average)",
-        name="second_dose_rolling",
-        line_color="#B33D43",
-        line_width=2,
+        stackers=["first_dose_rolling", "second_dose_rolling", "third_dose_rolling"],
+        legend_label=["First dose", "Second dose", "Third dose"],
+        color=list(reversed(Greens[3])),
     )
 
     fig.line(
         source=ds,
         x="date",
         y="total_rolling",
-        legend_label="All doses (weekly average)",
-        name="total_rolling",
-        line_color="#888888",
-        line_width=2,
+        color="#888888",
+        name="total"
     )
-
-    # july_target_rate = (
-    #    52534000 - vax_data.sel(date="2021-2-19")["first_dose"].data
-    # ) / (datetime.date(2021, 7, 31) - datetime.date(2021, 2, 19)).days
-
-    # fig.line(
-    #    x=[pd.to_datetime("2021-2-19"), pd.to_datetime("2021-7-31")],
-    #    y=[july_target_rate, july_target_rate],
-    #    color="#444444",
-    #    line_dash="dashed",
-    #    legend_label="July target",
-    # )
 
     fig.legend.location = "top_left"
     fig.yaxis.formatter = NumeralTickFormatter(format="0,0")
@@ -107,6 +69,7 @@ def vax_cumulative_graph(vax_data):
     )
 
     vax_data["first_dose_only"] = vax_data.first_dose - vax_data.second_dose
+    vax_data["second_dose_only"] = vax_data.second_dose - vax_data.third_dose
 
     fig = figure(
         title="Total people vaccinated",
@@ -123,6 +86,7 @@ def vax_cumulative_graph(vax_data):
                 ("Date", "@date{%d %b}"),
                 ("One dose", "@first_dose_only{0,0}"),
                 ("Two doses", "@second_dose{0,0}"),
+                ("Three doses", "@third_dose{0,0}"),
                 ("Total", "@first_dose{0,0}"),
             ],
             formatters={"@date": "datetime"},
@@ -134,9 +98,9 @@ def vax_cumulative_graph(vax_data):
     fig.varea_stack(
         source=ds,
         x="date",
-        stackers=["second_dose", "first_dose_only"],
-        color=["#1f77b4", "#aec7e8"],
-        legend_label=["Two doses", "One dose"],
+        stackers=["third_dose", "second_dose_only", "first_dose_only"],
+        color=Greens[3],
+        legend_label=["Three doses", "Two doses", "One dose"],
     )
     fig.line(source=ds, x="date", y="first_dose", color="#888888", name="total")
     #fig.line(
