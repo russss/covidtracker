@@ -1,13 +1,13 @@
 const colour_ramp = [
-  [500, 500, "#0c2c84", true],
-  [250, 250, "#225ea8", true],
-  [100, 100, "#1d91c0", true],
-  [75, 75, "#41b6c4", true],
-  [50, 50, "#7fcdbb", true],
-  [25, 25, "#c7e9b4", false],
-  [10, 10, "#edf8b1", false],
-  [0.01, 0.01, "#ffffd9", false],
-  [0, 0, "#ececec", false]
+  [1000, 1000, "#4d004b", true],
+  [750, 750, "#810f7c", true],
+  [500, 500, "#88419d", true],
+  [250, 250, "#8c6bb1", true],
+  [100, 100, "#8c96c6", true],
+  [75, 75, "#9ebcda", true],
+  [50, 50, "#bfd3e6", true],
+  [25, 25, "#e0ecf4", false],
+  [10, 10, "#f7fcfd", false],
 ];
 
 const change_colour_ramp = [
