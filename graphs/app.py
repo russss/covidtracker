@@ -86,6 +86,10 @@ def risky_venues(risky_venues):
 
 
 def test_availability(home_test, walk_in):
+    # Insert some blank rows at the current timestamp to extend time range to now.
+    # Hacky. Also may misrepresent data if it stops being fetched.
+    walk_in.loc[pd.Timestamp.now()] = ["Wales", None]
+    home_test.loc[pd.Timestamp.now()] = [None, None, None]
     data = (
         walk_in.pivot(columns=["area"])
         .resample("30T")
@@ -101,6 +105,7 @@ def test_availability(home_test, walk_in):
         )
     )
 
+    home_test.loc[pd.Timestamp.now()] = [None, None, None]
     home_data = (
         home_test.rename(
             columns={
@@ -114,11 +119,9 @@ def test_availability(home_test, walk_in):
         .ffill()
         .melt(ignore_index=False)
         .reset_index()
-    )
-    home_data = (
-        home_data.rename(columns={"variable": "area"})
-        .replace(1, "GOOD")
-        .replace(0, "NONE")
+        .rename(columns={"variable": "area"})
+        .replace(True, "GOOD")
+        .replace(False, "NONE")
     )
     home_data["area"] = home_data["area"].apply(lambda name: ("Home tests", name))
     data = pd.concat([home_data, data])
