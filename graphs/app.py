@@ -1,7 +1,11 @@
+""" NHS App and test availability """
+
 import numpy as np
 import pandas as pd
 from datetime import date, timedelta
-from bokeh.palettes import YlOrRd
+from bokeh.models import FactorRange
+from bokeh.transform import factor_cmap
+from bokeh.palettes import YlOrRd, RdYlBu
 from .common import figure
 
 
@@ -78,4 +82,82 @@ def risky_venues(risky_venues):
     fig.xaxis.axis_label = "Day of export"
     fig.legend.location = "top_left"
     fig.legend.title = "Notification type"
+    return fig
+
+
+def test_availability(home_test, walk_in):
+    data = (
+        walk_in.pivot(columns=["area"])
+        .resample("30T")
+        .last()
+        .ffill()
+        .melt(ignore_index=False, col_level=1)
+        .reset_index()
+    )
+    data["area"] = data["area"].apply(
+        lambda name: (
+            "England" if name not in ("Wales", "Scotland", "Northern Ireland") else "",
+            name,
+        )
+    )
+
+    home_data = (
+        home_test.rename(
+            columns={
+                "pcr_keyworker": "PCR (key workers)",
+                "pcr_public": "PCR (public)",
+                "lfd_public": "LFD",
+            }
+        )
+        .resample("30T")
+        .last()
+        .ffill()
+        .melt(ignore_index=False)
+        .reset_index()
+    )
+    home_data = (
+        home_data.rename(columns={"variable": "area"})
+        .replace(1, "GOOD")
+        .replace(0, "NONE")
+    )
+    home_data["area"] = home_data["area"].apply(lambda name: ("Home tests", name))
+    data = pd.concat([home_data, data])
+    data["value"] = data["value"].str.capitalize()
+
+    regions = [
+        ("Home tests", "PCR (key workers)"),
+        ("Home tests", "PCR (public)"),
+        ("Home tests", "LFD"),
+        ("England", "North East England"),
+        ("England", "North West England"),
+        ("England", "Yorkshire and the Humber"),
+        ("England", "East Midlands"),
+        ("England", "West Midlands"),
+        ("England", "East Of England"),
+        ("England", "London"),
+        ("England", "South East England"),
+        ("England", "South West England"),
+        ("", "Scotland"),
+        ("", "Wales"),
+        ("", "Northern Ireland"),
+    ]
+
+    fig = figure(
+        y_range=FactorRange(*list(reversed(regions))),
+        x_range=(data["date"].min(), pd.Timestamp.now()),
+        title="COVID Test Availability",
+        legend_position="right",
+    )
+
+    fig.rect(
+        "date",
+        "area",
+        height=1,
+        width=30 * 60 * 60 * 16,
+        source=data,
+        legend_field="value",
+        color=factor_cmap("value", RdYlBu[3], ["Good", "Low", "None"]),
+        alpha=1,
+    )
+
     return fig

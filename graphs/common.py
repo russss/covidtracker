@@ -112,17 +112,25 @@ def add_interventions(fig):
         intervention(fig, when, label, colour)
 
 
-def figure(interventions=True, **kwargs):
+def figure(interventions=True, legend_position=None, **kwargs):
+
+    figure_args = {
+        "width": 1200,
+        "height": 500
+    }
+
+    figure_args.update(kwargs)
+
     data_start = np.datetime64(date(2020, 3, 1))
     data_end = np.datetime64(date.today() + timedelta(days=1))
-    if "x_range" not in kwargs:
-        if "x_range_days" in kwargs:
-            range_days = kwargs["x_range_days"]
-            del kwargs["x_range_days"]
+    if "x_range" not in figure_args:
+        if "x_range_days" in figure_args:
+            range_days = figure_args["x_range_days"]
+            del figure_args["x_range_days"]
         else:
             range_days = 365
 
-        kwargs["x_range"] = Range1d(
+        figure_args["x_range"] = Range1d(
             start=np.datetime64(date.today() - timedelta(days=range_days)),
             end=data_end,
             bounds=(data_start, data_end),
@@ -130,12 +138,10 @@ def figure(interventions=True, **kwargs):
             reset_end=data_end,
         )
     fig = bokeh_figure(
-        width=1200,
-        height=500,
         toolbar_location="right",
         sizing_mode="scale_width",
         tools="reset,box_zoom",
-        **kwargs
+        **figure_args
     )
 
     fig.toolbar.logo = None
@@ -144,7 +150,7 @@ def figure(interventions=True, **kwargs):
 
     legend = Legend()
     legend.click_policy = "hide"
-    fig.add_layout(legend)
+    fig.add_layout(legend, legend_position)
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")
     fig.xgrid.visible = False
     if "y_range" not in kwargs:

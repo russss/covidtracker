@@ -26,13 +26,11 @@ from graphs.genomics import (
     lineage_prevalence,
 )
 from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
-from graphs.app import risky_venues, app_keys
-from graphs.tadpole import la_tadpole
-from graphs.unlocking import unlocking_graph
+from graphs.app import risky_venues, app_keys, test_availability
 from template import render_template
 from map import map_data
 from score import calculate_score
-from corrections import correct_scottish_data, cases_by_nhs_region
+from corrections import cases_by_nhs_region
 from nhs_app import NHSAppData
 
 logging.basicConfig(level=logging.DEBUG)
@@ -182,35 +180,6 @@ render_template(
     ],
 )
 
-testing = coviddata.uk.tests_phe()
-
-cases_by_publish_date = coviddata.uk.cases_phe(by="overview", basis="report")
-uk_cases_pub_date = cases_by_publish_date.sel(location="United Kingdom").diff("date")[
-    "cases"
-]
-uk_cases_pub_date = uk_cases_pub_date.where(uk_cases_pub_date > 0)
-positivity = uk_cases_pub_date / (
-    testing["newPillarOneTestsByPublishDate"]
-    + testing["newPillarTwoTestsByPublishDate"]
-)
-
-
-render_template(
-    "testing.html",
-    graphs={
-        "positivity": uk_test_positivity(positivity),
-        "test_capacity": uk_test_capacity(testing),
-    },
-    sources=[
-        (
-            testing.attrs["source"],
-            "Coronavirus (COVID-19) in the UK",
-            testing.attrs["source_url"],
-            testing.attrs["date"],
-        )
-    ],
-)
-
 positivity = coviddata.uk.test_positivity()
 vaccine_uptake = coviddata.uk.vaccination_uptake_by_area()
 
@@ -253,6 +222,44 @@ if os.environ.get("SKIP_SLOW"):
 
 
 app_data = NHSAppData()
+testing = coviddata.uk.tests_phe()
+
+cases_by_publish_date = coviddata.uk.cases_phe(by="overview", basis="report")
+uk_cases_pub_date = cases_by_publish_date.sel(location="United Kingdom").diff("date")[
+    "cases"
+]
+uk_cases_pub_date = uk_cases_pub_date.where(uk_cases_pub_date > 0)
+positivity = uk_cases_pub_date / (
+    testing["newPillarOneTestsByPublishDate"]
+    + testing["newPillarTwoTestsByPublishDate"]
+)
+
+
+render_template(
+    "testing.html",
+    graphs={
+        "positivity": uk_test_positivity(positivity),
+        "test_capacity": uk_test_capacity(testing),
+        "test_availability": test_availability(app_data.home_test_availability(),
+                                               app_data.walk_in_availability())
+    },
+    sources=[
+        (
+            testing.attrs["source"],
+            "Coronavirus (COVID-19) in the UK",
+            testing.attrs["source_url"],
+            testing.attrs["date"],
+        ),
+        (
+            "Russ Garrett",
+            "NHS COVID-19 Data",
+            "https://github.com/russss/nhs-covid19-app-data",
+            date.today(),
+        )
+    ],
+)
+
+
 exposures = app_data.exposures()
 render_template(
     "app.html",
@@ -264,7 +271,7 @@ render_template(
     sources=[
         (
             "Russ Garrett",
-            "NHS COVID-19 App Data",
+            "NHS COVID-19 Data",
             "https://github.com/russss/nhs-covid19-app-data",
             date.today(),
         )
