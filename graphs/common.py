@@ -112,7 +112,7 @@ def add_interventions(fig):
         intervention(fig, when, label, colour)
 
 
-def figure(interventions=True, legend_position=None, **kwargs):
+def figure(interventions=True, legend_position="center", **kwargs):
 
     figure_args = {
         "width": 1200,
