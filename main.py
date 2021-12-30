@@ -222,40 +222,21 @@ if os.environ.get("SKIP_SLOW"):
 
 
 app_data = NHSAppData()
-testing = coviddata.uk.tests_phe()
-
-cases_by_publish_date = coviddata.uk.cases_phe(by="overview", basis="report")
-uk_cases_pub_date = cases_by_publish_date.sel(location="United Kingdom").diff("date")[
-    "cases"
-]
-uk_cases_pub_date = uk_cases_pub_date.where(uk_cases_pub_date > 0)
-positivity = uk_cases_pub_date / (
-    testing["newPillarOneTestsByPublishDate"]
-    + testing["newPillarTwoTestsByPublishDate"]
-)
-
 
 render_template(
     "testing.html",
     graphs={
-        "positivity": uk_test_positivity(positivity),
-        "test_capacity": uk_test_capacity(testing),
-        "test_availability": test_availability(app_data.home_test_availability(),
-                                               app_data.walk_in_availability())
+        "test_availability": test_availability(
+            app_data.home_test_availability(), app_data.walk_in_availability()
+        )
     },
     sources=[
-        (
-            testing.attrs["source"],
-            "Coronavirus (COVID-19) in the UK",
-            testing.attrs["source_url"],
-            testing.attrs["date"],
-        ),
         (
             "Russ Garrett",
             "NHS COVID-19 Data",
             "https://github.com/russss/nhs-covid19-app-data",
             date.today(),
-        )
+        ),
     ],
 )
 
