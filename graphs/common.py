@@ -112,12 +112,14 @@ def add_interventions(fig):
         intervention(fig, when, label, colour)
 
 
-def figure(interventions=True, legend_position="center", **kwargs):
+def figure(
+    interventions=True,
+    legend_position="center",
+    legend_orientation="vertical",
+    **kwargs
+):
 
-    figure_args = {
-        "width": 1200,
-        "height": 500
-    }
+    figure_args = {"width": 1200, "height": 500, "tools": "reset,box_zoom"}
 
     figure_args.update(kwargs)
 
@@ -138,17 +140,14 @@ def figure(interventions=True, legend_position="center", **kwargs):
             reset_end=data_end,
         )
     fig = bokeh_figure(
-        toolbar_location="right",
-        sizing_mode="scale_width",
-        tools="reset,box_zoom",
-        **figure_args
+        toolbar_location="right", sizing_mode="scale_width", **figure_args
     )
 
     fig.toolbar.logo = None
     if interventions:
         add_interventions(fig)
 
-    legend = Legend()
+    legend = Legend(orientation=legend_orientation)
     legend.click_policy = "hide"
     fig.add_layout(legend, legend_position)
     fig.xaxis.formatter = DatetimeTickFormatter(days="%d %b", months="%d %b")

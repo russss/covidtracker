@@ -148,8 +148,11 @@ def test_availability(home_test, walk_in):
     fig = figure(
         y_range=FactorRange(*list(reversed(regions))),
         x_range=(data["date"].min(), pd.Timestamp.now()),
-        title="COVID Test Availability",
-        legend_position="right",
+        title="Test Availability",
+        legend_position="below",
+        legend_orientation="horizontal",
+        height=550,
+        tools="",
     )
 
     fig.rect(
@@ -162,5 +165,7 @@ def test_availability(home_test, walk_in):
         color=factor_cmap("value", RdYlBu[3], ["Good", "Low", "None"]),
         alpha=1,
     )
+
+    fig.legend.title = "Availability"
 
     return fig
