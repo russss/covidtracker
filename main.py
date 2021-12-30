@@ -16,8 +16,6 @@ from graphs import (
     case_ratio_heatmap,
     case_ratio,
     hospital_admissions_graph,
-    uk_test_positivity,
-    uk_test_capacity,
 )
 from graphs.genomics import (
     fetch_cog_metadata,
