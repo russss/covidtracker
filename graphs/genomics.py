@@ -81,7 +81,7 @@ sources_region_map = {
 
 def fetch_cog_metadata():
     data = pd.read_csv(
-        "https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv",
+        "https://cog-uk.s3.climb.ac.uk/phylogenetics/latest/cog_metadata.csv.gz",
         parse_dates=["sample_date"],
     )
     data["d614g"] = data["d614g"] == "G"
