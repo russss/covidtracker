@@ -43,6 +43,7 @@ england_interventions = [
         "Plan B: masks compulsory, working from home, vaccine passports",
         LOCKDOWN_COLOUR,
     ),  # Note: these restrictions imposed over a few days, picking one date here.
+    (date(2022, 2, 24), "All restrictions released", RELEASE_COLOUR),
 ]
 
 
