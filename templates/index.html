@@ -97,15 +97,13 @@ graphs on COVID-19 spread in the UK.{% endblock %} {% macro score_cell(value) %}
   <div id="hospital_admissions" class="graph"></div>
   <div id="case_ratio_heatmap" class="graph"></div>
 
-{#
+
   <h2>Case Ratio</h2>
-  <p>This plot shows the rate at which cases are rising or falling based on the weekly change in case rates by report date.
-      The use of report date as the basis means that changes are likely to show up earlier here, however it may also be
-      affected by reporting issues.</p>
-  <p>This plot is <a href="https://twitter.com/bristoliver">@BristOliver</a>'s speciality and I hope he doesn't mind that I'm replicating it here.</p>
+  <p>This plot shows the rate at which cases are rising or falling based on the weekly change in case rates.
+      These plots previously used data by report date, but this is no longer practical.</p>
   <div id="case_ratio_england" class="graph"></div>
   <div id="case_ratio_scotland" class="graph"></div>
-#}
+
   <h2>Sources</h2>
   {{sources_table(sources)}}
   <p class="footnote">

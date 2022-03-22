@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import xarray as xr
 from math import pi
 from itertools import cycle
 from datetime import timedelta, date
@@ -517,7 +516,7 @@ def case_ratio(cases_data, location="England"):
     if location == "England":
         interventions = True
     fig = figure(
-        title=f"7-day case ratio by reporting date: {location}",
+        title=f"7-day case ratio: {location}",
         x_range=None,
         y_range=None,
         y_axis_type="log",

@@ -24,7 +24,7 @@ from graphs.genomics import (
     lineage_prevalence,
 )
 from graphs.vaccine import vax_rate_graph, vax_cumulative_graph
-from graphs.app import risky_venues, app_keys, test_availability
+from graphs.app import risky_venues, app_keys
 from template import render_template
 from map import map_data
 from score import calculate_score
@@ -150,7 +150,6 @@ triage_online = None
 triage_pathways = None
 
 by_age = coviddata.uk.cases_by_age()
-by_report_date = coviddata.uk.cases_phe(basis="report")
 
 render_template(
     "index.html",
@@ -159,8 +158,8 @@ render_template(
         "regional_cases": regional_cases(nhs_region_cases),
         "case_ratio_heatmap": case_ratio_heatmap(by_age),
         "hospital_admissions": hospital_admissions_graph(hospital_admissions),
-        "case_ratio_england": case_ratio(by_report_date),
-        "case_ratio_scotland": case_ratio(by_report_date, "Scotland"),
+        "case_ratio_england": case_ratio(uk_cases),
+        "case_ratio_scotland": case_ratio(uk_cases, "Scotland"),
     },
     scores=calculate_score(
         nhs_region_cases,
@@ -220,24 +219,6 @@ if os.environ.get("SKIP_SLOW"):
 
 
 app_data = NHSAppData()
-
-render_template(
-    "testing.html",
-    graphs={
-        "test_availability": test_availability(
-            app_data.home_test_availability(), app_data.walk_in_availability()
-        )
-    },
-    sources=[
-        (
-            "Russ Garrett",
-            "NHS COVID-19 Data",
-            "https://github.com/russss/nhs-covid19-app-data",
-            date.today(),
-        ),
-    ],
-)
-
 
 exposures = app_data.exposures()
 render_template(
