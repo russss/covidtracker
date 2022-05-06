@@ -401,7 +401,6 @@ def lineage_prevalence(data):
     )
 
     grouped = grouped.unstack().fillna(0).rolling(7, center=True).mean().reset_index()
-    grouped.drop(columns=["None"], inplace=True)
 
     lineage_data = []
     for lin in set(grouped.columns) - {"sample_date"}:
